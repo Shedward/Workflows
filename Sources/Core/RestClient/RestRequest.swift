@@ -9,7 +9,40 @@ struct RestRequest<RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodab
     var query: RestQuery = .init()
     var headers: RestHeaders = .init()
     var body: RequestBody
+
+    init(
+        method: RestMethod = .get,
+        path: String? = nil,
+        query: RestQuery = .init(),
+        headers: RestHeaders = .init(),
+        body: RequestBody
+    ) {
+        self.method = method
+        self.path = path
+        self.query = query
+        self.headers = headers
+        self.body = body
+    }
 }
+
+extension RestRequest where RequestBody: DefaultInitable {
+    init(
+        method: RestMethod = .get,
+        path: String? = nil,
+        query: RestQuery = .init(),
+        headers: RestHeaders = .init()
+    ) {
+        self.init(
+            method: method,
+            path: path,
+            query: query,
+            headers: headers,
+            body: .init()
+        )
+    }
+}
+
+extension RestRequest: KeyPathSettable { }
 
 enum RestMethod: String {
     case get = "GET"

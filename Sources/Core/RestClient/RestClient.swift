@@ -9,9 +9,6 @@ actor RestClient {
     private let endpoint: RestEndpoint
     private let session: URLSession
 
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
-
     init(endpoint: RestEndpoint, session: URLSession = .shared) {
         self.endpoint = endpoint
         self.session = session
@@ -26,7 +23,7 @@ actor RestClient {
             try await session.data(for: request)
         }
         let responseBody = try EError.wrap("Parsing response") {
-            try Response.fromData(data, decoder: decoder)
+            try Response.fromData(data)
         }
         return responseBody
     }
@@ -46,7 +43,7 @@ actor RestClient {
         request.httpMethod = restRequest.method.rawValue
         request.allHTTPHeaderFields = restRequest.headers.values
 
-        request.httpBody = try restRequest.body.data(encoder: encoder)
+        request.httpBody = try restRequest.body.data()
 
         return request
     }

@@ -22,11 +22,11 @@ extension DictionaryBuildable {
         self.init(values: [:])
     }
 
-    static func value(_ value: Value, for key: Key) -> Self {
+    static func set(_ key: Key, to value: Value) -> Self {
         Self(values: [key: value])
     }
 
-    func value(_ value: Value, for key: Key) -> Self {
+    func set(_ key: Key, to value: Value) -> Self {
         var values = values
         values[key] = value
         return Self(values: values)
