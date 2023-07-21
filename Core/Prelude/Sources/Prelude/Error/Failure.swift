@@ -3,12 +3,12 @@
 //  Created by Vladislav Maltsev on 16.07.2023.
 //
 
-struct EError: DescriptiveError {
-    let context: StaticString
-    let description: String
-    let underlyingError: Error?
+public struct Failure: DescriptiveError {
+    public let context: StaticString
+    public let description: String
+    public let underlyingError: Error?
 
-    var userDescription: String {
+    public var userDescription: String {
         if let underlyingError {
             let errorDescription: String = (underlyingError as? DescriptiveError)?.userDescription
             ?? "\(underlyingError)"
@@ -22,15 +22,15 @@ struct EError: DescriptiveError {
         }
     }
 
-    init(_ description: String, underlyingError: Error? = nil, context: StaticString = #fileID) {
+    public init(_ description: String, underlyingError: Error? = nil, context: StaticString = #fileID) {
         self.context = context
         self.description = description
         self.underlyingError = underlyingError
     }
 }
 
-extension EError {
-    static func wrap<Result>(
+extension Failure {
+    public static func wrap<Result>(
         _ description: String,
         context: StaticString = #fileID,
         actions: () throws -> Result
@@ -38,11 +38,11 @@ extension EError {
         do {
             return try actions()
         } catch {
-            throw EError(description, underlyingError: error, context: context)
+            throw Failure(description, underlyingError: error, context: context)
         }
     }
 
-    static func wrap<Result>(
+    public static func wrap<Result>(
         _ description: String,
         context: StaticString = #fileID,
         actions: () async throws -> Result
@@ -50,7 +50,7 @@ extension EError {
         do {
             return try await actions()
         } catch {
-            throw EError(description, underlyingError: error, context: context)
+            throw Failure(description, underlyingError: error, context: context)
         }
     }
 }

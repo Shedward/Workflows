@@ -1,0 +1,94 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXFileReference section */
+		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
+		639C5FA12A6B1EE500896922 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = text; name = DebugApp; path = Core/DebugApp; sourceTree = SOURCE_ROOT; };
+		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		639C5FA02A6B1EB200896922 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				639C5FA12A6B1EE500896922 /* DebugApp */,
+			);
+			path = Apps;
+			sourceTree = "<group>";
+		};
+		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				630A76872A6B1BFA0038E21A /* Prelude */,
+				63C94D2C2A6B1B3B009AC8E4 /* RestClient */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		63F0EE632A6B1AD80010CBAE = {
+			isa = PBXGroup;
+			children = (
+				63C94D2B2A6B1AFE009AC8E4 /* Core */,
+				639C5FA02A6B1EB200896922 /* Apps */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		63F0EE642A6B1AD80010CBAE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = 63F0EE672A6B1AD80010CBAE /* Build configuration list for PBXProject "Workflows" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 63F0EE632A6B1AD80010CBAE;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		63F0EE682A6B1AD80010CBAE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		63F0EE692A6B1AD80010CBAE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		63F0EE672A6B1AD80010CBAE /* Build configuration list for PBXProject "Workflows" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63F0EE682A6B1AD80010CBAE /* Debug */,
+				63F0EE692A6B1AD80010CBAE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 63F0EE642A6B1AD80010CBAE /* Project object */;
+}

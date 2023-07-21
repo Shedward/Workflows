@@ -4,12 +4,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "Workflows",
-    platforms: [.macOS(.v13)],
+    name: "Prelude",
+    products: [
+        // Products define the executables and libraries a package produces, making them visible to other packages.
+        .library(
+            name: "Prelude",
+            targets: ["Prelude"]),
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
-        .executableTarget(
-            name: "Workflows"),
+        .target(
+            name: "Prelude"),
+        .testTarget(
+            name: "PreludeTests",
+            dependencies: ["Prelude"]),
     ]
 )

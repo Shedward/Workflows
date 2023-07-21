@@ -4,31 +4,34 @@
 //
 
 import Foundation
+import Prelude
 
-actor RestClient {
+public actor RestClient {
     private let endpoint: RestEndpoint
     private let session: URLSession
 
-    init(endpoint: RestEndpoint, session: URLSession = .shared) {
+    public init(endpoint: RestEndpoint, session: URLSession = .shared) {
         self.endpoint = endpoint
         self.session = session
     }
 
     @discardableResult
-    func request<Request, Response>(_ request: RestRequest<Request, Response>) async throws -> Response {
-        let request = try EError.wrap("Composing request \(Request.self)") {
+    public func request<Request, Response>(_ request: RestRequest<Request, Response>) async throws -> Response {
+        let request = try Failure.wrap("Composing request \(Request.self)") {
             try urlRequest(from: request)
         }
-        let (data, _) = try await EError.wrap("Requesting data") {
+        let (data, _) = try await Failure.wrap("Requesting data") {
             try await session.data(for: request)
         }
-        let responseBody = try EError.wrap("Parsing response") {
+        let responseBody = try Failure.wrap("Parsing response") {
             try Response.fromData(data)
         }
         return responseBody
     }
 
-    private func urlRequest<Request, Response>(from restRequest: RestRequest<Request, Response>) throws -> URLRequest {
+    private func urlRequest<Request, Response>(
+        from restRequest: RestRequest<Request, Response>
+    ) throws -> URLRequest {
         var url: URL = endpoint.host
         if let path = restRequest.path {
             url.append(path: path)

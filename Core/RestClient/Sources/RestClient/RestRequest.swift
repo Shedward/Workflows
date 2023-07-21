@@ -3,14 +3,19 @@
 //  Created by Vladislav Maltsev on 16.07.2023.
 //
 
-struct RestRequest<RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodable> {
-    var method: RestMethod = .get
-    var path: String?
-    var query: RestQuery = .init()
-    var headers: RestHeaders = .init()
-    var body: RequestBody
+import Prelude
 
-    init(
+public struct RestRequest<
+    RequestBody: RestBodyEncodable,
+    ResponseBody: RestBodyDecodable
+>: KeyPathSettable {
+    public var method: RestMethod = .get
+    public var path: String?
+    public var query: RestQuery = .init()
+    public var headers: RestHeaders = .init()
+    public var body: RequestBody
+
+    public init(
         method: RestMethod = .get,
         path: String? = nil,
         query: RestQuery = .init(),
@@ -26,7 +31,7 @@ struct RestRequest<RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodab
 }
 
 extension RestRequest where RequestBody: DefaultInitable {
-    init(
+    public init(
         method: RestMethod = .get,
         path: String? = nil,
         query: RestQuery = .init(),
@@ -42,25 +47,23 @@ extension RestRequest where RequestBody: DefaultInitable {
     }
 }
 
-extension RestRequest: KeyPathSettable { }
-
-enum RestMethod: String {
+public enum RestMethod: String {
     case get = "GET"
     case post = "POST"
 }
 
-struct RestQuery: DictionaryBuildable {
-    var values: [String: String]
+public struct RestQuery: DictionaryBuildable {
+    public var values: [String: String]
 
-    init(values: [String : String]) {
+    public init(values: [String: String]) {
         self.values = values
     }
 }
 
-struct RestHeaders: DictionaryBuildable {
-    var values: [String: String]
+public struct RestHeaders: DictionaryBuildable {
+    public var values: [String: String]
 
-    init(values: [String : String]) {
+    public init(values: [String: String]) {
         self.values = values
     }
 }

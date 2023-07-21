@@ -5,12 +5,12 @@
 
 import Foundation
 
-protocol RestBodyEncodable {
+public protocol RestBodyEncodable {
     func data() throws -> Data?
 }
 
-protocol RestBodyDecodable {
+public protocol RestBodyDecodable {
     static func fromData(_ data: Data) throws -> Self
 }
 
-typealias RestBodyCodable = RestBodyEncodable & RestBodyDecodable
+public typealias RestBodyCodable = RestBodyEncodable & RestBodyDecodable

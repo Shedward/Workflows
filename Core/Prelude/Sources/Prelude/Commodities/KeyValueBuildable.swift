@@ -3,7 +3,7 @@
 //  Created by Vladislav Maltsev on 17.07.2023.
 //
 
-protocol DictionaryBuildable {
+public protocol DictionaryBuildable {
     associatedtype Key: Hashable
     associatedtype Value
 
@@ -14,25 +14,25 @@ protocol DictionaryBuildable {
 
 extension DictionaryBuildable {
 
-    var isEmpty: Bool {
+    public var isEmpty: Bool {
         values.isEmpty
     }
 
-    init() {
+    public init() {
         self.init(values: [:])
     }
 
-    static func set(_ key: Key, to value: Value) -> Self {
+    public static func set(_ key: Key, to value: Value) -> Self {
         Self(values: [key: value])
     }
 
-    func set(_ key: Key, to value: Value) -> Self {
+    public func set(_ key: Key, to value: Value) -> Self {
         var values = values
         values[key] = value
         return Self(values: values)
     }
 
-    func merging(with another: Self) -> Self {
+    public func merging(with another: Self) -> Self {
         return Self(
             values: values.merging(another.values, uniquingKeysWith: { $1 })
         )
