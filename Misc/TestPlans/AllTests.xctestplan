@@ -1,0 +1,36 @@
+{
+  "configurations" : [
+    {
+      "id" : "53B1869F-25BC-4A3B-80C3-F3D76871A6F9",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Workflows.xcodeproj",
+      "identifier" : "639C5FA82A6B237200896922",
+      "name" : "DebugApp"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:..\/Prelude",
+        "identifier" : "PreludeTests",
+        "name" : "PreludeTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/RestClient",
+        "identifier" : "RestClientTests",
+        "name" : "RestClientTests"
+      }
+    }
+  ],
+  "version" : 1
+}

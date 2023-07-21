@@ -9,6 +9,7 @@
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
 		639C5FA12A6B1EE500896922 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = text; name = DebugApp; path = Core/DebugApp; sourceTree = SOURCE_ROOT; };
+		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -19,6 +20,29 @@
 				639C5FA12A6B1EE500896922 /* DebugApp */,
 			);
 			path = Apps;
+			sourceTree = "<group>";
+		};
+		639C5FA22A6B224800896922 /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				639C5FA42A6B229200896922 /* TestPlans */,
+			);
+			path = Misc;
+			sourceTree = "<group>";
+		};
+		639C5FA42A6B229200896922 /* TestPlans */ = {
+			isa = PBXGroup;
+			children = (
+				639C5FA32A6B228F00896922 /* AllTests.xctestplan */,
+			);
+			path = TestPlans;
+			sourceTree = "<group>";
+		};
+		639C5FAA2A6B237200896922 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
@@ -35,6 +59,8 @@
 			children = (
 				63C94D2B2A6B1AFE009AC8E4 /* Core */,
 				639C5FA02A6B1EB200896922 /* Apps */,
+				639C5FA22A6B224800896922 /* Misc */,
+				639C5FAA2A6B237200896922 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -45,6 +71,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 			};
 			buildConfigurationList = 63F0EE672A6B1AD80010CBAE /* Build configuration list for PBXProject "Workflows" */;
@@ -56,6 +83,7 @@
 				Base,
 			);
 			mainGroup = 63F0EE632A6B1AD80010CBAE;
+			productRefGroup = 639C5FAA2A6B237200896922 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
