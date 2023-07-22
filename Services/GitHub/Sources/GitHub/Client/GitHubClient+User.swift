@@ -6,7 +6,7 @@
 import RestClient
 
 extension GitHubClient {
-    func currentUser() async throws -> UserResponse {
+    func getCurrentUser() async throws -> UserResponse {
         let request = RestRequest<EmptyBody, UserResponse>(
             method: .get,
             path: "/user"

@@ -7,7 +7,9 @@ import GitHub
 let github = GitHub(token: "...")
 let user = try await github.currentUser()
 let repo = try await github.repo(owner: "hhru", name: "ios-apps")
-print(repo)
+let pullRequests = try await repo.pullRequests().allItems()
+print(pullRequests.count)
+print(pullRequests)
 
 //let request = RestRequest<EmptyBody, PlainTextBody>(
 //    method: .get,

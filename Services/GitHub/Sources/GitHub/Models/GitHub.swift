@@ -11,7 +11,7 @@ public struct GitHub {
     }
 
     public func currentUser() async throws -> User {
-        let userResponse = try await client.currentUser()
+        let userResponse = try await client.getCurrentUser()
         return User(userResponse: userResponse, client: client)
     }
 

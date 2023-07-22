@@ -52,11 +52,26 @@ public enum RestMethod: String {
     case post = "POST"
 }
 
-public struct RestQuery: DictionaryBuildable {
+public struct RestQuery {
     public var values: [String: String]
 
     public init(values: [String: String]) {
         self.values = values
+    }
+}
+
+extension RestQuery: DictionaryBuildable {
+    public static func set(_ key: String, to value: Int?) -> Self {
+        guard let value else {
+            return Self()
+        }
+        return Self(values: [key: String(value)])
+    }
+
+    public func set(_ key: Key, to value: Int?) -> Self {
+        var values = values
+        values[key] = value.map(String.init)
+        return Self(values: values)
     }
 }
 

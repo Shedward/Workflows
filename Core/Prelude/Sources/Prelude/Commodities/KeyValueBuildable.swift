@@ -22,23 +22,35 @@ extension DictionaryBuildable {
         self.init(values: [:])
     }
 
-    public static func set(_ key: Key, to value: Value) -> Self {
-        Self(values: [key: value])
+    public static func set(_ key: Key, to value: Value?) -> Self {
+        guard let value else {
+            return Self()
+        }
+        return Self(values: [key: value])
     }
 
-    public func set(_ key: Key, to value: Value) -> Self {
+    public static func merging(with another: Self?) -> Self {
+        guard let another else {
+            return Self()
+        }
+        return another
+    }
+
+    public func set(_ key: Key, to value: Value?) -> Self {
         var values = values
         values[key] = value
         return Self(values: values)
     }
 
-    public func merging(with another: Self) -> Self {
+    public func merging(with another: Self?) -> Self {
+        guard let another else { return self }
         return Self(
             values: values.merging(another.values, uniquingKeysWith: { $1 })
         )
     }
 
-    public mutating func merge(_ another: Self) {
+    public mutating func merge(_ another: Self?) {
+        guard let another else { return }
         values = values.merging(another.values, uniquingKeysWith: { $1 })
     }
 }
