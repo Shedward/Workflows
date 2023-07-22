@@ -3,11 +3,13 @@
 //  Created by Vladislav Maltsev on 16.07.2023.
 //
 
-protocol DescriptiveError: Error {
+import Foundation
+
+public protocol DescriptiveError: Error, LocalizedError {
     var userDescription: String { get }
 }
 
-extension DescriptiveError {
+public extension DescriptiveError {
     var userDescription: String {
         "\(self)"
     }

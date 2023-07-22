@@ -3,20 +3,41 @@
 
 import Foundation
 import RestClient
+import Prelude
 
-let request = RestRequest<EmptyBody, PlainTextBody>(
+//let request = RestRequest<EmptyBody, PlainTextBody>(
+//    method: .get,
+//    path: "/repos/octocat/Spoon-Knife/issues",
+//    query: RestQuery
+//        .set("sortBy", to: "createAt"),
+//    headers: RestHeaders
+//        .set("Accept", to: "application/vnd.github+json")
+//        .set("Authorization", to: "...")
+//)
+//
+//let endpoint = RestEndpoint(host: URL(string: "https://api.github.com")!)
+//let client = RestClient(endpoint: endpoint)
+//
+//let response = try await client.request(request)
+//print(response)
+
+let usr: String = "..."
+let pwd: String = "..."
+let token = "\(usr):\(pwd)".data(using: .utf8)?.base64EncodedString()
+
+
+let jiraRequest = RestRequest<EmptyBody, PlainTextBody>(
     method: .get,
-    path: "/repos/octocat/Spoon-Knife/issues",
+    path: "/rest/api/2/user",
     query: RestQuery
-        .set("sortBy", to: "createAt"),
+        .set("username", to: "v.maltsev"),
     headers: RestHeaders
-        .set("Accept", to: "application/vnd.github+json")
-        .set("Authorization", to: "...")
+        .set("Authorization", to: "Basic \(token!)")
+        .set("Content-Type", to: "application/json")
 )
 
-let endpoint = RestEndpoint(host: URL(string: "https://api.github.com")!)
+let endpoint = RestEndpoint(host: URL(string: "https://jira.hh.ru")!)
 let client = RestClient(endpoint: endpoint)
+let response = try await client.request(jiraRequest)
 
-let response = try await client.request(request)
 print(response)
-

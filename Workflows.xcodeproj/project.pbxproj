@@ -45,6 +45,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		63A9719F2A6C121C00A4EF8B /* Services */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -58,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				63C94D2B2A6B1AFE009AC8E4 /* Core */,
+				63A9719F2A6C121C00A4EF8B /* Services */,
 				639C5FA02A6B1EB200896922 /* Apps */,
 				639C5FA22A6B224800896922 /* Misc */,
 				639C5FAA2A6B237200896922 /* Products */,
