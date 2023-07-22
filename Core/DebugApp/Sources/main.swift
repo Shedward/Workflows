@@ -7,7 +7,8 @@ import GitHub
 let github = GitHub(token: "...")
 let user = try await github.currentUser()
 let repo = try await github.repo(owner: "hhru", name: "ios-apps")
-let pullRequests = try await repo.pullRequests().allItems()
+let query = PullRequest.Query(state: .opened)
+let pullRequests = try await repo.pullRequests(query: query).page(pageSize: 100)
 print(pullRequests.count)
 print(pullRequests)
 

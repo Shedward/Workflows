@@ -6,13 +6,13 @@
 import Prelude
 
 open class PaginatingClient<Item> {
-    func fetchPage(_ pageIndex: Int) async throws -> [Item] {
+    func fetchPage(_ pageIndex: Int, pageSize: Int?) async throws -> [Item] {
         throw Failure("Not implemented")
     }
 }
 
 public final class BlockPaginatingClient<Item>: PaginatingClient<Item> {
-    public typealias FetchBlock = (Int) async throws -> [Item]
+    public typealias FetchBlock = (Int, Int?) async throws -> [Item]
 
     private let fetch: FetchBlock
 
@@ -20,7 +20,7 @@ public final class BlockPaginatingClient<Item>: PaginatingClient<Item> {
         self.fetch = fetch
     }
 
-    public override func fetchPage(_ pageIndex: Int) async throws -> [Item] {
-        try await fetch(pageIndex)
+    public override func fetchPage(_ pageIndex: Int, pageSize: Int?) async throws -> [Item] {
+        try await fetch(pageIndex, pageSize)
     }
 }

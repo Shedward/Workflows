@@ -9,9 +9,11 @@ public struct PaginatingList<Item> {
     private var canLoadNextPage: Bool
 
     public private(set) var items: [Item] = []
+    private let pageSize: Int?
 
-    public init(client: PaginatingClient<Item>) {
+    public init(client: PaginatingClient<Item>, pageSize: Int? = nil) {
         self.client = client
+        self.pageSize = pageSize
         self.currentPage = 0
         self.canLoadNextPage = true
     }
@@ -27,28 +29,30 @@ public struct PaginatingList<Item> {
         guard canLoadNextPage else { return }
 
         currentPage += 1
-        let newItems = try await client.fetchPage(currentPage)
+        let newItems = try await page(currentPage, pageSize: pageSize)
         items.append(contentsOf: newItems)
         if newItems.isEmpty {
             canLoadNextPage = false
         }
     }
 
-    public mutating func loadAll() async throws {
-        while canLoadNextPage {
+    public mutating func loadAll(limitCount: Int = .max) async throws {
+        while canLoadNextPage && items.count < limitCount {
             try await loadNextPage()
         }
     }
 
-    public func firstPage() async throws -> [Item] {
+    public func page(_ pageIndex: Int = 0, pageSize: Int?) async throws -> [Item] {
+        try await client.fetchPage(currentPage, pageSize: pageSize ?? self.pageSize)
+    }
+
+    public func allItems(limitCount: Int = .max) async throws -> [Item] {
         var list = self
-        try await list.reload()
+        try await list.loadAll(limitCount: limitCount)
         return list.items
     }
 
-    public func allItems() async throws -> [Item] {
-        var list = self
-        try await list.loadAll()
-        return list.items
+    public func withPageSize(_ pageSize: Int?) -> PaginatingList<Item> {
+        .init(client: client, pageSize: pageSize)
     }
 }

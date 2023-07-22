@@ -6,39 +6,19 @@
 import RestClient
 
 extension GitHubClient {
-    struct PullRequestQuery: RestQueryConvertible {
-        enum State: String {
-            case open
-            case closed
-            case all
-        }
-
-        var state: State = .open
-        var base: String?
-        var head: String?
-
-        func asRestQuery() -> RestQuery {
-            RestQuery
-                .set("state", to: state.rawValue)
-                .set("head", to: head)
-                .set("base", to: base)
-        }
-    }
 
     func getPullRequests(
         owner: String,
         repoName: String,
-        query: PullRequestQuery? = nil,
-        sort: Sorting? = nil,
+        query: PullRequest.Query = .init(),
         pagination: Pagination? = nil
     ) async throws -> [PullRequestResponse] {
         let request = RestRequest<EmptyBody, ListBody<PullRequestResponse>>(
             method: .get,
             path: "/repos/\(owner)/\(repoName)/pulls",
             query: RestQuery
-                .merging(query)
-                .merging(sort)
-                .merging(pagination)
+                .merging(with: query.asRestQuery())
+                .merging(with: pagination?.asRestQuery())
         )
         let response = try await restClient.request(request)
         return response.items

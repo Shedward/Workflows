@@ -21,13 +21,14 @@ public struct Repo {
         self.client = client
     }
 
-    public func pullRequests() -> PaginatingList<PullRequest> {
+    public func pullRequests(query: PullRequest.Query = .init()) -> PaginatingList<PullRequest> {
         PaginatingList(
-            client: BlockPaginatingClient { pageId in
+            client: BlockPaginatingClient { pageId, pageSize in
                 let pullRequestsResponses = try await client.getPullRequests(
                     owner: owner,
                     repoName: name,
-                    pagination: GitHubClient.Pagination(page: pageId)
+                    query: query,
+                    pagination: Pagination(page: pageId, perPage: pageSize)
                 )
 
                 let pullRequests = pullRequestsResponses.map { response in
