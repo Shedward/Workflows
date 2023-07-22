@@ -37,4 +37,8 @@ extension DictionaryBuildable {
             values: values.merging(another.values, uniquingKeysWith: { $1 })
         )
     }
+
+    public mutating func merge(_ another: Self) {
+        values = values.merging(another.values, uniquingKeysWith: { $1 })
+    }
 }

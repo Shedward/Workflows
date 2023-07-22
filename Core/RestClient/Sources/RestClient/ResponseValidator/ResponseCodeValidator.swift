@@ -9,6 +9,9 @@ import Prelude
 public struct ResponseCodeValidator: ResponseValidator {
     public var allowedStatusCodes: [ClosedRange<Int>] = [200...299]
 
+    public init() {
+    }
+
     public func validate(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw Failure("Failed to cast response to HTTPURLResponse")

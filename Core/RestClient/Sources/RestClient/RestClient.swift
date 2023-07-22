@@ -10,12 +10,19 @@ public actor RestClient {
     private let endpoint: RestEndpoint
     private let session: URLSession
 
-    public var requestDecorators: [RequestDecorator] = []
-    public var responseValidator: [ResponseValidator] = [ResponseCodeValidator()]
+    public var requestDecorators: [RequestDecorator]
+    public var responseValidator: [ResponseValidator]
 
-    public init(endpoint: RestEndpoint, session: URLSession = .shared) {
+    public init(
+        endpoint: RestEndpoint,
+        session: URLSession = .shared,
+        requestDecorators: [RequestDecorator] = [],
+        responseValidators: [ResponseValidator] = [ResponseCodeValidator()]
+    ) {
         self.endpoint = endpoint
         self.session = session
+        self.requestDecorators = requestDecorators
+        self.responseValidator = responseValidators
     }
 
     @discardableResult

@@ -7,12 +7,12 @@ let package = Package(
     name: "DebugApp",
     platforms: [.macOS(.v13)],
     dependencies: [
-        .package(path: "../Core/RestClient")
+        .package(path: "../Services/GitHub")
     ],
     targets: [
         .executableTarget(
             name: "DebugApp",
-            dependencies: ["RestClient"]
+            dependencies: ["GitHub"]
         ),
     ]
 )
