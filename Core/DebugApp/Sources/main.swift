@@ -2,51 +2,37 @@
 // https://docs.swift.org/swift-book
 
 import Foundation
+import SecureStorage
+import RestClient
 import GitHub
+import Prelude
 
-let github = GitHub(token: "...")
-let user = try await github.currentUser()
-let repo = try await github.repo(owner: "hhru", name: "ios-apps")
-let query = PullRequest.Query(state: .opened)
-let pullRequests = try await repo.pullRequests(query: query).page(pageSize: 100)
-print(pullRequests.count)
-print(pullRequests)
+let debugCredentials = DebugCredentials()
 
-//let request = RestRequest<EmptyBody, PlainTextBody>(
-//    method: .get,
-//    path: "/repos/octocat/Spoon-Knife/issues",
-//    query: RestQuery
-//        .set("sortBy", to: "createAt"),
-//    headers: RestHeaders
-//        .set("Accept", to: "application/vnd.github+json")
-//        .set("Authorization", to: "...")
-//)
-//
-//let endpoint = RestEndpoint(host: URL(string: "https://api.github.com")!)
-//let client = RestClient(endpoint: endpoint)
-//
-//let response = try await client.request(request)
-//print(response)
+func testGitHub() async throws {
+    let github = GitHub(token: try debugCredentials.githubToken())
+    let repo = try await github.repo(owner: "hhru", name: "ios-apps")
+    let pullRequests = try await repo.pullRequests().allItems()
 
+    print(pullRequests.count)
+    print(pullRequests)
+}
 
+func testJira() async throws {
+    let jiraToken = try debugCredentials.jiraCreds().token()
+    let jiraRequest = RestRequest<EmptyBody, PlainTextBody>(
+        method: .get,
+        path: "/rest/api/2/user",
+        query: RestQuery
+            .set("username", to: "v.maltsev"),
+        headers: RestHeaders
+            .set("Authorization", to: "Basic \(jiraToken)")
+            .set("Content-Type", to: "application/json")
+    )
 
-//let usr: String = "..."
-//let pwd: String = "..."
-//let token = "\(usr):\(pwd)".data(using: .utf8)?.base64EncodedString()
+    let endpoint = RestEndpoint(host: URL(string: "https://jira.hh.ru")!)
+    let client = RestClient(endpoint: endpoint)
+    let response = try await client.request(jiraRequest)
 
-
-//let jiraRequest = RestRequest<EmptyBody, PlainTextBody>(
-//    method: .get,
-//    path: "/rest/api/2/user",
-//    query: RestQuery
-//        .set("username", to: "v.maltsev"),
-//    headers: RestHeaders
-//        .set("Authorization", to: "Basic \(token!)")
-//        .set("Content-Type", to: "application/json")
-//)
-//
-//let endpoint = RestEndpoint(host: URL(string: "https://jira.hh.ru")!)
-//let client = RestClient(endpoint: endpoint)
-//let response = try await client.request(jiraRequest)
-//
-//print(response)
+    print(response)
+}
