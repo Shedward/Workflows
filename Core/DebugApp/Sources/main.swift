@@ -12,12 +12,12 @@ import os
 let debugCredentials = DebugCredentials()
 
 extension LoggerScope {
-    static let demoOutput = LoggerScope(name: "demoOutput")
+    static let demoApp = LoggerScope(name: "Demo App")
 }
 
-Logger.enabledScopes = [.network, .demoOutput]
+Logger.enabledScopes = [.network, .demoApp]
 
-let logger = Logger(scope: .demoOutput)
+let logger = Logger(scope: .demoApp)
 
 func testGitHub() async throws {
     let github = GitHub(token: try debugCredentials.githubToken())
