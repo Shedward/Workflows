@@ -67,7 +67,7 @@ extension RestQuery: DictionaryBuildable {
         }
         return Self(values: [key: String(value)])
     }
-
+    
     public func set(_ key: Key, to value: Int?) -> Self {
         var values = values
         values[key] = value.map(String.init)

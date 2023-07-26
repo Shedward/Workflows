@@ -7,8 +7,11 @@ import RestClient
 import GitHub
 import Jira
 import Prelude
+import os
 
 let debugCredentials = DebugCredentials()
+
+Logger.enabledScopes = [.network]
 
 func testGitHub() async throws {
     let github = GitHub(token: try debugCredentials.githubToken())
@@ -27,4 +30,4 @@ func testJira() async throws {
     print(issue)
 }
 
-try await testJira()
+try await testGitHub()
