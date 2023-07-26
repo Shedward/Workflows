@@ -22,9 +22,9 @@ func testGitHub() async throws {
 func testJira() async throws {
     let jiraCreds = try debugCredentials.jiraCreds()
     let jira = try Jira(serverHost: URL(string: "https://jira.hh.ru")!, credentials: jiraCreds)
-    let user = try await jira.currentUser()
+    let issue = try await jira.issue(key: "MOB-31553")
 
-    print(user)
+    print(issue)
 }
 
 try await testJira()

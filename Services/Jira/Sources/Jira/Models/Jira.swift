@@ -21,4 +21,9 @@ public struct Jira {
         let response = try await client.getUser(username: name)
         return User(response: response, client: client)
     }
+
+    public func issue(key: String) async throws -> Issue {
+        let response = try await client.getIssue(key: key)
+        return Issue(response: response, client: client)
+    }
 }
