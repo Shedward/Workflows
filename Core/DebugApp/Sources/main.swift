@@ -11,12 +11,18 @@ import os
 
 let debugCredentials = DebugCredentials()
 
-Logger.enabledScopes = [.network]
+extension LoggerScope {
+    static let demoOutput = LoggerScope(name: "demoOutput")
+}
+
+Logger.enabledScopes = [.network, .demoOutput]
+
+let logger = Logger(scope: .demoOutput)
 
 func testGitHub() async throws {
     let github = GitHub(token: try debugCredentials.githubToken())
     let repo = try await github.repo(owner: "hhru", name: "ios-apps")
-    let pullRequests = try await repo.pullRequests().allItems()
+    let pullRequests = try await repo.pullRequests().withPageSize(5).allItems()
 
     print(pullRequests.count)
     print(pullRequests)

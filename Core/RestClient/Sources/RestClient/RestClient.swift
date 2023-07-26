@@ -29,7 +29,7 @@ public actor RestClient {
 
     @discardableResult
     public func request<Request, Response>(_ request: RestRequest<Request, Response>) async throws -> Response {
-        logger.trace("Begin \(request.shortDescription, privacy: .public)")
+        logger.trace("→ Begin \(request.shortDescription, privacy: .public)")
 
         do {
             
@@ -75,7 +75,7 @@ public actor RestClient {
             }
             
             logger.trace("""
-            Finished \(restRequest, privacy: .public)
+            ← Finished \(restRequest, privacy: .public)
 
             \(self.responseDescription(response, responseBody: responseBody), privacy: .public)
             """)
@@ -83,7 +83,7 @@ public actor RestClient {
             return responseBody
         } catch {
             logger.error("""
-            Failed \(request.shortDescription, privacy: .public)
+            ← Failed \(request.shortDescription, privacy: .public)
 
             Error:
             \(error, privacy: .public)
