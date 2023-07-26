@@ -12,6 +12,7 @@
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63A971A12A6C202200A4EF8B /* GitHub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitHub; sourceTree = "<group>"; };
 		63A971A22A6EFB4400A4EF8B /* SecureStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SecureStorage; sourceTree = "<group>"; };
+		63C497F72A7187AA0081CA41 /* Jira */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jira; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -58,6 +59,7 @@
 		63A9719F2A6C121C00A4EF8B /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				63C497F72A7187AA0081CA41 /* Jira */,
 				63A971A12A6C202200A4EF8B /* GitHub */,
 			);
 			path = Services;

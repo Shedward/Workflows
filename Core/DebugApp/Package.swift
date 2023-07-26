@@ -8,12 +8,13 @@ let package = Package(
     platforms: [.macOS(.v13)],
     dependencies: [
         .package(path: "../Services/GitHub"),
+        .package(path: "../Services/Jira"),
         .package(path: "../System/SecureStorage")
     ],
     targets: [
         .executableTarget(
             name: "DebugApp",
-            dependencies: ["GitHub", "SecureStorage"]
+            dependencies: ["GitHub", "Jira", "SecureStorage"]
         ),
     ]
 )

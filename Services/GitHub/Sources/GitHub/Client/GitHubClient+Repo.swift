@@ -6,6 +6,7 @@
 import RestClient
 
 extension GitHubClient {
+
     func getRepo(owner: String, name: String) async throws -> RepoResponse {
         let request = RestRequest<EmptyBody, RepoResponse>(
             method: .get,

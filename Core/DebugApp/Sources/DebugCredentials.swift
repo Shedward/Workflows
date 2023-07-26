@@ -5,6 +5,7 @@
 
 import SecureStorage
 import Prelude
+import Jira
 
 struct DebugCredentials {
     let secureStorage = SecItemStorage<DebugAppAccounts>(service: "me.shedward.workflows.DebugApp")
@@ -21,8 +22,8 @@ struct DebugCredentials {
         return token
     }
 
-    func jiraCreds() throws -> JiraCredentials {
-        guard let creds = try secureStorage.readSecretCodable(JiraCredentials.self, for: .jiraCredentials) else {
+    func jiraCreds() throws -> JiraServerCredentials {
+        guard let creds = try secureStorage.readSecretCodable(JiraServerCredentials.self, for: .jiraCredentials) else {
             throw Failure("No Jira creds in secure storage")
         }
         return creds

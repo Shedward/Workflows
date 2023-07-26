@@ -5,6 +5,7 @@ import Foundation
 import SecureStorage
 import RestClient
 import GitHub
+import Jira
 import Prelude
 
 let debugCredentials = DebugCredentials()
@@ -19,20 +20,11 @@ func testGitHub() async throws {
 }
 
 func testJira() async throws {
-    let jiraToken = try debugCredentials.jiraCreds().token()
-    let jiraRequest = RestRequest<EmptyBody, PlainTextBody>(
-        method: .get,
-        path: "/rest/api/2/user",
-        query: RestQuery
-            .set("username", to: "v.maltsev"),
-        headers: RestHeaders
-            .set("Authorization", to: "Basic \(jiraToken)")
-            .set("Content-Type", to: "application/json")
-    )
+    let jiraCreds = try debugCredentials.jiraCreds()
+    let jira = try Jira(serverHost: URL(string: "https://jira.hh.ru")!, credentials: jiraCreds)
+    let user = try await jira.currentUser()
 
-    let endpoint = RestEndpoint(host: URL(string: "https://jira.hh.ru")!)
-    let client = RestClient(endpoint: endpoint)
-    let response = try await client.request(jiraRequest)
-
-    print(response)
+    print(user)
 }
+
+try await testJira()
