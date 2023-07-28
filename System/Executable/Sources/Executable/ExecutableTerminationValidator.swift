@@ -5,7 +5,7 @@
 //  Created by Vladislav Maltsev on 28.07.2023.
 //
 
-public protocol ExecutableTerminationValidator {
+public protocol ExecutableTerminationValidator: Sendable {
     func validateTermination(_ termination: ExecutableTermination) throws
 }
 

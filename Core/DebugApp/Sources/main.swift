@@ -40,8 +40,24 @@ func testJira() async throws {
 }
 
 func testExecutable() async throws {
-    let lsExecutable = Executable(filePath: "/bin/ls")
-    try await lsExecutable.run(["-l", "-a"])
+    let output = Pipe()
+
+    let git = Executable(command: "git")
+        .workingDirectory("/Users/shed/Projects/Workflows")
+        .output(to: output)
+
+    try await git.run("status", "--porcelain")
+
+    let outputData = output.fileHandleForReading.availableData
+    let outputString = String(data: outputData, encoding: .utf8)
+    print(outputString ?? "<empty>")
+
+//    async let result: () = try await sort.run()
+//
+//    try inputPipe.fileHandleForWriting.write(contentsOf: data)
+//    try inputPipe.fileHandleForWriting.close()
+//
+//    return try await result
 }
 
 try await testExecutable()
