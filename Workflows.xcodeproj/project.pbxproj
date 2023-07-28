@@ -13,6 +13,7 @@
 		63A971A12A6C202200A4EF8B /* GitHub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitHub; sourceTree = "<group>"; };
 		63A971A22A6EFB4400A4EF8B /* SecureStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SecureStorage; sourceTree = "<group>"; };
 		63C497F72A7187AA0081CA41 /* Jira */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jira; sourceTree = "<group>"; };
+		63C498132A7442900081CA41 /* Executable */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Executable; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -20,6 +21,7 @@
 		631006B52A6F153B00C8B1B6 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				63C498132A7442900081CA41 /* Executable */,
 				63A971A22A6EFB4400A4EF8B /* SecureStorage */,
 			);
 			path = System;

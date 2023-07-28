@@ -9,12 +9,13 @@ let package = Package(
     dependencies: [
         .package(path: "../Services/GitHub"),
         .package(path: "../Services/Jira"),
-        .package(path: "../System/SecureStorage")
+        .package(path: "../System/SecureStorage"),
+        .package(path: "../System/Executable")
     ],
     targets: [
         .executableTarget(
             name: "DebugApp",
-            dependencies: ["GitHub", "Jira", "SecureStorage"]
+            dependencies: ["GitHub", "Jira", "SecureStorage", "Executable"]
         ),
     ]
 )
