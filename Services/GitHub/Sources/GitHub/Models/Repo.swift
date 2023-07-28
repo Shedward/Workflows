@@ -22,21 +22,19 @@ public struct Repo {
     }
 
     public func pullRequests(query: PullRequest.Query = .init()) -> PaginatingList<PullRequest> {
-        PaginatingList(
-            client: BlockPaginatingClient { pageId, pageSize in
-                let pullRequestsResponses = try await client.getPullRequests(
-                    owner: owner,
-                    repoName: name,
-                    query: query,
-                    pagination: Pagination(page: pageId, perPage: pageSize)
-                )
+        PaginatingList { pageId, pageSize in
+            let pullRequestsResponses = try await client.getPullRequests(
+                owner: owner,
+                repoName: name,
+                query: query,
+                pagination: Pagination(page: pageId, perPage: pageSize)
+            )
 
-                let pullRequests = pullRequestsResponses.map { response in
-                    PullRequest(response: response, client: client)
-                }
-
-                return pullRequests
+            let pullRequests = pullRequestsResponses.map { response in
+                PullRequest(response: response, client: client)
             }
-        )
+
+            return pullRequests
+        }
     }
 }
