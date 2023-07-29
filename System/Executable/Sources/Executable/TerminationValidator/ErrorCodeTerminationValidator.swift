@@ -1,26 +1,11 @@
 //
-//  ExecutableTerminationValidator.swift
+//  ErrorCodeTerminationValidator.swift
 //  Workflows
 //
-//  Created by Vladislav Maltsev on 28.07.2023.
+//  Created by Vladislav Maltsev on 29.07.2023.
 //
 
-public protocol ExecutableTerminationValidator: Sendable {
-    func validateTermination(_ termination: ExecutableTermination) throws
-}
-
-public struct DefaultTerminationValidator: ExecutableTerminationValidator {
-    public init() {
-    }
-
-    public func validateTermination(_ termination: ExecutableTermination) throws {
-        if termination.isSuccessful {
-            return
-        } else {
-            throw ExecutableError.unsuccessfullTermination(termination)
-        }
-    }
-}
+import Foundation
 
 public struct ErrorCodeTerminationValidator: ExecutableTerminationValidator {
     private var errorByCode: [Int32: Error]
@@ -43,5 +28,11 @@ public struct ErrorCodeTerminationValidator: ExecutableTerminationValidator {
         }
 
         throw ExecutableError.unsuccessfullTermination(termination)
+    }
+}
+
+extension Executable {
+    public func errorCodes(_ errorByCode: [Int32: Error]) -> Executable {
+        terminationValidator(ErrorCodeTerminationValidator(errorByCode))
     }
 }

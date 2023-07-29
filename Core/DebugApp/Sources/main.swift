@@ -9,6 +9,7 @@ import Jira
 import Executable
 import Prelude
 import os
+import Git
 
 let debugCredentials = DebugCredentials()
 
@@ -23,41 +24,42 @@ let logger = Logger(scope: .demoApp)
 func testGitHub() async throws {
     let github = GitHub(token: try debugCredentials.githubToken())
     let repo = try await github.repo(owner: "hhru", name: "ios-apps")
-    let pullRequests = try await repo.pullRequests().withPageSize(5).allItems()
 
-    print(pullRequests.count)
-    print(pullRequests)
+    let oldestPullRequests = try await repo
+        .pullRequests(query: .init(state: .opened, sorting: .init(sortBy: .created, direction: .descending)))
+        .allItems(maxCount: 5)
+
+    print(oldestPullRequests)
 }
 
 func testJira() async throws {
     let jiraCreds = try debugCredentials.jiraCreds()
     let jira = try Jira(serverHost: URL(string: "https://jira.hh.ru")!, credentials: jiraCreds)
 
-    let query = JQLQuery(rawValue: "assignee = currentUser() AD type = Проект")
+    let query = JQLQuery(rawValue: "assignee = currentUser() AND type = Проект")
     let myIssues = try await jira.searchIssues(jql: query).allItems()
 
     print(myIssues)
 }
 
-func testExecutable() async throws {
-    let output = Pipe()
+func testGit() async throws {
+    let git = Git()
+    let workflowsRepository = try await git.repository(at: "/Users/shed/Projects/Workflows")
+    let branch = try await workflowsRepository.currentBranch()
 
-    let git = Executable(command: "git")
-        .workingDirectory("/Users/shed/Projects/Workflows")
-        .output(to: output)
-
-    try await git.run("status", "--porcelain")
-
-    let outputData = output.fileHandleForReading.availableData
-    let outputString = String(data: outputData, encoding: .utf8)
-    print(outputString ?? "<empty>")
-
-//    async let result: () = try await sort.run()
-//
-//    try inputPipe.fileHandleForWriting.write(contentsOf: data)
-//    try inputPipe.fileHandleForWriting.close()
-//
-//    return try await result
+    print(branch)
 }
 
-try await testExecutable()
+func testCurrentIssue() async throws {
+    let git = Git()
+    let analyticsRepo = try await git.repository(at: "/Users/shed/Projects/hh-mobile-analytics")
+    let workingBranch = try await analyticsRepo.currentBranch()
+
+    let jiraCreds = try debugCredentials.jiraCreds()
+    let jira = try Jira(serverHost: URL(string: "https://jira.hh.ru")!, credentials: jiraCreds)
+    let workingIssue = try await jira.issue(key: workingBranch.rawValue)
+
+    print("Current analytics about \(workingIssue)")
+}
+
+try await testGitHub()

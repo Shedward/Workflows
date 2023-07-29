@@ -9,19 +9,19 @@ import Foundation
 import Prelude
 
 extension Executable {
-    public func input(to pipe: ExecutablePipe) -> Executable {
+    public func input(to pipe: ExecutablePipe?) -> Executable {
         var executable = self
         executable.pipes.input = pipe
         return executable
     }
 
-    public func output(to pipe: ExecutablePipe) -> Executable {
+    public func output(to pipe: ExecutablePipe?) -> Executable {
         var executable = self
         executable.pipes.output = pipe
         return executable
     }
 
-    public func errorOutput(to pipe: ExecutablePipe) -> Executable {
+    public func errorOutput(to pipe: ExecutablePipe?) -> Executable {
         var executable = self
         executable.pipes.error = pipe
         return executable

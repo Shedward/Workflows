@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
+		63322F1A2A7512CF002CBC8C /* Git */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Git; sourceTree = "<group>"; };
 		639C5FA12A6B1EE500896922 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = text; name = DebugApp; path = Core/DebugApp; sourceTree = SOURCE_ROOT; };
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63A971A12A6C202200A4EF8B /* GitHub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitHub; sourceTree = "<group>"; };
@@ -21,6 +22,7 @@
 		631006B52A6F153B00C8B1B6 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				63322F1A2A7512CF002CBC8C /* Git */,
 				63C498132A7442900081CA41 /* Executable */,
 				63A971A22A6EFB4400A4EF8B /* SecureStorage */,
 			);

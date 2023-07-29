@@ -5,6 +5,8 @@
 //  Created by Vladislav Maltsev on 29.07.2023.
 //
 
+import Foundation
+
 extension Executable {
 
     public func run(_ arguments: String...) async throws {
@@ -36,5 +38,29 @@ extension Executable {
                 continuation.resume(throwing: ExecutableError.failedToRun(error))
             }
         }
+    }
+
+    public func runForDataOutput(_ arguments: String...) async throws -> Data {
+        try await runForDataOutput(arguments)
+    }
+
+    public func runForDataOutput(_ arguments: [String]) async throws -> Data {
+        let output = Pipe()
+
+        try await self
+            .output(to: output)
+            .run(arguments)
+
+        let data = output.fileHandleForReading.availableData
+        return data
+    }
+
+    public func runForOutput(_ arguments: String...) async throws -> String {
+        try await runForOutput(arguments)
+    }
+
+    public func runForOutput(_ arguments: [String]) async throws -> String {
+        let data = try await runForDataOutput(arguments)
+        return String(data: data, encoding: .utf8) ?? ""
     }
 }

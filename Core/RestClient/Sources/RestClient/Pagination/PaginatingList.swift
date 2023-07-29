@@ -38,19 +38,19 @@ public struct PaginatingList<Item> {
         currentPage += 1
     }
 
-    public mutating func loadAll(limitCount: Int = .max) async throws {
-        while canLoadNextPage && items.count < limitCount {
+    public mutating func loadAll(maxCount: Int = .max) async throws {
+        while canLoadNextPage && items.count < maxCount {
             try await loadNextPage()
         }
     }
 
-    public func page(_ pageIndex: Int = 0, pageSize: Int?) async throws -> [Item] {
+    public func page(_ pageIndex: Int = 0, pageSize: Int? = nil) async throws -> [Item] {
         try await fetch(currentPage, pageSize ?? self.pageSize)
     }
 
-    public func allItems(limitCount: Int = .max) async throws -> [Item] {
+    public func allItems(maxCount: Int = .max) async throws -> [Item] {
         var list = self
-        try await list.loadAll(limitCount: limitCount)
+        try await list.loadAll(maxCount: maxCount)
         return list.items
     }
 
