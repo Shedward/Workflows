@@ -9,13 +9,15 @@ let package = Package(
     products: [
         .library(
             name: "Prelude",
-            targets: ["Prelude"]),
+            targets: ["Prelude"]
+        ),
     ],
     targets: [
         .target(
             name: "Prelude"),
         .testTarget(
             name: "PreludeTests",
-            dependencies: ["Prelude"]),
+            dependencies: ["Prelude"]
+        ),
     ]
 )
