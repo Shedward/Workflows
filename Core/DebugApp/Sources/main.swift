@@ -62,4 +62,4 @@ func testCurrentIssue() async throws {
     print("Current analytics about \(workingIssue)")
 }
 
-try await testGitHub()
+try await testCurrentIssue()

@@ -30,9 +30,8 @@ public actor RestClient {
     @discardableResult
     public func request<Request, Response>(_ request: RestRequest<Request, Response>) async throws -> Response {
         logger.trace("→ Begin \(request.shortDescription, privacy: .public)")
-
+        var responseData: Data?
         do {
-            
             let restRequest = try await Failure.wrap("Decorating request") {
                 var request = request
                 for decorator in requestDecorators {
@@ -63,7 +62,8 @@ public actor RestClient {
             let (data, response) = try await Failure.wrap("Requesting data") {
                 try await session.data(for: urlRequest)
             }
-            
+            responseData = data
+
             try Failure.wrap("Validating response") {
                 for validator in responseValidator {
                     try validator.validate(response)
@@ -87,6 +87,8 @@ public actor RestClient {
 
             Error:
             \(error, privacy: .public)
+            Response:
+            \(responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "<no response>", privacy: .public)
             """)
             throw error
         }
