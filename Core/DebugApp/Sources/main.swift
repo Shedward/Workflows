@@ -6,6 +6,7 @@ import SecureStorage
 import RestClient
 import GitHub
 import Jira
+import Figma
 import Executable
 import Prelude
 import os
@@ -61,3 +62,12 @@ func testCurrentIssue() async throws {
 
     print("Current analytics about \(workingIssue)")
 }
+
+func testFigma() async throws {
+    let figma = Figma(token: try debugCredentials.figmaToken())
+    let me = try await figma.me()
+
+    print("Current user \(me)")
+}
+
+try await testFigma()

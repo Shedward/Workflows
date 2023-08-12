@@ -13,6 +13,7 @@ struct DebugCredentials {
     enum DebugAppAccounts: String, SecureStorageAccount {
         case githubToken = "shedward@github"
         case jiraCredentials = "shedward@jira"
+        case figmaToken = "shedward@figma"
     }
 
     func githubToken() throws -> String {
@@ -27,5 +28,12 @@ struct DebugCredentials {
             throw Failure("No Jira creds in secure storage")
         }
         return creds
+    }
+
+    func figmaToken() throws -> String {
+        guard let token = try secureStorage.readSecretString(for: .figmaToken) else {
+            throw Failure("No Figma token in secure storage")
+        }
+        return token
     }
 }
