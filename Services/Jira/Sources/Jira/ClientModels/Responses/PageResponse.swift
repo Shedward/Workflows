@@ -10,7 +10,7 @@ protocol PageResponseDynamicKeys {
     static var items: ArbitraryCodingKey { get }
 }
 
-struct PageResponse<Item, DynamicKeys>: Decodable, RestBodyDecodable, Sendable
+struct PageResponse<Item, DynamicKeys>: JSONDecodableBody
     where Item: Decodable, Item: Sendable, DynamicKeys: PageResponseDynamicKeys {
 
     let startAt: Int

@@ -5,14 +5,28 @@
 
 import Foundation
 
-public extension RestBodyEncodable where Self: Encodable {
+public protocol JSONEncodableBody: RestBodyEncodable, Encodable, Sendable {
+    static func encoder() -> JSONEncoder
+}
+
+public extension JSONEncodableBody {
     func data() throws -> Data? {
-        try JSONEncoder().encode(self)
+        try Self.encoder().encode(self)
     }
 }
 
-public extension RestBodyDecodable where Self: Decodable {
+public protocol JSONDecodableBody: RestBodyDecodable, Decodable, Sendable {
+    static func decoder() -> JSONDecoder
+}
+
+public extension JSONDecodableBody {
     static func fromData(_ data: Data) throws -> Self {
-        try JSONDecoder().decode(Self.self, from: data)
+        try Self.decoder().decode(Self.self, from: data)
+    }
+
+    static func decoder() -> JSONDecoder {
+        JSONDecoder()
     }
 }
+
+public typealias JSONCodableBody = JSONEncodableBody & JSONDecodableBody

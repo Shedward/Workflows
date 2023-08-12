@@ -5,7 +5,7 @@
 
 import RestClient
 
-struct UserResponse: Decodable, RestBodyDecodable, Sendable {
+struct UserResponse: JSONDecodableBody {
     let id: Int
     let login: String
     let name: String

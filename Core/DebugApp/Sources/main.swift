@@ -68,6 +68,11 @@ func testFigma() async throws {
     let me = try await figma.me()
 
     print("Current user \(me)")
+
+    let magrittoFile = figma.file(key: "iKAlkRsX1xUEKc0DVpQ4A8")
+    let magrittoComments = try await magrittoFile.comments()
+
+    print("Comments: \n \(magrittoComments)")
 }
 
 try await testFigma()

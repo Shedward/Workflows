@@ -16,4 +16,8 @@ public struct Figma {
         let response = try await client.me()
         return User(response: response, client: client)
     }
+
+    public func file(key: String) -> File {
+        File(client: client, key: key)
+    }
 }

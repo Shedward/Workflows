@@ -1,5 +1,5 @@
 //
-//  UserResponse.swift
+//  CommentsListResponse.swift
 //
 //
 //  Created by Vladislav Maltsev on 12.08.2023.
@@ -8,10 +8,8 @@
 import Foundation
 import RestClient
 
-struct UserResponse: JSONDecodableBody {
-    let id: String
-    let email: String
-    let handle: String
+struct CommentsListResponse: JSONDecodableBody {
+    let comments: [CommentResponse]
 
     static func decoder() -> JSONDecoder {
         Decoders.decoder

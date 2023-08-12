@@ -6,7 +6,7 @@
 import Foundation
 import RestClient
 
-struct UserResponse: Codable, Sendable, RestBodyDecodable {
+struct UserResponse: JSONDecodableBody {
     let key: String
     let name: String
     let emailAddress: String
