@@ -20,10 +20,14 @@ public struct PaginatingList<Item> {
         self.canLoadNextPage = true
     }
 
-    public mutating func reload() async throws {
+    public mutating func reset() {
         items = []
         currentPage = 0
         canLoadNextPage = true
+    }
+
+    public mutating func reload() async throws {
+        reset()
         try await loadNextPage()
     }
 
@@ -44,8 +48,8 @@ public struct PaginatingList<Item> {
         }
     }
 
-    public func page(_ pageIndex: Int = 0, pageSize: Int? = nil) async throws -> [Item] {
-        try await fetch(currentPage, pageSize ?? self.pageSize)
+    public func page(_ pageIndex: Int, pageSize: Int? = nil) async throws -> [Item] {
+        try await fetch(pageIndex, pageSize ?? self.pageSize)
     }
 
     public func allItems(maxCount: Int = .max) async throws -> [Item] {

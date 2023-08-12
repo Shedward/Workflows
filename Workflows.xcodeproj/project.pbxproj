@@ -69,6 +69,13 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		63B0A5FF2A76D584001A34E8 /* Workflows */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Workflows;
+			sourceTree = "<group>";
+		};
 		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -84,6 +91,7 @@
 				63C94D2B2A6B1AFE009AC8E4 /* Core */,
 				631006B52A6F153B00C8B1B6 /* System */,
 				63A9719F2A6C121C00A4EF8B /* Services */,
+				63B0A5FF2A76D584001A34E8 /* Workflows */,
 				639C5FA02A6B1EB200896922 /* Apps */,
 				639C5FA22A6B224800896922 /* Misc */,
 				639C5FAA2A6B237200896922 /* Products */,
