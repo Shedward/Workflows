@@ -19,10 +19,30 @@ final class CachedTests: XCTestCase {
         }
     }
 
-    func testBasicUsage() async throws {
+    func testInMemoryBasicUsage() async throws {
+        try await testBasicUsage(storage: .inMemory)
+    }
+
+    func testFileBasicUsage() async throws {
+        let tempFile = try uniqueTempFile("TestFileBasicUsage", ext: "json")
+        try await testBasicUsage(storage: .file(tempFile))
+    }
+
+    private func uniqueTempFile(_ name: String, ext: String) throws -> URL {
+        let prefix = "WorkflowTests/caches"
+        let dirPath = FileManager.default.temporaryDirectory.appending(path: prefix)
+        if !FileManager.default.fileExists(atPath: dirPath.absoluteString) {
+            try FileManager.default.createDirectory(at: dirPath, withIntermediateDirectories: true)
+        }
+        let uniqueName = "\(name).\(UUID().uuidString).\(ext)"
+        let path = dirPath.appending(path: uniqueName)
+        return path
+    }
+
+    func testBasicUsage(storage: AnyCacheStorage<Int>) async throws {
         let fetcher = NextNumberFetcher()
         
-        let cachedNumber = Cached<Int>(storage: .inMemory) {
+        let cachedNumber = Cached<Int>(storage: storage) {
             fetcher.fetchNextNumber()
         }
 

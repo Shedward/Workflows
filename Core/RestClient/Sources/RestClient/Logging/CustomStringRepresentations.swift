@@ -18,9 +18,9 @@ extension RestRequest: CustomStringConvertible {
 
     public var description: String {
         var description = """
-        RestRequest<\(RequestBody.self), \(ResponseBody.self)>(
-        \(methodDescription())\n
-        """
+            RestRequest<\(RequestBody.self), \(ResponseBody.self)>(
+            \(methodDescription())\n
+            """
 
         if !query.isEmpty {
             description += "\(query);\n"
@@ -47,12 +47,12 @@ extension RestQuery: CustomStringConvertible {
         if values.isEmpty {  return "RestQuery()" }
 
         return """
-        RestQuery(
-        \(values
-            .map { "  \($0) = \($1)"}
-            .joined(separator: "\n"))
-        )
-        """
+            RestQuery(
+            \(values
+                .map { "  \($0) = \($1)"}
+                .joined(separator: "\n"))
+            )
+            """
     }
 }
 
@@ -61,12 +61,12 @@ extension RestHeaders: CustomStringConvertible {
         if values.isEmpty {  return "RestHeaders()" }
 
         return """
-        RestHeaders(
-        \(values
-            .map { "  \($0): \(redactHeaderIfNeeded($0, value: $1))"}
-            .joined(separator: "\n"))
-        )
-        """
+            RestHeaders(
+            \(values
+                .map { "  \($0): \(redactHeaderIfNeeded($0, value: $1))"}
+                .joined(separator: "\n"))
+            )
+            """
     }
 
     private func redactHeaderIfNeeded(_ key: String, value: String) -> String {

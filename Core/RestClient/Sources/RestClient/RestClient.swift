@@ -74,22 +74,26 @@ public actor RestClient {
                 try Response.fromData(data)
             }
             
-            logger.trace("""
-            ← Finished \(restRequest, privacy: .public)
+            logger.trace(
+                """
+                ← Finished \(restRequest, privacy: .public)
 
-            \(self.responseDescription(response, responseBody: responseBody), privacy: .public)
-            """)
+                \(self.responseDescription(response, responseBody: responseBody), privacy: .public)
+                """
+            )
 
             return responseBody
         } catch {
-            logger.error("""
-            ← Failed \(request.shortDescription, privacy: .public)
+            logger.error(
+                """
+                ← Failed \(request.shortDescription, privacy: .public)
 
-            Error:
-            \(error, privacy: .public)
-            Response:
-            \(responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "<no response>", privacy: .public)
-            """)
+                Error:
+                \(error, privacy: .public)
+                Response:
+                \(responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "<no response>", privacy: .public)
+                """
+            )
             throw error
         }
     }
@@ -98,10 +102,10 @@ public actor RestClient {
         guard let urlResponse = urlResponse as? HTTPURLResponse else { return "Response: -" }
 
         return """
-        Response:
-          Status Code: \(urlResponse.statusCode)
-          URL: \(urlResponse.url?.absoluteString ?? "-")
-          Body: \(responseBody)
-        """
+            Response:
+              Status Code: \(urlResponse.statusCode)
+              URL: \(urlResponse.url?.absoluteString ?? "-")
+              Body: \(responseBody)
+            """
     }
 }

@@ -10,6 +10,8 @@ public struct LoggerScope: Equatable {
         self.name = name
     }
 
+    public static let global = LoggerScope(name: "global")
+
     public static func file(_ fileID: StaticString = #fileID) -> LoggerScope {
         LoggerScope(name: "\(fileID)")
     }

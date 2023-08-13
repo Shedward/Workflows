@@ -20,7 +20,7 @@ extension LoggerScope {
     static let demoApp = LoggerScope(name: "Demo App")
 }
 
-Logger.enabledScopes = [.network, .demoApp]
+Logger.enabledScopes = [.network, .demoApp, .global]
 
 let logger = Logger(scope: .demoApp)
 

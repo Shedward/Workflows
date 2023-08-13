@@ -31,10 +31,11 @@ public struct Failure: DescriptiveError, CustomDebugStringConvertible {
                 ?? (underlyingError as? DescriptiveError)?.userDescription
                 ?? "\(underlyingError)"
 
-            return """
-            \(currentErrorDescriptionString(includeContext: includeContext))
-             ↪ \(errorDescription)
-            """
+            return 
+                """
+                \(currentErrorDescriptionString(includeContext: includeContext))
+                 ↪ \(errorDescription)
+                """
         } else {
             return currentErrorDescriptionString(includeContext: includeContext)
         }
