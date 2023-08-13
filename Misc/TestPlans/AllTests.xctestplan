@@ -9,12 +9,12 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
     "targetForVariableExpansion" : {
       "containerPath" : "container:Workflows.xcodeproj",
       "identifier" : "639C5FA82A6B237200896922",
       "name" : "DebugApp"
-    }
+    },
+    "threadSanitizerEnabled" : true
   },
   "testTargets" : [
     {
