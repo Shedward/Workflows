@@ -14,6 +14,8 @@ struct DebugCredentials {
         case githubToken = "shedward@github"
         case jiraCredentials = "shedward@jira"
         case figmaToken = "shedward@figma"
+        case googleKey = "shedward@google"
+        case googleAccessToken = "shedward-access@google"
     }
 
     func githubToken() throws -> String {
@@ -33,6 +35,20 @@ struct DebugCredentials {
     func figmaToken() throws -> String {
         guard let token = try secureStorage.readSecretString(for: .figmaToken) else {
             throw Failure("No Figma token in secure storage")
+        }
+        return token
+    }
+
+    func googleKey() throws -> String {
+        guard let token = try secureStorage.readSecretString(for: .googleKey) else {
+            throw Failure("No Google token in secure storage")
+        }
+        return token
+    }
+
+    func googleAccessToken() throws -> String {
+        guard let token = try secureStorage.readSecretString(for: .googleAccessToken) else {
+            throw Failure("No Google Access Token in secure storage")
         }
         return token
     }

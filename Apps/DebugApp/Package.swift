@@ -12,12 +12,23 @@ let package = Package(
         .package(path: "../Services/Figma"),
         .package(path: "../System/SecureStorage"),
         .package(path: "../System/Executable"),
-        .package(path: "../System/Git")
+        .package(path: "../System/Git"),
+        .package(path: "../Services/GoogleDrive"),
+        .package(path: "../Services/GoogleSheets")
     ],
     targets: [
         .executableTarget(
             name: "DebugApp",
-            dependencies: ["GitHub", "Jira", "Figma", "SecureStorage", "Executable", "Git"]
+            dependencies: [
+                "GitHub",
+                "Jira",
+                "Figma",
+                "SecureStorage",
+                "Executable",
+                "Git",
+                "GoogleDrive",
+                "GoogleSheets"
+            ]
         ),
     ]
 )

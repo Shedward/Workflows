@@ -11,6 +11,8 @@ import Executable
 import Prelude
 import os
 import Git
+import GoogleDrive
+import GoogleSheets
 
 let debugCredentials = DebugCredentials()
 
@@ -74,3 +76,17 @@ func testFigma() async throws {
 
     print("Comments: \n \(magrittoComments)")
 }
+
+func testGoogleDrive() async throws {
+    let googleDrive = GoogleDrive(accessToken: try debugCredentials.googleAccessToken())
+    let newFile = try await googleDrive.createFile(.init(name: "TestText", mimeType: "text/plain"))
+    print(newFile)
+}
+
+func testGoogleSheets() async throws {
+    let googleSheets = GoogleSheets(key: try debugCredentials.googleKey())
+    let newSpreadsheet = try await googleSheets.createSpreadsheet(.init(title: "TestSheets"))
+    print(newSpreadsheet)
+}
+
+try await testGoogleSheets()

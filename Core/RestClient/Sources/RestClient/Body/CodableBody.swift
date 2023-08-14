@@ -13,6 +13,10 @@ public extension JSONEncodableBody {
     func data() throws -> Data? {
         try Self.encoder().encode(self)
     }
+
+    static func encoder() -> JSONEncoder {
+        JSONEncoder()
+    }
 }
 
 public protocol JSONDecodableBody: RestBodyDecodable, Decodable, Sendable {

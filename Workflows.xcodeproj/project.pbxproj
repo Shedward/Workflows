@@ -17,6 +17,9 @@
 		63C498132A7442900081CA41 /* Executable */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Executable; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
 		E18EAAEA2A8A65E6009C6AE5 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DebugApp; sourceTree = "<group>"; };
+		E18EAAEC2A8A67CA009C6AE5 /* HeadHunter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = HeadHunter; sourceTree = "<group>"; };
+		E18EAAEF2A8A7C33009C6AE5 /* GoogleSheets */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GoogleSheets; sourceTree = "<group>"; };
+		E18EAAF02A8A7FD1009C6AE5 /* GoogleDrive */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GoogleDrive; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -64,6 +67,8 @@
 		63A9719F2A6C121C00A4EF8B /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E18EAAF02A8A7FD1009C6AE5 /* GoogleDrive */,
+				E18EAAEF2A8A7C33009C6AE5 /* GoogleSheets */,
 				63A3111B2A877DE500A9642E /* Figma */,
 				63C497F72A7187AA0081CA41 /* Jira */,
 				63A971A12A6C202200A4EF8B /* GitHub */,
@@ -86,10 +91,19 @@
 				63C94D2B2A6B1AFE009AC8E4 /* Core */,
 				631006B52A6F153B00C8B1B6 /* System */,
 				63A9719F2A6C121C00A4EF8B /* Services */,
+				E18EAAEB2A8A6738009C6AE5 /* Workflows */,
 				639C5FA02A6B1EB200896922 /* Apps */,
 				639C5FA22A6B224800896922 /* Misc */,
 				639C5FAA2A6B237200896922 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
+			isa = PBXGroup;
+			children = (
+				E18EAAEC2A8A67CA009C6AE5 /* HeadHunter */,
+			);
+			path = Workflows;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
