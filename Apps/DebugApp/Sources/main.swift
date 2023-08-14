@@ -74,5 +74,3 @@ func testFigma() async throws {
 
     print("Comments: \n \(magrittoComments)")
 }
-
-try await testFigma()

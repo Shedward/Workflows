@@ -9,7 +9,6 @@
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
 		63322F1A2A7512CF002CBC8C /* Git */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Git; sourceTree = "<group>"; };
-		639C5FA12A6B1EE500896922 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = text; name = DebugApp; path = Core/DebugApp; sourceTree = SOURCE_ROOT; };
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63A3111B2A877DE500A9642E /* Figma */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Figma; sourceTree = "<group>"; };
 		63A971A12A6C202200A4EF8B /* GitHub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitHub; sourceTree = "<group>"; };
@@ -17,6 +16,7 @@
 		63C497F72A7187AA0081CA41 /* Jira */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jira; sourceTree = "<group>"; };
 		63C498132A7442900081CA41 /* Executable */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Executable; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
+		E18EAAEA2A8A65E6009C6AE5 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DebugApp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -33,7 +33,7 @@
 		639C5FA02A6B1EB200896922 /* Apps */ = {
 			isa = PBXGroup;
 			children = (
-				639C5FA12A6B1EE500896922 /* DebugApp */,
+				E18EAAEA2A8A65E6009C6AE5 /* DebugApp */,
 			);
 			path = Apps;
 			sourceTree = "<group>";
@@ -71,13 +71,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		63B0A5FF2A76D584001A34E8 /* Workflows */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Workflows;
-			sourceTree = "<group>";
-		};
 		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -93,7 +86,6 @@
 				63C94D2B2A6B1AFE009AC8E4 /* Core */,
 				631006B52A6F153B00C8B1B6 /* System */,
 				63A9719F2A6C121C00A4EF8B /* Services */,
-				63B0A5FF2A76D584001A34E8 /* Workflows */,
 				639C5FA02A6B1EB200896922 /* Apps */,
 				639C5FA22A6B224800896922 /* Misc */,
 				639C5FAA2A6B237200896922 /* Products */,
