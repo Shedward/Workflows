@@ -18,9 +18,7 @@ public struct OAuthHelperApp: View {
                 icon: Image("services.google", bundle: .module),
                 name: "Google",
                 onSignIn: {
-                    let authUrlBuilder = GoogleOAuthAuthorizationUrl()
-                    let url = try! authUrlBuilder.buildUrl()
-                    NSWorkspace.shared.open(url)
+                    GoogleOAuthAuthorizer.shared.authorize()
                 }
             )
             OAuthServiceView(

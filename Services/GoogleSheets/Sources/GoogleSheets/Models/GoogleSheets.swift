@@ -8,8 +8,8 @@
 public struct GoogleSheets {
     private let client: GoogleSheetsClient
 
-    public init(key: String) {
-        self.client = GoogleSheetsClient(key: key)
+    public init(accessToken: String) {
+        self.client = GoogleSheetsClient(accessToken: accessToken)
     }
 
     public func createSpreadsheet(_ createSpreadsheet: CreateSpreadsheet) async throws -> Spreadsheet {

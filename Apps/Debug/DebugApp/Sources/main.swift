@@ -84,9 +84,9 @@ func testGoogleDrive() async throws {
 }
 
 func testGoogleSheets() async throws {
-    let googleSheets = GoogleSheets(key: try debugCredentials.googleKey())
+    let googleSheets = GoogleSheets(accessToken: try debugCredentials.googleAccessToken())
     let newSpreadsheet = try await googleSheets.createSpreadsheet(.init(title: "TestSheets"))
     print(newSpreadsheet)
 }
 
-try await testGoogleSheets()
+try await testGoogleDrive()

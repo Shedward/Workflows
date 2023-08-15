@@ -14,10 +14,16 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var logger = Logger(scope: .global)
 
     public func applicationDidFinishLaunching(_ notification: Notification) {
+        Logger.enabledScopes.append(.network)
         logger.notice("Application did finish launching")
     }
 
     public func application(_ application: NSApplication, open urls: [URL]) {
-        logger.notice("Application open urls \(urls, privacy: .public)")
+        guard let url = urls.first else { return }
+        GoogleOAuthAuthorizer.shared.processRedirectUrl(url)
+    }
+
+    public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        true
     }
 }

@@ -11,14 +11,19 @@ import Foundation
 struct GoogleSheetsClient {
     let client: RestClient
 
-    init(key: String) {
+    init(accessToken: String) {
         let endpoint = RestEndpoint(
             host: URL(string: "https://sheets.googleapis.com")!
         )
         self.client = RestClient(
             endpoint: endpoint,
             requestDecorators: [
-                QueryRequestDecorator(query: .set("key", to: key))
+                HeadersRequestDecorator(
+                    headers: RestHeaders
+                        .set("Accept", to: "application/json")
+                        .set("Content-Type", to: "application/json")
+                        .set("Authorization", to: "Bearer \(accessToken)")
+                )
             ]
         )
     }

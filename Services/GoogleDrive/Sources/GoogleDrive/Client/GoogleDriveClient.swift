@@ -18,7 +18,12 @@ struct GoogleDriveClient {
         self.client = RestClient(
             endpoint: endpoint,
             requestDecorators: [
-                HeadersRequestDecorator(headers: .set("Authorization", to: "Bearer \(accessToken)"))
+                HeadersRequestDecorator(
+                    headers: RestHeaders
+                        .set("Accept", to: "application/json")
+                        .set("Content-Type", to: "application/json")
+                        .set("Authorization", to: "Bearer \(accessToken)")
+                )
             ]
         )
     }

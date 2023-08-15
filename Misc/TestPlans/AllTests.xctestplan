@@ -19,14 +19,14 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:..\/..\/Core\/Prelude",
+        "containerPath" : "container:..\/..\/..\/Core\/Prelude",
         "identifier" : "PreludeTests",
         "name" : "PreludeTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/Core\/RestClient",
+        "containerPath" : "container:..\/..\/..\/Core\/RestClient",
         "identifier" : "RestClientTests",
         "name" : "RestClientTests"
       }

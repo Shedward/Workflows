@@ -13,13 +13,15 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../Core/Prelude")
+        .package(path: "../Core/Prelude"),
+        .package(path: "../Core/RestClient")
     ],
     targets: [
         .target(
             name: "OAuthHelperApp",
             dependencies: [
-                "Prelude"
+                "Prelude",
+                "RestClient"
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
