@@ -11,7 +11,7 @@ public extension Logger {
 
     init(subsystem: String = defaultSubsystemPrefix, scope: LoggerScope) {
         if Logger.enabledScopes.contains(scope) {
-            self.init(subsystem: subsystem, category: scope.name)
+            self.init(subsystem: "\(Logger.defaultSubsystemPrefix).\(subsystem)", category: scope.name)
         } else {
             self.init(.disabled)
         }

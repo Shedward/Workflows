@@ -10,7 +10,10 @@ public struct LoggerScope: Equatable {
         self.name = name
     }
 
-    public static let global = LoggerScope(name: "global")
+    @available(*, deprecated, message: "For debug purposes, should not be commited")
+    public static let debug = LoggerScope(name: "Debug")
+
+    public static let global = LoggerScope(name: "Global")
 
     public static func file(_ fileID: StaticString = #fileID) -> LoggerScope {
         LoggerScope(name: "\(fileID)")
