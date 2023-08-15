@@ -8,10 +8,20 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>me.workflows.OAuthHelper</string>
+			<string>me.workflows.OAuthHelper.short</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>wf-auth</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>me.workflows.OAuthHelper</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>me.workflows.OAuthHelper</string>
 			</array>
 		</dict>
 	</array>

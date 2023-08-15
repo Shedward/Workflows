@@ -17,7 +17,11 @@ public struct OAuthHelperApp: View {
             OAuthServiceView(
                 icon: Image("services.google", bundle: .module),
                 name: "Google",
-                onSignIn: { }
+                onSignIn: {
+                    let authUrlBuilder = GoogleOAuthAuthorizationUrl()
+                    let url = try! authUrlBuilder.buildUrl()
+                    NSWorkspace.shared.open(url)
+                }
             )
             OAuthServiceView(
                 icon: Image("services.jira", bundle: .module),
