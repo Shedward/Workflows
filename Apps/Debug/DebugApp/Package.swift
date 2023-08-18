@@ -10,11 +10,10 @@ let package = Package(
         .package(path: "../Services/GitHub"),
         .package(path: "../Services/Jira"),
         .package(path: "../Services/Figma"),
+        .package(path: "../Services/GoogleCloud"),
         .package(path: "../System/SecureStorage"),
         .package(path: "../System/Executable"),
-        .package(path: "../System/Git"),
-        .package(path: "../Services/GoogleDrive"),
-        .package(path: "../Services/GoogleSheets")
+        .package(path: "../System/Git")
     ],
     targets: [
         .executableTarget(
@@ -26,8 +25,7 @@ let package = Package(
                 "SecureStorage",
                 "Executable",
                 "Git",
-                "GoogleDrive",
-                "GoogleSheets"
+                "GoogleCloud"
             ]
         ),
     ]

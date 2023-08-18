@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "GoogleSheets",
+    name: "GoogleCloud",
     platforms: [.macOS(.v13)],
     products: [
         .library(
-            name: "GoogleSheets",
-            targets: ["GoogleSheets"]
+            name: "GoogleCloud",
+            targets: ["GoogleCloud"]
         ),
     ],
     dependencies: [
@@ -17,12 +17,8 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "GoogleSheets",
+            name: "GoogleCloud",
             dependencies: ["RestClient"]
-        ),
-        .testTarget(
-            name: "GoogleSheetsTests",
-            dependencies: ["GoogleSheets"]
-        ),
+        )
     ]
 )

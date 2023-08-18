@@ -11,8 +11,7 @@ import Executable
 import Prelude
 import os
 import Git
-import GoogleDrive
-import GoogleSheets
+import GoogleCloud
 
 let debugCredentials = DebugCredentials()
 
