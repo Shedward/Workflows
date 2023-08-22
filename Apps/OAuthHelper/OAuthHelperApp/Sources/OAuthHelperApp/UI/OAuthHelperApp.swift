@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import os
 
 public struct OAuthHelperApp: View {
 
@@ -18,7 +19,14 @@ public struct OAuthHelperApp: View {
                 icon: Image("services.google", bundle: .module),
                 name: "Google",
                 onSignIn: {
-                    GoogleOAuthAuthorizer.shared.authorize()
+                    Task {
+                        do {
+                            let url = try await Dependencies.shared.googleAuthorizer.authorizationUrl()
+                            NSWorkspace.shared.open(url)
+                        } catch {
+                            Logger(scope: .global).fault("Failed to open url: \(error, privacy: .public)")
+                        }
+                    }
                 }
             )
             OAuthServiceView(

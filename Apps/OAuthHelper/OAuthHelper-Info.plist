@@ -24,6 +24,16 @@
 				<string>me.workflows.OAuthHelper</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>me.workflows.OAuthHelper.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.546377572292-380otnito02mdjd4vhacgheri475f482</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

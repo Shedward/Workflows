@@ -8,6 +8,7 @@
 import SwiftUI
 import os
 import Prelude
+import GoogleCloud
 
 public final class AppDelegate: NSObject, NSApplicationDelegate {
 
@@ -20,7 +21,13 @@ public final class AppDelegate: NSObject, NSApplicationDelegate {
 
     public func application(_ application: NSApplication, open urls: [URL]) {
         guard let url = urls.first else { return }
-        GoogleOAuthAuthorizer.shared.processRedirectUrl(url)
+        Task {
+            do {
+                try await Dependencies.shared.googleAuthorizer.processRedirectUrl(url)
+            } catch {
+                logger.fault("Failed to process redirect: \(error, privacy: .public)")
+            }
+        }
     }
 
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

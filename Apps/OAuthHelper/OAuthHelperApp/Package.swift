@@ -14,14 +14,18 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core/Prelude"),
-        .package(path: "../Core/RestClient")
+        .package(path: "../Core/RestClient"),
+        .package(path: "../System/SecureStorage"),
+        .package(path: "../Services/GoogleCloud")
     ],
     targets: [
         .target(
             name: "OAuthHelperApp",
             dependencies: [
                 "Prelude",
-                "RestClient"
+                "RestClient",
+                "SecureStorage",
+                "GoogleCloud"
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
