@@ -7,8 +7,11 @@
 
 import SwiftUI
 import os
+import GoogleCloud
 
 public struct OAuthHelperApp: View {
+
+    private let googleAuthorizer = Dependencies.shared.googleAuthorizer
 
     public init() {
     }
@@ -21,23 +24,38 @@ public struct OAuthHelperApp: View {
                 onSignIn: {
                     Task {
                         do {
-                            let url = try await Dependencies.shared.googleAuthorizer.authorizationUrl()
+                            let url = try await googleAuthorizer.authorizationUrl()
                             NSWorkspace.shared.open(url)
                         } catch {
                             Logger(scope: .global).fault("Failed to open url: \(error, privacy: .public)")
                         }
                     }
+                },
+                fetchStatus: {
+                    let isAuthorized = await googleAuthorizer.isAuthorized()
+                    if !isAuthorized {
+                        return .unauthorized
+                    }
+
+                    let exrirationTime = await googleAuthorizer.authorizedUntil()
+                    return .authorized(" Until \(exrirationTime?.timeIntervalSinceNow ?? 0)")
                 }
             )
             OAuthServiceView(
                 icon: Image("services.jira", bundle: .module),
                 name: "Jira",
-                onSignIn: { }
+                onSignIn: { },
+                fetchStatus: {
+                    .unknown
+                }
             )
             OAuthServiceView(
                 icon: Image("services.github", bundle: .module),
                 name: "Github",
-                onSignIn: { }
+                onSignIn: { },
+                fetchStatus: {
+                    .unknown
+                }
             )
         }
         .padding(16)

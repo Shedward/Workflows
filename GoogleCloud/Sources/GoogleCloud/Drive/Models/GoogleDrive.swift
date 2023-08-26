@@ -12,6 +12,10 @@ public struct GoogleDrive {
         self.client = GoogleDriveClient(accessToken: accessToken)
     }
 
+    public init(authorizer: Authorizer) {
+        self.client = GoogleDriveClient(authorizer: authorizer)
+    }
+
     public func createFile(_ createFile: CreateFile) async throws -> File {
         let createRequest = CreateFileRequest(createFile: createFile)
         let newFileResponse = try await client.createFile(createFile: createRequest)

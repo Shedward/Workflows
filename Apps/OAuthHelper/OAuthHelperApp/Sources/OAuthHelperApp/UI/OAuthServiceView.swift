@@ -6,11 +6,16 @@
 //
 
 import SwiftUI
+import Prelude
 
 struct OAuthServiceView: View {
     let icon: Image
     let name: String
     let onSignIn: () -> Void
+    let fetchStatus: () async throws -> OAuthStatus
+
+    @State
+    private var authStatus: Loading<OAuthStatus, Error>  = .loading
 
     var body: some View {
         VStack {
@@ -18,6 +23,22 @@ struct OAuthServiceView: View {
             Text(name)
                 .font(.title)
             Spacer(minLength: 8)
+            authorizationStatusView
+        }
+        .frame(width: 100)
+        .padding()
+        .background(Rectangle().fill(Color.white))
+        .onAppear(perform: loadStatus)
+    }
+
+    @ViewBuilder
+    var authorizationStatusView: some View {
+        switch authStatus {
+        case .loading:
+            Text("Loading")
+        case .loaded(.unknown):
+            Text("-")
+        case .loaded(.unauthorized):
             VStack {
                 Image(systemName: "key.fill")
                     .font(.title)
@@ -27,11 +48,30 @@ struct OAuthServiceView: View {
                 FixedSpacer(height: 24)
                 Button("Sign in", action: onSignIn)
             }
-            .foregroundStyle(Color(.systemRed))
+        case .loaded(.authorized(let message)):
+            VStack {
+                Text("Authorized")
+                Text(message)
+            }
+        case .failure(let error):
+            VStack {
+                Text("Failed")
+                Text("\(error.localizedDescription)")
+                Button("Retry", action: loadStatus)
+            }
         }
-        .frame(width: 100)
-        .padding()
-        .background(Rectangle().fill(Color.white))
+    }
+
+    private func loadStatus() {
+        Task { @MainActor in
+            authStatus = .loading
+            do {
+                let newStatus = try await fetchStatus()
+                authStatus = .loaded(newStatus)
+            } catch {
+                authStatus = .failure(error)
+            }
+        }
     }
 }
 
@@ -39,6 +79,7 @@ struct OAuthServiceView: View {
     OAuthServiceView(
         icon: Image("services.google", bundle: .module),
         name: "Google",
-        onSignIn: { }
+        onSignIn: { },
+        fetchStatus: { .unauthorized }
     )
 }

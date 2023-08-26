@@ -17,7 +17,17 @@ public actor Authorizer {
     private let request: AuthorizerRequest
     private let tokensStorage: ThrowingAccessor<Data?>
 
-    private var tokens: AuthorizerTokens = .init()
+    private var loadedTokens: AuthorizerTokens?
+    private var tokens: AuthorizerTokens {
+        get {
+            loadTokensIfNeeded()
+            return loadedTokens ?? AuthorizerTokens()
+        }
+        set {
+            loadedTokens = newValue
+        }
+    }
+
     private let expiringTimeBuffer: TimeInterval = 15
 
     private lazy var restClient: RestClient = {
@@ -61,7 +71,11 @@ public actor Authorizer {
     }
 
     public func isAuthorized() -> Bool {
-        tokens.refreshToken?.isExpired(after: expiringTimeBuffer) ?? false
+        !(tokens.refreshToken?.isExpired(after: expiringTimeBuffer) ?? true)
+    }
+
+    public func authorizedUntil() -> Date? {
+        tokens.refreshToken?.expirationTime
     }
 
     public func logout() throws {
@@ -146,6 +160,11 @@ public actor Authorizer {
 
         let response = try await restClient.request(request)
         return response
+    }
+
+    private func loadTokensIfNeeded() {
+        guard loadedTokens == nil else { return }
+        try? loadTokens()
     }
 
     private func loadTokens() throws {
