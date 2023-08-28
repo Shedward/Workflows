@@ -23,7 +23,6 @@
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
 		E18E81AD2A90032A00D4055D /* GoogleCloud */ = {isa = PBXFileReference; lastKnownFileType = text; path = GoogleCloud; sourceTree = SOURCE_ROOT; };
 		E18EAAEA2A8A65E6009C6AE5 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DebugApp; sourceTree = "<group>"; };
-		E18EAAEC2A8A67CA009C6AE5 /* HeadHunter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = HeadHunter; sourceTree = "<group>"; };
 		E1B9C7822A8AB67300CA22DF /* OAuthHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OAuthHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1B9C7942A8AB8F000CA22DF /* OAuthHelperApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = OAuthHelperApp; sourceTree = "<group>"; };
 		E1B9C7952A8AB97F00CA22DF /* OAuthHelperMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthHelperMain.swift; sourceTree = "<group>"; };
@@ -125,7 +124,6 @@
 		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
 			isa = PBXGroup;
 			children = (
-				E18EAAEC2A8A67CA009C6AE5 /* HeadHunter */,
 			);
 			path = Workflows;
 			sourceTree = "<group>";
