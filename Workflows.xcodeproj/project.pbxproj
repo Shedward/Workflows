@@ -29,6 +29,7 @@
 		E1B9C7952A8AB97F00CA22DF /* OAuthHelperMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthHelperMain.swift; sourceTree = "<group>"; };
 		E1B9C7B52A8ABB0600CA22DF /* OAuthHelper.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = OAuthHelper.entitlements; sourceTree = "<group>"; };
 		E1CCAE162A8B4BDA0035FEF7 /* OAuthHelper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OAuthHelper-Info.plist"; sourceTree = "<group>"; };
+		E1E52A642A9D3A390088E996 /* LocalStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalStorage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +47,7 @@
 		631006B52A6F153B00C8B1B6 /* System */ = {
 			isa = PBXGroup;
 			children = (
+				E1E52A642A9D3A390088E996 /* LocalStorage */,
 				63322F1A2A7512CF002CBC8C /* Git */,
 				63C498132A7442900081CA41 /* Executable */,
 				63A971A22A6EFB4400A4EF8B /* SecureStorage */,
@@ -56,6 +58,7 @@
 		639C5FA02A6B1EB200896922 /* Apps */ = {
 			isa = PBXGroup;
 			children = (
+				E1DFCECD2A9BBFAB0096D404 /* Common */,
 				E1B9C7922A8AB69E00CA22DF /* OAuthHelper */,
 				E1B9C7912A8AB68300CA22DF /* Debug */,
 			);
@@ -144,6 +147,13 @@
 				E1B9C7952A8AB97F00CA22DF /* OAuthHelperMain.swift */,
 			);
 			path = OAuthHelper;
+			sourceTree = "<group>";
+		};
+		E1DFCECD2A9BBFAB0096D404 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

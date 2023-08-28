@@ -18,4 +18,14 @@ extension GoogleDriveClient {
 
         return try await client.request(request)
     }
+
+    func copy(sourceId: String, to createFile: CreateFileRequest) async throws -> FileResponse {
+        let request = RestRequest<CreateFileRequest, FileResponse>(
+            method: .post,
+            path: "/v3/files/\(sourceId)/copy",
+            body: createFile
+        )
+
+        return try await client.request(request)
+    }
 }

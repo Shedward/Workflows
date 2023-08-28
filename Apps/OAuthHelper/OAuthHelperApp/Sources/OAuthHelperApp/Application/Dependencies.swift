@@ -6,6 +6,7 @@
 //
 
 import SecureStorage
+import LocalStorage
 import GoogleCloud
 import Foundation
 
@@ -19,15 +20,12 @@ final class Dependencies {
         SecItemStorage<Accounts>(service: "me.workflows.OAuthHelper")
     }()
 
+    lazy var configStorage: ConfigStorage = {
+        FileConfigStorage()
+    }()
+
     lazy var googleAuthorizer: GoogleCloud.Authorizer = {
-        let request = AuthorizerRequest(
-            clientId: "546377572292-380otnito02mdjd4vhacgheri475f482.apps.googleusercontent.com",
-            scopes: [
-                "https://www.googleapis.com/auth/drive",
-                "https://www.googleapis.com/auth/spreadsheets"
-            ],
-            redirectUri: "com.googleusercontent.apps.546377572292-380otnito02mdjd4vhacgheri475f482:oauth-redirect"
-        )
+        let request = try! configStorage.load(GoogleCloud.AuthorizerRequest.self, at: "google-authorizer")
         let tokenStorage = secureStorage.accessor(for: .google)
         return GoogleCloud.Authorizer(request: request, tokensStorage: tokenStorage)
     }()

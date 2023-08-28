@@ -16,6 +16,7 @@ let package = Package(
         .package(path: "../Core/Prelude"),
         .package(path: "../Core/RestClient"),
         .package(path: "../System/SecureStorage"),
+        .package(path: "../System/LocalStorage"),
         .package(path: "../Services/GoogleCloud")
     ],
     targets: [
@@ -25,7 +26,8 @@ let package = Package(
                 "Prelude",
                 "RestClient",
                 "SecureStorage",
-                "GoogleCloud"
+                "GoogleCloud",
+                "LocalStorage"
             ],
             resources: [
                 .process("Resources/Assets.xcassets")
