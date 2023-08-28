@@ -12,6 +12,10 @@ public struct GoogleSheets {
         self.client = GoogleSheetsClient(accessToken: accessToken)
     }
 
+    public init(authorizer: Authorizer) {
+        self.client = GoogleSheetsClient(authorizer: authorizer)
+    }
+
     public func createSpreadsheet(_ createSpreadsheet: CreateSpreadsheet) async throws -> Spreadsheet {
         let request = CreateSpreadsheetRequest(createSpreadsheet: createSpreadsheet)
         let response = try await client.createSpreadsheet(createRequest: request)

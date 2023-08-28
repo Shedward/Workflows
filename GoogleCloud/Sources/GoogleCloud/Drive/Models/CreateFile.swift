@@ -8,9 +8,9 @@
 public struct CreateFile {
     public var name: String
     public var parents: [String]
-    public var mimeType: String
+    public var mimeType: String?
 
-    public init(name: String, parents: [String] = [], mimeType: String) {
+    public init(name: String, parents: [String] = [], mimeType: String? = nil) {
         self.name = name
         self.parents = parents
         self.mimeType = mimeType

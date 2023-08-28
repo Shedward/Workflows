@@ -12,8 +12,10 @@ let package = Package(
         .package(path: "../Services/Figma"),
         .package(path: "../Services/GoogleCloud"),
         .package(path: "../System/SecureStorage"),
+        .package(path: "../System/LocalStorage"),
         .package(path: "../System/Executable"),
-        .package(path: "../System/Git")
+        .package(path: "../System/Git"),
+        .package(path: "../Workflows/HeadHunter")
     ],
     targets: [
         .executableTarget(
@@ -23,9 +25,11 @@ let package = Package(
                 "Jira",
                 "Figma",
                 "SecureStorage",
+                "LocalStorage",
                 "Executable",
                 "Git",
-                "GoogleCloud"
+                "GoogleCloud",
+                "HeadHunter"
             ]
         ),
     ]

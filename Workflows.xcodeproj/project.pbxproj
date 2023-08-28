@@ -29,6 +29,7 @@
 		E1B9C7B52A8ABB0600CA22DF /* OAuthHelper.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = OAuthHelper.entitlements; sourceTree = "<group>"; };
 		E1CCAE162A8B4BDA0035FEF7 /* OAuthHelper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OAuthHelper-Info.plist"; sourceTree = "<group>"; };
 		E1E52A642A9D3A390088E996 /* LocalStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalStorage; sourceTree = "<group>"; };
+		E1E52A652A9D4F4F0088E996 /* HeadHunter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = HeadHunter; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +125,7 @@
 		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
 			isa = PBXGroup;
 			children = (
+				E1E52A652A9D4F4F0088E996 /* HeadHunter */,
 			);
 			path = Workflows;
 			sourceTree = "<group>";

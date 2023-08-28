@@ -27,4 +27,21 @@ struct GoogleSheetsClient {
             ]
         )
     }
+
+    init(authorizer: Authorizer) {
+        let endpoint = RestEndpoint(
+            host: URL(string: "https://sheets.googleapis.com")!
+        )
+        self.client = RestClient(
+            endpoint: endpoint,
+            requestDecorators: [
+                HeadersRequestDecorator(
+                    headers: RestHeaders
+                        .set("Accept", to: "application/json")
+                        .set("Content-Type", to: "application/json")
+                ),
+                AccessTokenAuthorizerRequestDecorator(authorizer: authorizer)
+            ]
+        )
+    }
 }

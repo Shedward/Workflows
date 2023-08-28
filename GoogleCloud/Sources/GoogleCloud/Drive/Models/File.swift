@@ -8,8 +8,8 @@
 public struct File {
     private let client: GoogleDriveClient
 
-    let id: String
-    let name: String
+    public let id: String
+    public let name: String
 
     init(response: FileResponse, client: GoogleDriveClient) {
         self.id = response.id
