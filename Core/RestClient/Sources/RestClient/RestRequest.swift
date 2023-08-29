@@ -50,6 +50,7 @@ extension RestRequest where RequestBody: DefaultInitable {
 public enum RestMethod: String {
     case get = "GET"
     case post = "POST"
+    case put = "PUT"
 }
 
 public struct RestQuery {

@@ -16,17 +16,14 @@ public struct GoogleDrive {
         self.client = GoogleDriveClient(authorizer: authorizer)
     }
 
-    public func createFile(_ createFile: CreateFile) async throws -> File {
+    public func createFile(_ createFile: CreateFile) async throws -> FileDetails {
         let createRequest = CreateFileRequest(createFile: createFile)
         let newFileResponse = try await client.createFile(createFile: createRequest)
-        let newFile = File(response: newFileResponse, client: client)
+        let newFile = FileDetails(response: newFileResponse, client: client)
         return newFile
     }
 
-    public func copy(fileId: String, to createFile: CreateFile) async throws -> File {
-        let createRequest = CreateFileRequest(createFile: createFile)
-        let copyFileResponse = try await client.copy(sourceId: fileId, to: createRequest)
-        let copyFile = File(response: copyFileResponse, client: client)
-        return copyFile
+    public func file(id: String) -> File {
+        File(id: id, client: client)
     }
 }
