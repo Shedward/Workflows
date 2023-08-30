@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Prelude
 import GoogleCloud
 
 public struct CreateDecompositionTableAction: WorkflowAction {
@@ -32,13 +33,19 @@ public struct CreateDecompositionTableAction: WorkflowAction {
     public func perform() async throws {
         let decompositionTemplateFile = deps.googleDrive.file(id: config.templateFileId)
         let decompositionCreateFile = CreateFile(name: portfolioKey, parents: [config.decompositionsFolderId])
-        let decompositionFile = try await decompositionTemplateFile.copy(to: decompositionCreateFile)
+        let decompositionFile = try await decompositionTemplateFile.copy(to: decompositionCreateFile).file()
 
         let spreadsheet = deps.googleSheets.spreadsheet(id: decompositionFile.id)
         try await spreadsheet.cells(config.titleCell).update(to: .string(portfolioKey))
         try await spreadsheet.cells(config.projectKeyCell).update(to: .string(config.projectKey))
 
-        // TODO: Open for sharing
-        // TODO: output decomposition url
+        try await decompositionFile.permissions().create(.init(group: .anyone, role: .reader))
+
+        let updatedFileDetails = try await decompositionFile.details(fields: [.webViewLink])
+        guard let decompositionUrl = updatedFileDetails.webViewLink else {
+            throw Failure("Decomposition file was created but failed to get sharing URL")
+        }
+
+        print("Decomposition file created at \(decompositionUrl)")
     }
 }

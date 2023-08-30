@@ -17,8 +17,19 @@ public struct File {
 
     public func copy(to createFile: CreateFile) async throws -> FileDetails {
         let createRequest = CreateFileRequest(createFile: createFile)
-        let copyFileResponse = try await client.copy(sourceId: id, to: createRequest)
+        let copyFileResponse = try await client.copyFile(sourceId: id, to: createRequest)
         let copyFile = FileDetails(response: copyFileResponse, client: client)
         return copyFile
+    }
+
+    public func details(fields: Set<FileDetails.Fields> = []) async throws -> FileDetails {
+        let fields = (FileDetails.Fields.required + fields).map(\.rawValue)
+        let fileResponse = try await client.getFile(fileId: id, fields: fields)
+        let fileDetails = FileDetails(response: fileResponse, client: client)
+        return fileDetails
+    }
+
+    public func permissions() -> FilePermissions {
+        FilePermissions(client: client, fileId: id)
     }
 }
