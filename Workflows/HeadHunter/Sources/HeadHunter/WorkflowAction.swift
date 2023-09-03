@@ -6,6 +6,7 @@
 //
 
 public protocol WorkflowAction {
+
     var id: String { get }
     var title: String { get }
 

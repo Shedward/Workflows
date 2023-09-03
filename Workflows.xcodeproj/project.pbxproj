@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E133EC9A2AA4BFF1003059F5 /* WorkflowsAppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E133EC992AA4BFF1003059F5 /* WorkflowsAppMain.swift */; };
+		E133EC9E2AA4BFF4003059F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E133EC9D2AA4BFF4003059F5 /* Assets.xcassets */; };
+		E133ECAA2AA4C6AE003059F5 /* WorkflowsApp in Frameworks */ = {isa = PBXBuildFile; productRef = E133ECA92AA4C6AE003059F5 /* WorkflowsApp */; };
 		E1B9C7962A8AB97F00CA22DF /* OAuthHelperMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B9C7952A8AB97F00CA22DF /* OAuthHelperMain.swift */; };
 		E1B9C7992A8AB9C300CA22DF /* OAuthHelperApp in Frameworks */ = {isa = PBXBuildFile; productRef = E1B9C7982A8AB9C300CA22DF /* OAuthHelperApp */; };
 /* End PBXBuildFile section */
@@ -21,6 +24,11 @@
 		63C497F72A7187AA0081CA41 /* Jira */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jira; sourceTree = "<group>"; };
 		63C498132A7442900081CA41 /* Executable */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Executable; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
+		E133EC972AA4BFF1003059F5 /* Workflows.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Workflows.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E133EC992AA4BFF1003059F5 /* WorkflowsAppMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsAppMain.swift; sourceTree = "<group>"; };
+		E133EC9D2AA4BFF4003059F5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E133ECA22AA4BFF4003059F5 /* Workflows.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Workflows.entitlements; sourceTree = "<group>"; };
+		E133ECA72AA4C5CF003059F5 /* WorkflowsApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WorkflowsApp; sourceTree = "<group>"; };
 		E18E81AD2A90032A00D4055D /* GoogleCloud */ = {isa = PBXFileReference; lastKnownFileType = text; path = GoogleCloud; sourceTree = SOURCE_ROOT; };
 		E18EAAEA2A8A65E6009C6AE5 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DebugApp; sourceTree = "<group>"; };
 		E1B9C7822A8AB67300CA22DF /* OAuthHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OAuthHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -33,6 +41,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E133EC942AA4BFF1003059F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E133ECAA2AA4C6AE003059F5 /* WorkflowsApp in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1B9C77F2A8AB67300CA22DF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -59,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				E1DFCECD2A9BBFAB0096D404 /* Common */,
+				E133EC922AA4BD30003059F5 /* Workflows */,
 				E1B9C7922A8AB69E00CA22DF /* OAuthHelper */,
 				E1B9C7912A8AB68300CA22DF /* Debug */,
 			);
@@ -85,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				E1B9C7822A8AB67300CA22DF /* OAuthHelper.app */,
+				E133EC972AA4BFF1003059F5 /* Workflows.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -119,7 +137,26 @@
 				639C5FA02A6B1EB200896922 /* Apps */,
 				639C5FA22A6B224800896922 /* Misc */,
 				639C5FAA2A6B237200896922 /* Products */,
+				E133ECA82AA4C6AE003059F5 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		E133EC922AA4BD30003059F5 /* Workflows */ = {
+			isa = PBXGroup;
+			children = (
+				E133ECA72AA4C5CF003059F5 /* WorkflowsApp */,
+				E133EC992AA4BFF1003059F5 /* WorkflowsAppMain.swift */,
+				E133EC9D2AA4BFF4003059F5 /* Assets.xcassets */,
+				E133ECA22AA4BFF4003059F5 /* Workflows.entitlements */,
+			);
+			path = Workflows;
+			sourceTree = "<group>";
+		};
+		E133ECA82AA4C6AE003059F5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
@@ -159,6 +196,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E133EC962AA4BFF1003059F5 /* Workflows */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E133ECA32AA4BFF4003059F5 /* Build configuration list for PBXNativeTarget "Workflows" */;
+			buildPhases = (
+				E133EC932AA4BFF1003059F5 /* Sources */,
+				E133EC942AA4BFF1003059F5 /* Frameworks */,
+				E133EC952AA4BFF1003059F5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Workflows;
+			packageProductDependencies = (
+				E133ECA92AA4C6AE003059F5 /* WorkflowsApp */,
+			);
+			productName = Workflows;
+			productReference = E133EC972AA4BFF1003059F5 /* Workflows.app */;
+			productType = "com.apple.product-type.application";
+		};
 		E1B9C7812A8AB67300CA22DF /* OAuthHelper */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E1B9C78E2A8AB67500CA22DF /* Build configuration list for PBXNativeTarget "OAuthHelper" */;
@@ -189,6 +246,9 @@
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
+					E133EC962AA4BFF1003059F5 = {
+						CreatedOnToolsVersion = 15.0;
+					};
 					E1B9C7812A8AB67300CA22DF = {
 						CreatedOnToolsVersion = 15.0;
 						LastSwiftMigration = 1500;
@@ -209,11 +269,20 @@
 			projectRoot = "";
 			targets = (
 				E1B9C7812A8AB67300CA22DF /* OAuthHelper */,
+				E133EC962AA4BFF1003059F5 /* Workflows */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E133EC952AA4BFF1003059F5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E133EC9E2AA4BFF4003059F5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1B9C7802A8AB67300CA22DF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,6 +293,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E133EC932AA4BFF1003059F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E133EC9A2AA4BFF1003059F5 /* WorkflowsAppMain.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1B9C77E2A8AB67300CA22DF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -244,6 +321,160 @@
 		63F0EE692A6B1AD80010CBAE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+			};
+			name = Release;
+		};
+		E133ECA42AA4BFF4003059F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Apps/Workflows/Workflows.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = me.shedward.workflows.Workflows;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E133ECA52AA4BFF4003059F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Apps/Workflows/Workflows.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = me.shedward.workflows.Workflows;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -417,6 +648,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E133ECA32AA4BFF4003059F5 /* Build configuration list for PBXNativeTarget "Workflows" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E133ECA42AA4BFF4003059F5 /* Debug */,
+				E133ECA52AA4BFF4003059F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E1B9C78E2A8AB67500CA22DF /* Build configuration list for PBXNativeTarget "OAuthHelper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -429,6 +669,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E133ECA92AA4C6AE003059F5 /* WorkflowsApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WorkflowsApp;
+		};
 		E1B9C7982A8AB9C300CA22DF /* OAuthHelperApp */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OAuthHelperApp;
