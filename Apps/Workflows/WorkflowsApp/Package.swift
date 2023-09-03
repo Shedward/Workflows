@@ -12,9 +12,15 @@ let package = Package(
             targets: ["WorkflowsApp"]
         ),
     ],
+    dependencies: [
+        .package(path: "../Workflows/HeadHunter")
+    ],
     targets: [
         .target(
-            name: "WorkflowsApp"
+            name: "WorkflowsApp",
+            dependencies: [
+                "HeadHunter"
+            ]
         ),
         .testTarget(
             name: "WorkflowsAppTests",

@@ -14,6 +14,10 @@ public struct Jira {
         client = try JiraClient.jiraServerClient(host: serverHost, credentials: credentials)
     }
 
+    public init(serverHost: URL, authorizer: JiraAuthorizer) {
+        client = JiraClient.jiraServerClient(host: serverHost, authorizer: authorizer)
+    }
+
     public func currentUser() async throws -> User {
         let response = try await client.getCurrentUser()
         return User(response: response, client: client)

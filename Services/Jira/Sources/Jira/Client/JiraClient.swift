@@ -29,4 +29,20 @@ final class JiraClient {
 
         return JiraClient(restClient: restClient)
     }
+
+    static func jiraServerClient(host: URL, authorizer: JiraAuthorizer) -> JiraClient {
+        let endpoint = RestEndpoint(host: host.appending(path: "/rest/api/2"))
+        let restClient = RestClient(
+            endpoint: endpoint,
+            requestDecorators: [
+                HeadersRequestDecorator(
+                    headers: RestHeaders
+                        .set("Content-Type", to: "application/json")
+                ),
+                AuthorizerRequestDecorator(authorizer: authorizer)
+            ]
+        )
+
+        return JiraClient(restClient: restClient)
+    }
 }

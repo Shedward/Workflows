@@ -7,5 +7,5 @@
 
 public typealias AllDependencies =
     ConfigStorageDependency
-    & GoogleDriveDependency
-    & GoogleSheetsDependency
+    & AllGoogleCloudDependencies
+    & AllJiraDependencies

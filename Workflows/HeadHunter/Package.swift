@@ -17,6 +17,7 @@ let package = Package(
         .package(path: "../System/LocalStorage"),
         .package(path: "../System/SecureStorage"),
         .package(path: "../Services/GoogleCloud"),
+        .package(path: "../Services/Jira")
     ],
     targets: [
         .target(
@@ -25,7 +26,8 @@ let package = Package(
                 "Prelude",
                 "LocalStorage",
                 "SecureStorage",
-                "GoogleCloud"
+                "GoogleCloud",
+                "Jira"
             ]
         )
     ]

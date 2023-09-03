@@ -6,6 +6,7 @@
 //
 
 import GoogleCloud
+import Jira
 import LocalStorage
 
 public protocol GoogleDriveDependency {
@@ -17,8 +18,25 @@ public protocol GoogleSheetsDependency {
 }
 
 public protocol GoogleAuthorizerDependency {
-    var googleAuthorizer: GoogleCloud.Authorizer { get set }
+    var googleAuthorizer: GoogleAuthorizer { get set }
 }
+
+public typealias AllGoogleCloudDependencies =
+    GoogleDriveDependency
+    & GoogleSheetsDependency
+    & GoogleAuthorizerDependency
+
+public protocol JiraAuthorizerDependency {
+    var jiraAuthorizer: JiraAuthorizer { get set }
+}
+
+public protocol JiraDependency {
+    var jira: Jira { get }
+}
+
+public typealias AllJiraDependencies =
+    JiraDependency
+    & JiraAuthorizerDependency
 
 public protocol ConfigStorageDependency {
     var configStorage: ConfigStorage { get set }

@@ -2,7 +2,7 @@
 //  AuthorizerError.swift
 //
 //
-//  Created by v.maltsev on 23.08.2023.
+//  Created by v.maltsev on 03.09.2023.
 //
 
 import Prelude
@@ -15,7 +15,7 @@ extension AuthorizerError: DescriptiveError {
     public var userDescription: String {
         switch self {
         case .signInRequired:
-            return "Google sign in required"
+            return "Jira sign in required"
         }
     }
 }

@@ -12,7 +12,7 @@ public struct GoogleSheets {
         self.client = GoogleSheetsClient(accessToken: accessToken)
     }
 
-    public init(authorizer: Authorizer) {
+    public init(authorizer: GoogleAuthorizer) {
         self.client = GoogleSheetsClient(authorizer: authorizer)
     }
 

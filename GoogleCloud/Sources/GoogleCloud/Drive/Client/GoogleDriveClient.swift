@@ -28,7 +28,7 @@ struct GoogleDriveClient {
         )
     }
 
-    init(authorizer: Authorizer) {
+    init(authorizer: GoogleAuthorizer) {
         let endpoint = RestEndpoint(
             host: URL(string: "https://www.googleapis.com/drive")!
         )

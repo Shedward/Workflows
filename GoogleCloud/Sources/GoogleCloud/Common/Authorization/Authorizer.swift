@@ -12,7 +12,7 @@ import os
 
 /// Authorizer for GoogleCloud
 /// Details: https://developers.google.com/identity/protocols/oauth2/native-app
-public actor Authorizer {
+public actor GoogleAuthorizer {
 
     private let request: AuthorizerRequest
     private let tokensStorage: ThrowingAccessor<Data?>
@@ -193,7 +193,7 @@ public actor Authorizer {
     }
 }
 
-extension Authorizer: AccessTokenAuthorizer {
+extension GoogleAuthorizer: AccessTokenAuthorizer {
     public func accessToken() async throws -> String {
         try await reloadAccessTokenIfNeeded()
 

@@ -14,12 +14,13 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core/Prelude"),
-        .package(path: "../Core/RestClient")
+        .package(path: "../Core/RestClient"),
+        .package(path: "../System/SecureStorage"),
     ],
     targets: [
         .target(
             name: "Jira",
-            dependencies: ["Prelude", "RestClient"]
+            dependencies: ["Prelude", "RestClient", "SecureStorage"]
         ),
         .testTarget(
             name: "JiraTests",

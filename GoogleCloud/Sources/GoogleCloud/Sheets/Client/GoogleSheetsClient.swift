@@ -28,7 +28,7 @@ struct GoogleSheetsClient {
         )
     }
 
-    init(authorizer: Authorizer) {
+    init(authorizer: GoogleAuthorizer) {
         let endpoint = RestEndpoint(
             host: URL(string: "https://sheets.googleapis.com")!
         )

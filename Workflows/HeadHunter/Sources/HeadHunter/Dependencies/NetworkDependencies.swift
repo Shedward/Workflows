@@ -8,26 +8,37 @@
 import GoogleCloud
 import SecureStorage
 import LocalStorage
+import Jira
 
 public struct NetworkDependencies: AllDependencies {
     public var configStorage: ConfigStorage
+
     public var googleDrive: GoogleCloud.GoogleDrive
     public var googleSheets: GoogleCloud.GoogleSheets
+    public var googleAuthorizer: GoogleAuthorizer
+
+    public var jiraAuthorizer: JiraAuthorizer
+    public var jira: Jira
 
     public init() throws {
         self.configStorage = FileConfigStorage()
-        
-        let secureStorage = SecItemStorage<SecureStorageAccounts>(service: "me.workflows.OAuthHelper")
-        let authorizer = Authorizer(
-            request: try configStorage.load(at: "google-authorizer"),
+
+        let secureStorage = SecItemStorage<SecureStorageAccounts>(service: "me.workflows.Workflows")
+
+        self.googleAuthorizer = GoogleAuthorizer(
+            request: try configStorage.load(at: "google"),
             tokensStorage: secureStorage.accessor(for: .google)
         )
+        self.googleDrive = GoogleDrive(authorizer: googleAuthorizer)
+        self.googleSheets = GoogleSheets(authorizer: googleAuthorizer)
 
-        self.googleDrive = GoogleDrive(authorizer: authorizer)
-        self.googleSheets = GoogleSheets(authorizer: authorizer)
+        let jiraConfig = try configStorage.load(JiraConfig.self, at: "jira")
+        self.jiraAuthorizer = JiraAuthorizer(credentialsStorage: secureStorage.accessor(for: .jira))
+        self.jira = Jira(serverHost: jiraConfig.host, authorizer: jiraAuthorizer)
     }
 }
 
 private enum SecureStorageAccounts: String, SecureStorageAccount {
     case google
+    case jira
 }

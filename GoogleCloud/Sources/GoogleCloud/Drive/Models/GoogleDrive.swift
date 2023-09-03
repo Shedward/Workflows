@@ -12,7 +12,7 @@ public struct GoogleDrive {
         self.client = GoogleDriveClient(accessToken: accessToken)
     }
 
-    public init(authorizer: Authorizer) {
+    public init(authorizer: GoogleAuthorizer) {
         self.client = GoogleDriveClient(authorizer: authorizer)
     }
 
