@@ -15,14 +15,37 @@ public struct WorkflowsApp: App {
     public var body: some Scene {
         MenuBarExtra {
             VStack(alignment: .leading) {
-                Text("Workflows")
-                    .font(.title)
-                Text("Here will be all your work")
+                List {
+                    Section("В работу") {
+                        WorkflowCell(
+                            key: "PORTFOLIO-22623", 
+                            icon: Image(systemName: "briefcase"),
+                            name: "Реализовать экран списка флоу",
+                            state: "В работе"
+                        )
+                        WorkflowCell(
+                            key: "PORTFOLIO-22623",
+                            icon: Image(systemName: "briefcase"),
+                            name: "Реализовать экран списка флоу",
+                            state: "АБ-тестирование"
+                        )
+                    }
+                    Section("Ждем") {
+                        WorkflowCell(
+                            key: "MOB-22321",
+                            icon: Image(systemName: "eyes"),
+                            name: "Реализовать экран списка флоу",
+                            state: "Ревью"
+                        )
+                    }
+                }
+                .listStyle(.plain)
+                .frame(maxWidth: 300)
+                .padding()
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
             }
-            .padding()
         } label: {
             HStack {
                 Image(systemName: "flowchart")

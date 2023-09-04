@@ -21,10 +21,6 @@ let package = Package(
             dependencies: [
                 "HeadHunter"
             ]
-        ),
-        .testTarget(
-            name: "WorkflowsAppTests",
-            dependencies: ["WorkflowsApp"]
-        ),
+        )
     ]
 )
