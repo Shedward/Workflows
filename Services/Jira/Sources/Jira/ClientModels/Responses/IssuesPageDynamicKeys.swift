@@ -7,5 +7,5 @@ import Foundation
 import Prelude
 
 enum IssuesPageDynamicKeys: PageResponseDynamicKeys {
-    static let items = ArbitraryCodingKey(stringValue: "issues")
+    static let items: ArbitraryCodingKey = "issues"
 }

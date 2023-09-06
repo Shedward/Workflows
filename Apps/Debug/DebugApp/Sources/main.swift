@@ -41,7 +41,7 @@ func testJira() async throws {
     let jira = try Jira(serverHost: URL(string: "https://jira.hh.ru")!, credentials: jiraCreds)
 
     let query = JQLQuery(rawValue: "assignee = currentUser() AND type = Проект")
-    let myIssues = try await jira.searchIssues(jql: query).allItems()
+    let myIssues = try await jira.searchIssues(jql: query, fields: NoFields.self).allItems()
 
     print(myIssues)
 }
@@ -78,14 +78,14 @@ func testFigma() async throws {
     print("Comments: \n \(magrittoComments)")
 }
 
-func googleAuthorizer() throws -> GoogleCloud.Authorizer {
+func googleAuthorizer() throws -> GoogleAuthorizer {
     enum Accounts: String, SecureStorageAccount {
         case google
     }
     
     let secureStorage = SecItemStorage<Accounts>(service: "me.workflows.OAuthHelper")
     let configStorage = FileConfigStorage()
-    let authorizer = GoogleCloud.Authorizer(
+    let authorizer = GoogleAuthorizer(
         request: try configStorage.load(at: "google-authorizer"),
         tokensStorage: secureStorage.accessor(for: .google)
     )
@@ -118,4 +118,10 @@ func testCreateDecompositionTableAction() async throws {
     try await action.perform()
 }
 
-try await testCreateDecompositionTableAction()
+func testAssignedPortfolios() async throws {
+    let deps = try NetworkDependencies()
+    let portfolios = try await AssignedPortfolios(deps: deps).load().allItems()
+    print(portfolios)
+}
+
+try await testAssignedPortfolios()

@@ -25,7 +25,8 @@ public protocol JSONDecodableBody: RestBodyDecodable, Decodable, Sendable {
 
 public extension JSONDecodableBody {
     static func fromData(_ data: Data) throws -> Self {
-        try Self.decoder().decode(Self.self, from: data)
+        let decoder = Self.decoder()
+        return try decoder.decode(Self.self, from: data)
     }
 
     static func decoder() -> JSONDecoder {

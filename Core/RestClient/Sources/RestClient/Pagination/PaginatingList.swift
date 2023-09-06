@@ -61,4 +61,18 @@ public struct PaginatingList<Item> {
     public func withPageSize(_ pageSize: Int?) -> PaginatingList<Item> {
         .init(pageSize: pageSize, fetch: fetch)
     }
+
+    public func map<OtherItem>(_ transform: @escaping (Item) throws -> OtherItem) rethrows -> PaginatingList<OtherItem> {
+        var otherList = PaginatingList<OtherItem>(pageSize: pageSize) { page, pageSize in
+            let newItems = try await fetch(page, pageSize)
+            let newOtherItems = try newItems.map(transform)
+            return newOtherItems
+        }
+
+        otherList.items = try items.map(transform)
+        otherList.currentPage = currentPage
+        otherList.canLoadNextPage = canLoadNextPage
+
+        return otherList
+    }
 }

@@ -5,6 +5,7 @@
 
 import Foundation
 
+import Prelude
 import RestClient
 
 public struct Jira {
@@ -30,16 +31,20 @@ public struct Jira {
 
     public func issue(key: String) async throws -> Issue {
         let response = try await client.getIssue(key: key)
-        return Issue(response: response, client: client)
+        return IssueWithFields(response: response, client: client)
     }
 
-    public func searchIssues(jql: JQLQuery) async throws -> PaginatingList<Issue> {
+    public func searchIssues(jql: JQLQuery) async throws -> PaginatingList<IssueWithFields<NoFields>> {
+        try await searchIssues(jql: jql, fields: NoFields.self)
+    }
+
+    public func searchIssues<Fields: IssueFields>(jql: JQLQuery, fields: Fields.Type) async throws -> PaginatingList<IssueWithFields<Fields>> {
         PaginatingList { [client] page, pageSize in
             let defaultPageSize = 50
             let pagination = Pagination(page: page, pageSize: pageSize ?? defaultPageSize)
-            let issuesResponse = try await client.getSearchResults(query: jql, pagination: pagination)
+            let issuesResponse = try await client.getSearchResults(query: jql, pagination: pagination, fields: fields)
             let issues = issuesResponse.map { issueResponse in
-                Issue(response: issueResponse, client: client)
+                IssueWithFields(response: issueResponse, client: client)
             }
             return issues
         }
