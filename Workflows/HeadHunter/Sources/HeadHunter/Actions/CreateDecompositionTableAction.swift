@@ -9,7 +9,7 @@ import Foundation
 import Prelude
 import GoogleCloud
 
-public struct CreateDecompositionTableAction: WorkflowAction {
+public struct CreateDecompositionTableAction {
 
     public typealias Dependencies =
         GoogleDriveDependency
@@ -18,25 +18,43 @@ public struct CreateDecompositionTableAction: WorkflowAction {
     let deps: Dependencies
     let config: DecompositionConfig
 
-    let portfolioKey: String
-
     public var title: String {
         "Создать таблицу для декомпозиции"
     }
 
-    public init(deps: Dependencies, config: DecompositionConfig, portfolioKey: String) {
+    public init(deps: Dependencies, config: DecompositionConfig) {
         self.deps = deps
         self.config = config
-        self.portfolioKey = portfolioKey
+    }
+}
+
+extension CreateDecompositionTableAction: WorkflowAction {
+
+    public struct Input {
+        public let portfolioKey: String
+
+        public init(portfolioKey: String) {
+            self.portfolioKey = portfolioKey
+        }
     }
 
-    public func perform() async throws {
+    public struct Output {
+        public let decompositionSpreadsheet: Spreadsheet
+        public let decompositonUrl: String
+
+        public init(decompositionSpreadsheet: Spreadsheet, decompositonUrl: String) {
+            self.decompositionSpreadsheet = decompositionSpreadsheet
+            self.decompositonUrl = decompositonUrl
+        }
+    }
+
+    public func perform(_ input: Input) async throws -> Output {
         let decompositionTemplateFile = deps.googleDrive.file(id: config.templateFileId)
-        let decompositionCreateFile = CreateFile(name: portfolioKey, parents: [config.decompositionsFolderId])
+        let decompositionCreateFile = CreateFile(name: input.portfolioKey, parents: [config.decompositionsFolderId])
         let decompositionFile = try await decompositionTemplateFile.copy(to: decompositionCreateFile).file()
 
         let spreadsheet = deps.googleSheets.spreadsheet(id: decompositionFile.id)
-        try await spreadsheet.cells(config.titleCell).update(to: .string(portfolioKey))
+        try await spreadsheet.cells(config.titleCell).update(to: .string(input.portfolioKey))
         try await spreadsheet.cells(config.projectKeyCell).update(to: .string(config.projectKey))
 
         try await decompositionFile.permissions().create(.init(group: .anyone, role: .reader))
@@ -46,6 +64,9 @@ public struct CreateDecompositionTableAction: WorkflowAction {
             throw Failure("Decomposition file was created but failed to get sharing URL")
         }
 
-        print("Decomposition file created at \(decompositionUrl)")
+        return Output(
+            decompositionSpreadsheet: spreadsheet,
+            decompositonUrl: decompositionUrl
+        )
     }
 }

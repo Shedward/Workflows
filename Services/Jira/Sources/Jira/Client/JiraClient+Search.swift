@@ -18,7 +18,7 @@ extension JiraClient {
             query: RestQuery
                 .set("jql", to: query.rawValue)
                 .merging(with: pagination.asRestQuery())
-                .merging(with: fieldsQueryParameter(Fields.fieldKeys()))
+                .merging(with: fieldsQueryParameter(Fields.fieldKeys))
         )
 
         let response = try await restClient.request(request)

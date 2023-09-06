@@ -6,11 +6,13 @@
 //
 
 public protocol WorkflowAction {
+    associatedtype Input
+    associatedtype Output
 
     var id: String { get }
     var title: String { get }
 
-    func perform() async throws
+    func perform(_ input: Input) async throws -> Output
 }
 
 public extension WorkflowAction {

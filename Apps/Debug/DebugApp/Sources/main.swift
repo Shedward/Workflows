@@ -112,16 +112,18 @@ func testCreateDecompositionTableAction() async throws {
     let deps = try NetworkDependencies()
     let action = CreateDecompositionTableAction(
         deps: deps,
-        config: try deps.configStorage.load(at: "portfolio-decomposition"),
-        portfolioKey: "PORTFOLIO-22989"
+        config: try deps.configStorage.load(at: "portfolio-decomposition")
     )
-    try await action.perform()
+
+    let output = try await action.perform(.init(portfolioKey: "PORTFOLIO-22989"))
+    print(output)
 }
 
 func testAssignedPortfolios() async throws {
     let deps = try NetworkDependencies()
-    let portfolios = try await AssignedPortfolios(deps: deps).load().allItems()
-    print(portfolios)
+    let action = GetAssignedPortfolios(deps: deps)
+    let output = try await action.perform()
+    print(try await output.activePortfolios.allItems())
 }
 
 try await testAssignedPortfolios()

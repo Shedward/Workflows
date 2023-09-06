@@ -1,5 +1,5 @@
 //
-//  AssignedPortfolios.swift
+//  GetAssignedPortfolios.swift
 //
 //
 //  Created by v.maltsev on 04.09.2023.
@@ -8,7 +8,7 @@
 import Jira
 import RestClient
 
-public struct AssignedPortfolios {
+public struct GetAssignedPortfolios {
     public typealias Dependencies = JiraDependency
 
     let deps: Dependencies
@@ -16,16 +16,26 @@ public struct AssignedPortfolios {
     public init(deps: Dependencies) {
         self.deps = deps
     }
+}
 
-    public func load() async throws -> PaginatingList<Portfolio> {
+extension GetAssignedPortfolios: WorkflowAction {
+
+    public struct Output {
+        public let activePortfolios: PaginatingList<Portfolio>
+    }
+
+    public var title: String {
+        "Получить assigned портфели"
+    }
+
+
+    public func perform(_ input: Void = ()) async throws -> Output {
         let query = JQLQuery(rawValue: "assignee = currentUser() AND type = Проект")
 
         struct SummaryFields: IssueFields {
             let summary: String
 
-            static func fieldKeys() -> [IssueFieldKey] {
-                ["summary"]
-            }
+            static let fieldKeys: [IssueFieldKey] = ["summary"]
         }
 
         let issues = try await deps.jira.searchIssues(jql: query, fields: SummaryFields.self)
@@ -35,6 +45,9 @@ public struct AssignedPortfolios {
                 title: issue.fileds.summary
             )
         }
-        return portfolios
+
+        return Output(
+            activePortfolios: portfolios
+        )
     }
 }

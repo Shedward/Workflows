@@ -11,13 +11,11 @@ import Prelude
 public typealias NoFields = CodableVoid
 
 extension NoFields: IssueFields {
-    public static func fieldKeys() -> [IssueFieldKey] {
-        []
-    }
+    public static let fieldKeys: [IssueFieldKey] = []
 }
 
 public protocol IssueFields: Decodable, Sendable {
-    static func fieldKeys() -> [IssueFieldKey]
+    static var fieldKeys: [IssueFieldKey] { get }
 }
 
 public struct IssueFieldKey: Hashable {
