@@ -30,11 +30,15 @@ public struct Jira {
     }
 
     public func issue(key: String) async throws -> Issue {
-        let response = try await client.getIssue(key: key)
+        try await issue(key: key, fields: NoFields.self)
+    }
+
+    public func issue<Fields: IssueFields>(key: String, fields: Fields.Type) async throws -> IssueWithFields<Fields> {
+        let response = try await client.getIssue(key: key, fields: Fields.self)
         return IssueWithFields(response: response, client: client)
     }
 
-    public func searchIssues(jql: JQLQuery) async throws -> PaginatingList<IssueWithFields<NoFields>> {
+    public func searchIssues(jql: JQLQuery) async throws -> PaginatingList<Issue> {
         try await searchIssues(jql: jql, fields: NoFields.self)
     }
 

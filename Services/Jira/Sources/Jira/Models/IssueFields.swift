@@ -18,6 +18,16 @@ public protocol IssueFields: Decodable, Sendable {
     static var fieldKeys: [IssueFieldKey] { get }
 }
 
+extension IssueFields {
+    static var fieldsDescription: String? {
+        guard !fieldKeys.isEmpty else {
+            return nil
+        }
+
+        return fieldKeys.map(\.rawValue).joined(separator: ",")
+    }
+}
+
 public struct IssueFieldKey: Hashable {
     public let rawValue: String
 

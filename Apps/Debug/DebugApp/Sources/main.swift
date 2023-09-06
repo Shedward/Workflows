@@ -126,4 +126,14 @@ func testAssignedPortfolios() async throws {
     print(try await output.activePortfolios.allItems())
 }
 
-try await testAssignedPortfolios()
+func testCurrentTask() async throws {
+    let deps = try NetworkDependencies()
+    let action = GetCurrentTask(
+        deps: deps,
+        mainRepoConfig: try deps.configStorage.load(at: "main-repository")
+    )
+    let output = try await action.perform()
+    print(output.task)
+}
+
+try await testCurrentTask()

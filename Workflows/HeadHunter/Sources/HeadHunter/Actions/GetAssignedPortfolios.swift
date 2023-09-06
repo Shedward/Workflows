@@ -32,12 +32,6 @@ extension GetAssignedPortfolios: WorkflowAction {
     public func perform(_ input: Void = ()) async throws -> Output {
         let query = JQLQuery(rawValue: "assignee = currentUser() AND type = Проект")
 
-        struct SummaryFields: IssueFields {
-            let summary: String
-
-            static let fieldKeys: [IssueFieldKey] = ["summary"]
-        }
-
         let issues = try await deps.jira.searchIssues(jql: query, fields: SummaryFields.self)
         let portfolios = issues.map { issue in
             return Portfolio(
@@ -50,4 +44,10 @@ extension GetAssignedPortfolios: WorkflowAction {
             activePortfolios: portfolios
         )
     }
+}
+
+private struct SummaryFields: IssueFields {
+    let summary: String
+
+    static let fieldKeys: [IssueFieldKey] = ["summary"]
 }

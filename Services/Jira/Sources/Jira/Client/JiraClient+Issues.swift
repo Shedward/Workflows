@@ -8,10 +8,12 @@ import RestClient
 
 extension JiraClient {
 
-    func getIssue(key: String) async throws -> IssueResponse<CodableVoid> {
-        let request = RestRequest<EmptyBody, IssueResponse<CodableVoid>>(
+    func getIssue<Fields: IssueFields>(key: String, fields: Fields.Type) async throws -> IssueResponse<Fields> {
+        let request = RestRequest<EmptyBody, IssueResponse<Fields>>(
             method: .get,
-            path: "issue/\(key)"
+            path: "issue/\(key)",
+            query: RestQuery
+                .set("fields", to: Fields.fieldsDescription)
         )
         return try await restClient.request(request)
     }

@@ -9,7 +9,7 @@ public struct Portfolio {
     public let key: String
     public let title: String
 
-    public init(key: String, title: String) {
+    init(key: String, title: String) {
         self.key = key
         self.title = title
     }

@@ -41,11 +41,6 @@ extension CreateDecompositionTableAction: WorkflowAction {
     public struct Output {
         public let decompositionSpreadsheet: Spreadsheet
         public let decompositonUrl: String
-
-        public init(decompositionSpreadsheet: Spreadsheet, decompositonUrl: String) {
-            self.decompositionSpreadsheet = decompositionSpreadsheet
-            self.decompositonUrl = decompositonUrl
-        }
     }
 
     public func perform(_ input: Input) async throws -> Output {

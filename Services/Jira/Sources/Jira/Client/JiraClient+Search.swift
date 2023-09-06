@@ -17,18 +17,11 @@ extension JiraClient {
             path: "/search",
             query: RestQuery
                 .set("jql", to: query.rawValue)
+                .set("fields", to: Fields.fieldsDescription)
                 .merging(with: pagination.asRestQuery())
-                .merging(with: fieldsQueryParameter(Fields.fieldKeys))
         )
 
         let response = try await restClient.request(request)
         return response.items
-    }
-
-    private func fieldsQueryParameter(_ fields: [IssueFieldKey]) -> RestQuery {
-        guard !fields.isEmpty else { return RestQuery() }
-
-        let fieldNames = fields.map(\.rawValue).joined(separator: ",")
-        return .set("fields", to: fieldNames)
     }
 }

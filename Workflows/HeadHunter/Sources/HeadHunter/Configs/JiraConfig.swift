@@ -8,5 +8,5 @@
 import Foundation
 
 public struct JiraConfig: Decodable {
-    let host: URL
+    public let host: URL
 }
