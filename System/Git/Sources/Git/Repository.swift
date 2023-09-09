@@ -26,4 +26,8 @@ public struct Repository {
 
         return Ref(rawValue: branchName)
     }
+
+    public func push() async throws {
+        try await git.run("push")
+    }
 }

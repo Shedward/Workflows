@@ -136,4 +136,14 @@ func testCurrentTask() async throws {
     print(output.task)
 }
 
-try await testCurrentTask()
+func testPreparePullRequest() async throws {
+    let deps = try NetworkDependencies()
+    let action = PreparePullRequest(
+        deps: deps,
+        mainRepoConfig: try deps.configStorage.load(at: "main-repository")
+    )
+    let output = try await action.perform()
+    print(output.task)
+}
+
+try await testPreparePullRequest()
