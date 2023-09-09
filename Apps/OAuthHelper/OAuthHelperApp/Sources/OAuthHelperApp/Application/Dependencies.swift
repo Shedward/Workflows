@@ -24,9 +24,9 @@ final class Dependencies {
         FileConfigStorage()
     }()
 
-    lazy var googleAuthorizer: GoogleCloud.Authorizer = {
+    lazy var googleAuthorizer: GoogleAuthorizer = {
         let request = try! configStorage.load(GoogleCloud.AuthorizerRequest.self, at: "google-authorizer")
         let tokenStorage = secureStorage.accessor(for: .google)
-        return GoogleCloud.Authorizer(request: request, tokensStorage: tokenStorage)
+        return GoogleAuthorizer(request: request, tokensStorage: tokenStorage)
     }()
 }

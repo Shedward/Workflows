@@ -16,6 +16,7 @@ let package = Package(
         .package(path: "../Core/Prelude"),
         .package(path: "../System/LocalStorage"),
         .package(path: "../System/SecureStorage"),
+        .package(path: "../System/Git"),
         .package(path: "../Services/GoogleCloud"),
         .package(path: "../Services/Jira")
     ],
@@ -26,6 +27,7 @@ let package = Package(
                 "Prelude",
                 "LocalStorage",
                 "SecureStorage",
+                "Git",
                 "GoogleCloud",
                 "Jira"
             ]
