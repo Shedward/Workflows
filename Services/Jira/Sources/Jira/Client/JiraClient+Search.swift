@@ -11,8 +11,8 @@ extension JiraClient {
         query: JQLQuery,
         pagination: Pagination,
         fields: Fields.Type
-    ) async throws -> [IssueResponse<Fields>] {
-        let request = RestRequest<EmptyBody, PageResponse<IssueResponse<Fields>, IssuesPageDynamicKeys>>(
+    ) async throws -> [IssueDetails<Fields>] {
+        let request = RestRequest<EmptyBody, PageResponse<IssueDetails<Fields>, IssuesPageDynamicKeys>>(
             method: .get,
             path: "/search",
             query: RestQuery

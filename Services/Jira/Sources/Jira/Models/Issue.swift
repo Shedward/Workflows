@@ -12,13 +12,22 @@ public struct IssueWithFields<Fields: IssueFields> {
     public let key: String
     public let fileds: Fields
 
-    private let client: JiraClient
+    internal let client: JiraClient
 
-    init(response: IssueResponse<Fields>, client: JiraClient) {
+    internal init(response: IssueDetails<Fields>, client: JiraClient) {
         self.id = response.id
         self.key = response.key
         self.fileds = response.fields
 
         self.client = client
     }
+}
+
+extension IssueWithFields where Fields: IssueFieldsWithLinks {
+    public func links() -> Links {
+        Links(client: client, issue: self)
+    }
+}
+
+extension IssueWithFields: Identifiable {
 }

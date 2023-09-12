@@ -35,10 +35,8 @@ extension PreparePullRequest: WorkflowAction {
     public func perform(_ input: Void = ()) async throws -> Output {
         let ropository = try await Git().repository(at: mainRepoConfig.repositoryPath)
         let currentBranch = try await ropository.currentBranch()
-        let issue = try await deps.jira.issue(key: currentBranch.rawValue, fields: SummaryFields.self)
-        return Output(
-            task: Task(key: issue.key, title: issue.fileds.summary, portfolio: nil)
-        )
+        let issue = try await deps.jira.issue(key: currentBranch.rawValue, fields: TaskIssueFields.self)
+        return Output(task: .init(issue: issue))
     }
 }
 

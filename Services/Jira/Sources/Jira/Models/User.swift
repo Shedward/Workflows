@@ -7,9 +7,9 @@ public struct User {
     public let name: String
     public let key: String
 
-    private let client: JiraClient
+    internal let client: JiraClient
 
-    init(response: UserResponse, client: JiraClient) {
+    internal init(response: UserResponse, client: JiraClient) {
         self.name = response.name
         self.key = response.key
 

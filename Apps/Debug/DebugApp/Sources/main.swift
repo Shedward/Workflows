@@ -119,11 +119,20 @@ func testCreateDecompositionTableAction() async throws {
     print(output)
 }
 
-func testAssignedPortfolios() async throws {
+func testAssignedTasks() async throws {
     let deps = try NetworkDependencies()
-    let action = GetAssignedPortfolios(deps: deps)
+    let action = GetAssignedTasks(deps: deps)
     let output = try await action.perform()
-    print(try await output.activePortfolios.allItems())
+    let taskDescriptions = output.assignedTasks.map { task in
+        """
+        \(task.key)\(task.portfolio.map { " <- \($0.key)" } ?? "")
+        \(task.status)\(task.portfolio.map { " :: \($0.status)" } ?? "")
+        [\(task.type)] \(task.title)
+        """
+    }
+
+    let descriptions = try await taskDescriptions.allItems()
+    print(descriptions.joined(separator: "\n---\n\n"))
 }
 
 func testCurrentTask() async throws {
@@ -146,4 +155,4 @@ func testPreparePullRequest() async throws {
     print(output.task)
 }
 
-try await testPreparePullRequest()
+try await testAssignedTasks()

@@ -8,8 +8,8 @@ import RestClient
 
 extension JiraClient {
 
-    func getIssue<Fields: IssueFields>(key: String, fields: Fields.Type) async throws -> IssueResponse<Fields> {
-        let request = RestRequest<EmptyBody, IssueResponse<Fields>>(
+    func getIssue<Fields: IssueFields>(key: String, fields: Fields.Type) async throws -> IssueDetails<Fields> {
+        let request = RestRequest<EmptyBody, IssueDetails<Fields>>(
             method: .get,
             path: "issue/\(key)",
             query: RestQuery

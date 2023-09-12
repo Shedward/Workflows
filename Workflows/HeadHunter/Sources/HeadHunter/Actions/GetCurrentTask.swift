@@ -24,7 +24,7 @@ public struct GetCurrentTask {
 extension GetCurrentTask: WorkflowAction {
 
     public struct Output {
-        public let task: Task
+        public let task: HeadHunter.Task
     }
 
     public var title: String {
@@ -34,15 +34,7 @@ extension GetCurrentTask: WorkflowAction {
     public func perform(_ input: Void = ()) async throws -> Output {
         let ropository = try await Git().repository(at: mainRepoConfig.repositoryPath)
         let currentBranch = try await ropository.currentBranch()
-        let issue = try await deps.jira.issue(key: currentBranch.rawValue, fields: SummaryFields.self)
-        return Output(
-            task: Task(key: issue.key, title: issue.fileds.summary, portfolio: nil)
-        )
+        let issue = try await deps.jira.issue(key: currentBranch.rawValue, fields: TaskIssueFields.self)
+        return Output(task: .init(issue: issue))
     }
-}
-
-private struct SummaryFields: IssueFields {
-    let summary: String
-
-    static let fieldKeys: [IssueFieldKey] = ["summary"]
 }

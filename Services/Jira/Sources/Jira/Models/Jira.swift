@@ -9,7 +9,7 @@ import Prelude
 import RestClient
 
 public struct Jira {
-    private let client: JiraClient
+    internal let client: JiraClient
 
     public init(serverHost: URL, credentials: JiraServerCredentials) throws {
         client = try JiraClient.jiraServerClient(host: serverHost, credentials: credentials)
