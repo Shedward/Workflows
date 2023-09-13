@@ -7,6 +7,7 @@
 
 import Foundation
 import Prelude
+import Jira
 import GoogleCloud
 
 public struct CreateDecompositionTableAction {
@@ -14,6 +15,7 @@ public struct CreateDecompositionTableAction {
     public typealias Dependencies =
         GoogleDriveDependency
         & GoogleSheetsDependency
+        & JiraDependency
 
     let deps: Dependencies
     let config: DecompositionConfig
@@ -45,7 +47,11 @@ extension CreateDecompositionTableAction: WorkflowAction {
 
     public func perform(_ input: Input) async throws -> Output {
         let decompositionTemplateFile = deps.googleDrive.file(id: config.templateFileId)
-        let decompositionCreateFile = CreateFile(name: input.portfolioKey, parents: [config.decompositionsFolderId])
+
+        let issue = try await deps.jira.issue(key: input.portfolioKey, fields: SummaryFields.self)
+
+        let fileName = "\(issue.key): \(issue.fileds.summary)"
+        let decompositionCreateFile = CreateFile(name: fileName, parents: [config.decompositionsFolderId])
         let decompositionFile = try await decompositionTemplateFile.copy(to: decompositionCreateFile).file()
 
         let spreadsheet = deps.googleSheets.spreadsheet(id: decompositionFile.id)
@@ -63,5 +69,13 @@ extension CreateDecompositionTableAction: WorkflowAction {
             decompositionSpreadsheet: spreadsheet,
             decompositonUrl: decompositionUrl
         )
+    }
+}
+
+private struct SummaryFields: IssueFields {
+    let summary: String
+
+    static var fieldKeys: [IssueFieldKey] {
+        ["summary"]
     }
 }

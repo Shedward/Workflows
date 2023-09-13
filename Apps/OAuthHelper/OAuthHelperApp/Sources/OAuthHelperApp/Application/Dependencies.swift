@@ -17,7 +17,7 @@ final class Dependencies {
     }
 
     lazy var secureStorage: SecItemStorage = {
-        SecItemStorage<Accounts>(service: "me.workflows.OAuthHelper")
+        SecItemStorage<Accounts>(service: "me.workflows.Workflows")
     }()
 
     lazy var configStorage: ConfigStorage = {
@@ -25,7 +25,7 @@ final class Dependencies {
     }()
 
     lazy var googleAuthorizer: GoogleAuthorizer = {
-        let request = try! configStorage.load(GoogleCloud.AuthorizerRequest.self, at: "google-authorizer")
+        let request = try! configStorage.load(GoogleCloud.AuthorizerRequest.self, at: "google")
         let tokenStorage = secureStorage.accessor(for: .google)
         return GoogleAuthorizer(request: request, tokensStorage: tokenStorage)
     }()

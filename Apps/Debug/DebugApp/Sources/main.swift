@@ -108,14 +108,14 @@ func testGoogleSheets() async throws {
 }
 
 
-func testCreateDecompositionTableAction() async throws {
+func testCreateDecompositionTableAction(portfolioKey: String) async throws {
     let deps = try NetworkDependencies()
     let action = CreateDecompositionTableAction(
         deps: deps,
         config: try deps.configStorage.load(at: "portfolio-decomposition")
     )
 
-    let output = try await action.perform(.init(portfolioKey: "PORTFOLIO-22989"))
+    let output = try await action.perform(.init(portfolioKey: portfolioKey))
     print(output)
 }
 
@@ -155,4 +155,4 @@ func testPreparePullRequest() async throws {
     print(output.task)
 }
 
-try await testAssignedTasks()
+try await testCreateDecompositionTableAction(portfolioKey: "PORTFOLIO-24499")
