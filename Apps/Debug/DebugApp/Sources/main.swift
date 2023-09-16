@@ -155,4 +155,4 @@ func testPreparePullRequest() async throws {
     print(output.task)
 }
 
-try await testCreateDecompositionTableAction(portfolioKey: "PORTFOLIO-24499")
+try await testAssignedTasks()
