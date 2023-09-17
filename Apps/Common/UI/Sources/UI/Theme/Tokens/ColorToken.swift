@@ -9,6 +9,9 @@ import SwiftUI
 
 public typealias ColorToken = KeyPath<Colors, Color>
 
+extension KeyPath: @unchecked Sendable {
+}
+
 extension Theme {
     public func color(for token: ColorToken) -> Color {
         colors[keyPath: token]
