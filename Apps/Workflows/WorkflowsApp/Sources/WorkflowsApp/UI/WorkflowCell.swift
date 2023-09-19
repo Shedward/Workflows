@@ -19,19 +19,23 @@ struct WorkflowCell: View {
 
     var body: some View {
         SpacedHStack(alignment: .top) {
-            icon.font(\.body)
+            icon
+                .foregroundColor(\.content.primary)
+                .font(\.body)
             SpacedVStack(alignment: .leading) {
                 SpacedHStack {
                     Text(key)
+                        .foregroundColor(\.content.secondary)
                         .font(\.caption)
                     Spacer()
                     Text(state)
+                        .foregroundColor(\.content.primary)
                         .font(\.caption)
                 }
                 Text(name)
-                    .font(\.body)
                     .lineLimit(2)
-
+                    .foregroundColor(\.content.primary)
+                    .font(\.body)
             }
         }
         .spacedFrame(\.background.tertiary)
@@ -40,13 +44,14 @@ struct WorkflowCell: View {
 
 #Preview {
     SpacedVStack {
-        ForEach(0..<5) { _ in
+        ForEach(0..<3) { _ in
             WorkflowCell(
                 key: "PORTFOLIO-22623",
                 icon: Image(systemName: "briefcase"),
-                name: "Реализовать экран списка флоу длинное",
+                name: "Реализовать экран списка окна",
                 state: "В работе"
-            )        }
+            )
+        }
     }
     .spacedFrame(\.background.primary)
     .spacing(.s1)

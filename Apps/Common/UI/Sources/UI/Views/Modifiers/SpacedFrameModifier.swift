@@ -32,6 +32,5 @@ extension View {
     Text("Hello frame")
         .border(Color.blue)
         .spacedFrame(\.background.tertiary)
-        .spacedFrame(\.background.primary)
         .padding()
 }
