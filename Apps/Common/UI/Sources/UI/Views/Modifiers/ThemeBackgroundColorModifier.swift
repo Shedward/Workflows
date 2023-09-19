@@ -15,12 +15,14 @@ struct ThemeBackgroundColorModifier: ViewModifier {
     let colorToken: ColorToken
 
     func body(content: Content) -> some View {
-        content.backgroundStyle(theme.color(for: colorToken))
+        content
+            .background()
+            .backgroundStyle(theme.color(for: colorToken))
     }
 }
 
 public extension View {
-    func backgroundThemeColor(
+    func backgroundColor(
         _ colorToken: ColorToken
     ) -> some View {
         modifier(ThemeBackgroundColorModifier(colorToken: colorToken))
@@ -28,15 +30,7 @@ public extension View {
 }
 
 #Preview {
-    Spaced(background: \.accent) {
-        Spaced(background: \.background.tertiary) {
-            Spaced(background: \.background.secondary) {
-                Spaced(background: \.background.primary) {
-                    Rectangle()
-                        .frame(width: 64, height: 64)
-                        .foregroundThemeColor(\.accent)
-                }
-            }
-        }
-    }
+    Text("Hello")
+        .frame(width: 64, height: 64)
+        .backgroundColor(\.accent)
 }

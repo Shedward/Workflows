@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UI
 
 struct WorkflowCell: View {
     let key: String
@@ -13,43 +14,41 @@ struct WorkflowCell: View {
     let name: String
     let state: String
 
+    @Environment(\.spacing)
+    private var spacing: Spacing
+
     var body: some View {
-        HStack(alignment: .top) {
-            icon
-                .font(.caption)
-                .padding(.top, 8)
-            VStack(alignment: .leading) {
-                HStack {
+        SpacedHStack(alignment: .top) {
+            icon.font(\.body)
+            SpacedVStack(alignment: .leading) {
+                SpacedHStack {
                     Text(key)
-                        .font(.caption)
+                        .font(\.caption)
                     Spacer()
                     Text(state)
-                        .font(.caption)
+                        .font(\.caption)
                 }
                 Text(name)
+                    .font(\.body)
                     .lineLimit(2)
-                    .font(.body)
+
             }
         }
-        .padding(4)
+        .spacedFrame(\.background.tertiary)
     }
 }
 
 #Preview {
-    List {
-        WorkflowCell(
-            key: "PORTFOLIO-22623",
-            icon: Image(systemName: "briefcase"),
-            name: "Реализовать экран списка флоу",
-            state: "В работе"
-        )
-        WorkflowCell(
-            key: "PORTFOLIO-22623",
-            icon: Image(systemName: "suitcase"),
-            name: "Реализовать экран списка флоу",
-            state: "АБ-тестирование"
-        )
+    SpacedVStack {
+        ForEach(0..<5) { _ in
+            WorkflowCell(
+                key: "PORTFOLIO-22623",
+                icon: Image(systemName: "briefcase"),
+                name: "Реализовать экран списка флоу длинное",
+                state: "В работе"
+            )        }
     }
-    .listStyle(.plain)
+    .spacedFrame(\.background.primary)
+    .spacing(.s1)
     .frame(maxWidth: 300)
 }

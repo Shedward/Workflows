@@ -28,5 +28,7 @@ public extension View {
 
 #Preview {
     Text("Hello, world!")
+        .border(Color.blue)
         .spacedPadding()
+        .border(Color.red)
 }

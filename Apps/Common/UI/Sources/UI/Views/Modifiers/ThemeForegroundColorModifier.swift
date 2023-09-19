@@ -20,7 +20,7 @@ struct ThemeForegroundColorModifier: ViewModifier {
 }
 
 public extension View {
-    func foregroundThemeColor(_ colorToken: ColorToken) -> some View {
+    func foregroundColor(_ colorToken: ColorToken) -> some View {
         modifier(ThemeForegroundColorModifier(colorToken: colorToken))
     }
 }
@@ -28,11 +28,11 @@ public extension View {
 #Preview {
     VStack {
         Text("Accent")
-            .foregroundThemeColor(\.accent)
+            .foregroundColor(\.accent)
         Text("Positive")
-            .foregroundThemeColor(\.positive)
+            .foregroundColor(\.positive)
         Text("Negative")
-            .foregroundThemeColor(\.negative)
+            .foregroundColor(\.negative)
     }
     .padding()
 }

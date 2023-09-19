@@ -21,14 +21,13 @@ struct ThemeFontModifier: ViewModifier {
 }
 
 public extension View {
-    func themeFont(_ fontToken: FontToken) -> some View {
+    func font(_ fontToken: FontToken) -> some View {
         modifier(ThemeFontModifier(fontToken: fontToken))
     }
 }
 
 #Preview {
     Text("Hello, world!")
-        .backgroundStyle(ThemeColor(\.accent))
-        .themeFont(\.h2)
-        .theme(.system)
+        .font(\.body)
+        .spacedFrame(\.background.secondary)
 }

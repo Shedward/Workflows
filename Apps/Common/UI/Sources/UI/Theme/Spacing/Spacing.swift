@@ -7,27 +7,34 @@
 
 import SwiftUI
 
+public enum RelativeSpacing: Int {
+    case d4 = 4
+    case d3 = 3
+    case d2 = 2
+    case d1 = 1
+    case same = 0
+    case u1 = -1
+    case u2 = -2
+    case u3 = -3
+    case u4 = -4
+}
+
 public struct Spacing {
     public let value: CGFloat
 
     static let step: CGFloat = 6
 
-    public static let s0 = Spacing(value: 24)
-    public static let s1 = s0.down()
-    public static let s2 = s1.down()
-    public static let s3 = s2.down()
-    public static let s4 = s3.down()
+    public static let s0 = Spacing(value: 18)
+    public static let s1 = s0.relative(.d1)
+    public static let s2 = s0.relative(.d2)
+    public static let s3 = s0.relative(.d3)
+    public static let s4 = s0.relative(.d4)
 
     static let minimal = Spacing(value: 4)
 
-    public func down(_ steps: Int = 1) -> Spacing {
-        let nextValue = value - Spacing.step * CGFloat(steps)
+    public func relative(_ relative: RelativeSpacing) -> Spacing {
+        let nextValue = value - Spacing.step * CGFloat(relative.rawValue)
         return Spacing(value: max(nextValue, Spacing.minimal.value))
-    }
-
-    public func up(_ steps: Int = 1) -> Spacing {
-        let previousValue = value + Spacing.step * CGFloat(steps)
-        return Spacing(value: previousValue)
     }
 }
 

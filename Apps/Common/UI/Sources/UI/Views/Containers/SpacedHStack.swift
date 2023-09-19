@@ -14,41 +14,33 @@ public struct SpacedHStack<Content: View>: View {
 
     private let alignment: VerticalAlignment
     private let content: () -> Content
+    private let relativeSpacing: RelativeSpacing
 
     public init(
+        spacing: RelativeSpacing = .same,
         alignment: VerticalAlignment = .center,
         @ViewBuilder content: @escaping () -> Content
     ) {
+        self.relativeSpacing = spacing
         self.alignment = alignment
         self.content = content
     }
 
     public var body: some View {
-        HStack(alignment: alignment, spacing: spacing.value) {
+        HStack(
+            alignment: alignment,
+            spacing: spacing.relative(relativeSpacing).value
+        ) {
             content()
         }
     }
 }
 
 #Preview {
-    Spaced(background: \.positive) {
-        SpacedHStack {
-            SpacedItemPreview()
-            Spaced(background: \.negative) {
-                SpacedHStack {
-                    SpacedItemPreview()
-                    SpacedItemPreview()
-                    Spaced(background: \.special) {
-                        SpacedHStack {
-                            SpacedItemPreview()
-                            SpacedItemPreview()
-                            SpacedItemPreview()
-                        }
-                    }
-                }
-            }
-            SpacedItemPreview()
-            SpacedItemPreview()
-        }
+    SpacedHStack {
+        SpacedItemPreview()
+        SpacedItemPreview()
+        SpacedItemPreview()
     }
+    .spacedFrame(\.positive)
 }
