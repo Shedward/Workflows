@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UI
 
 public struct WorkflowsApp: App {
 
@@ -14,69 +15,36 @@ public struct WorkflowsApp: App {
 
     public var body: some Scene {
         MenuBarExtra {
-            VStack(alignment: .leading, spacing: 0) {
-                WorkflowCell(
-                    key: "PORTFOLIO-22623",
-                    icon: Image(systemName: "briefcase"),
-                    name: "Реализовать экран списка флоу",
-                    state: "В работе"
-                )
-                .padding(8)
-                .background(.blue.opacity(0.1))
-                List {
-                    Section("В работу") {
+            SpacedVStack {
+                ForEach(0..<2) { _ in
+                    WorkflowCell(
+                        key: "MOB-22623",
+                        icon: Image(systemName: "briefcase"), 
+                        statusIcon: nil,
+                        name: "Реализовать экран списка окна",
+                        state: "В работе"
+                    )
+                }
+                .spacing(.d1)
+
+                SpacedVStack {
+                    ForEach(0..<2) { _ in
                         WorkflowCell(
-                            key: "PORTFOLIO-22623", 
+                            key: "MOB-22623",
                             icon: Image(systemName: "briefcase"),
-                            name: "Реализовать экран списка флоу",
+                            statusIcon: nil,
+                            name: "Реализовать экран списка окна",
                             state: "В работе"
                         )
-                        WorkflowCell(
-                            key: "PORTFOLIO-22623",
-                            icon: Image(systemName: "briefcase"),
-                            name: "Реализовать экран списка флоу",
-                            state: "АБ-тестирование"
-                        )
-                    }
-                    Section("Ждем") {
-                        WorkflowCell(
-                            key: "MOB-22321",
-                            icon: Image(systemName: "eyes"),
-                            name: "Реализовать экран списка флоу",
-                            state: "Ревью"
-                        )
-                        WorkflowCell(
-                            key: "MOB-22321",
-                            icon: Image(systemName: "eyes"),
-                            name: "Реализовать экран списка флоу",
-                            state: "Ревью"
-                        )
-                        WorkflowCell(
-                            key: "MOB-22321",
-                            icon: Image(systemName: "eyes"),
-                            name: "Реализовать экран списка флоу",
-                            state: "Ревью"
-                        )
                     }
                 }
-                .listStyle(.plain)
-
-                HStack {
-                    Button("Quit") {
-                        NSApplication.shared.terminate(nil)
-                    }
-                    Spacer()
-                    Menu {
-                        Button("ToDo") { }
-                        Button("MOB") { }
-                        Button("Job interview") { }
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .menuStyle(.borderedButton)
-                }
-                .padding()
+                .spacedFrame(\.background.tertiary)
+                .spacing(.d2)
             }
+            .spacing(.s0)
+            .spacedPadding()
+            .backgroundColor(\.background.primary)
+            .frame(maxWidth: 300)
         } label: {
             HStack {
                 Image(systemName: "flowchart")

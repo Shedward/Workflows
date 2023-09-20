@@ -11,6 +11,7 @@ import UI
 struct WorkflowCell: View {
     let key: String
     let icon: Image
+    let statusIcon: Image?
     let name: String
     let state: String
 
@@ -19,9 +20,12 @@ struct WorkflowCell: View {
 
     var body: some View {
         SpacedHStack(alignment: .top) {
-            icon
-                .foregroundColor(\.content.primary)
-                .font(\.body)
+            SpacedVStack {
+                icon
+                    .foregroundColor(\.content.primary)
+                    .font(\.body)
+                statusIcon
+            }
             SpacedVStack(alignment: .leading) {
                 SpacedHStack {
                     Text(key)
@@ -36,6 +40,17 @@ struct WorkflowCell: View {
                     .lineLimit(2)
                     .foregroundColor(\.content.primary)
                     .font(\.body)
+                SpacedHStack {
+                    Spacer()
+                    Button("Отменить") {
+                    }
+                    .buttonStyle(.borderless)
+
+                    Button("Завершить") {
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(\.accent)
+                }
             }
         }
         .spacedFrame(\.background.tertiary)
@@ -44,16 +59,31 @@ struct WorkflowCell: View {
 
 #Preview {
     SpacedVStack {
-        ForEach(0..<3) { _ in
+        ForEach(0..<1) { _ in
             WorkflowCell(
-                key: "PORTFOLIO-22623",
-                icon: Image(systemName: "briefcase"),
-                name: "Реализовать экран списка окна",
+                key: "MOB-22623",
+                icon: Image(systemName: "briefcase"), 
+                statusIcon: nil,
+                name: "Реализовать экран списка окна с длинным названием",
                 state: "В работе"
             )
         }
+        .spacing(.d1)
+
+        SpacedVStack {
+            ForEach(0..<2) { _ in
+                WorkflowCell(
+                    key: "MOB-22623",
+                    icon: Image(systemName: "checkmark.rectangle"),
+                    statusIcon: nil,
+                    name: "Реализовать экран списка окна с длинным названием",
+                    state: "В работе"
+                )
+            }
+        }
+        .spacedFrame(\.background.tertiary)
+        .spacing(.d2)
     }
     .spacedFrame(\.background.primary)
-    .spacing(.s1)
     .frame(maxWidth: 300)
 }
