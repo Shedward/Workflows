@@ -9,6 +9,7 @@ import SwiftUI
 
 public struct Colors {
     public let content: ColorsByLevel
+    public let accessory: ColorsByLevel
     public let background: ColorsByLevel
     public let neutral: Color
     public let accent: Color

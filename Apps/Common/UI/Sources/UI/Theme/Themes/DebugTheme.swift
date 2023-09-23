@@ -14,6 +14,11 @@ extension Theme {
                 primary: Color(.blue),
                 secondary: Color(.blue.withAlphaComponent(0.5)),
                 tertiary: Color(.blue.withAlphaComponent(0.25))
+            ), 
+            accessory: ColorsByLevel(
+                primary: Color(.magenta),
+                secondary: Color(.magenta.withAlphaComponent(0.5)),
+                tertiary: Color(.magenta.withAlphaComponent(0.25))
             ),
             background: ColorsByLevel(
                 primary: Color(.orange),

@@ -14,6 +14,11 @@ extension Theme {
                 primary: Color(.labelColor),
                 secondary: Color(.secondaryLabelColor),
                 tertiary: Color(.tertiaryLabelColor)
+            ), 
+            accessory: .init(
+                primary: Color(.secondaryLabelColor),
+                secondary: Color(.tertiaryLabelColor),
+                tertiary: Color(.separatorColor)
             ),
             background: ColorsByLevel(
                 primary: Color(.textBackgroundColor),

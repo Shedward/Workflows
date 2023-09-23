@@ -40,17 +40,10 @@ struct WorkflowCell: View {
                     .lineLimit(2)
                     .foregroundColor(\.content.primary)
                     .font(\.body)
-                SpacedHStack {
-                    Spacer()
-                    Button("Отменить") {
-                    }
-                    .buttonStyle(.borderless)
-
-                    Button("Завершить") {
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundColor(\.accent)
-                }
+            }
+            VStack {
+                Image(systemName: "chevron.compact.right")
+                    .foregroundColor(\.accessory.primary)
             }
         }
         .spacedFrame(\.background.tertiary)
