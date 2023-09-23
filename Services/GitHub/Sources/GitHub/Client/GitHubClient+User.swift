@@ -18,8 +18,8 @@ extension GitHubClient {
 
 extension GitHubMock {
 
-    func setCurrentUser(_ userResponse: UserResponse) async {
-        await mockRestClient.addResponse(
+    func setCurrentUserResponse(_ userResponse: UserResponse) async {
+        await restClient.addResponse(
             for: RestRequestFilter<EmptyBody, UserResponse>(
                 method: .exact(.get),
                 path: .exact("/user")

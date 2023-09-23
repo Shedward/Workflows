@@ -12,7 +12,7 @@ extension JiraClient {
         let request = RestRequest<EmptyBody, IssueDetails<Fields>>(
             method: .get,
             path: "issue/\(key)",
-            query: RestQuery
+            query: RestQuery()
                 .set("fields", to: Fields.fieldsDescription)
         )
         return try await restClient.request(request)

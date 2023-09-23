@@ -10,12 +10,16 @@ import Foundation
 public struct ValueFilter<T> {
     let isMatching: (T) -> Bool
 
-    public init(isMatching: @escaping (T) -> Bool) {
+    init(isMatching: @escaping (T) -> Bool) {
         self.isMatching = isMatching
     }
 
     public func matching(_ value: T) -> Bool {
         isMatching(value)
+    }
+
+    public static func custom(_ isMatching: @escaping (T) -> Bool) -> ValueFilter {
+        ValueFilter(isMatching: isMatching)
     }
 }
 

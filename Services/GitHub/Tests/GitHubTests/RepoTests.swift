@@ -13,10 +13,10 @@ final class RepoTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
-        await mock.setRepo(
+        await mock.setRepoResponse(
             owner: "mockOwner",
             name: "Mock Repo",
-            repo: RepoResponse(id: 1, owner: "mockOwner", name: "Mock Repo", description: "mock description")
+            response: RepoResponse(id: 1, owner: "mockOwner", name: "Mock Repo", description: "mock description")
         )
         let repo = github.repo(owner: "mockOwner", name: "Mock Repo")
         XCTAssertEqual(repo.name, "Mock Repo")

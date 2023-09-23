@@ -19,9 +19,13 @@ struct Pagination {
 
 extension Pagination {
     func asRestQuery() -> RestQuery {
-        RestQuery
+        RestQuery()
             .set("per_page", to: perPage)
             .set("page", to: page)
+    }
+
+    static func restQueryKeys() -> [RestQuery.Key] {
+        ["per_page", "page"]
     }
 
     init?(restQuery: RestQuery) throws {

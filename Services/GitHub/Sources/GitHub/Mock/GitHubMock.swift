@@ -8,9 +8,9 @@
 import RestClient
 
 public struct GitHubMock {
-    let mockRestClient: MockRestClient
+    let restClient: MockRestClient
 
     public init() {
-        self.mockRestClient = MockRestClient()
+        self.restClient = MockRestClient()
     }
 }

@@ -16,6 +16,6 @@ extension GoogleDriveClient {
             body: createPermission
         )
 
-        try await client.request(request)
+        _ = try await restClient.request(request)
     }
 }

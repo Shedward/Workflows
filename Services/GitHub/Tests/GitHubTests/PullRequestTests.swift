@@ -10,13 +10,14 @@ import XCTest
 
 final class PullRequestTests: XCTestCase {
     func testGetPullRequests() async throws {
+
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
-        await mock.setPullRequests(
+        await mock.setPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
-            pullRequests: [
+            response: [
                 .init(id: 1, title: "Mock Pull Request To Mock Repo")
             ]
         )
@@ -28,11 +29,11 @@ final class PullRequestTests: XCTestCase {
         let firstPullRequest = try XCTUnwrap(allPullRequests.first)
         XCTAssertEqual(firstPullRequest.title, "Mock Pull Request To Mock Repo")
 
-        await mock.setPullRequests(
+        await mock.setPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
             forQuery: .init(state: .closed),
-            pullRequests: [
+            response: [
                 .init(id: 2, title: "First closed mock pull request"),
                 .init(id: 3, title: "Second closed mock pull request")
             ]

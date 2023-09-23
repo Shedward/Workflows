@@ -19,7 +19,7 @@ struct GoogleSheetsClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Accept", to: "application/json")
                         .set("Content-Type", to: "application/json")
                         .set("Authorization", to: "Bearer \(accessToken)")
@@ -36,7 +36,7 @@ struct GoogleSheetsClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Accept", to: "application/json")
                         .set("Content-Type", to: "application/json")
                 ),

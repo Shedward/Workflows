@@ -16,11 +16,11 @@ extension GoogleSheetsClient {
         let request = RestRequest<ValueRange, EmptyBody>(
             method: .put,
             path: "v4/spreadsheets/\(spreadsheetId)/values/\(valueRange.range)",
-            query: RestQuery
+            query: RestQuery()
                 .set("valueInputOption", to: stringInterpretation.rawValue),
             body: valueRange
         )
 
-        try await client.request(request)
+        _ = try await client.request(request)
     }
 }

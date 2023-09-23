@@ -15,7 +15,7 @@ final class GitHubClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Accept", to: "application/vnd.github+json")
                         .set("Authorization", to: "Bearer \(token)")
                         .set("X-GitHub-Api-Version", to: "2022-11-28")
@@ -25,6 +25,6 @@ final class GitHubClient {
     }
 
     init(mock: GitHubMock) {
-        restClient = mock.mockRestClient
+        restClient = mock.restClient
     }
 }

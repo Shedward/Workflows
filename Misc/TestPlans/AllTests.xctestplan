@@ -79,6 +79,13 @@
         "identifier" : "SecureStorageTests",
         "name" : "SecureStorageTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/..\/GoogleCloud",
+        "identifier" : "GoogleCloudTests",
+        "name" : "GoogleCloudTests"
+      }
     }
   ],
   "version" : 1

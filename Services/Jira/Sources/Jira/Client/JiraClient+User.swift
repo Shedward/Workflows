@@ -16,12 +16,12 @@ extension JiraClient {
     }
 
     func getUser(username: String) async throws -> UserResponse {
-        let request = getUserRequest(query: RestQuery.set("username", to: username))
+        let request = getUserRequest(query: RestQuery().set("username", to: username))
         return try await restClient.request(request)
     }
 
     func getUser(key: String) async throws -> UserResponse {
-        let request = getUserRequest(query: RestQuery.set("key", to: key))
+        let request = getUserRequest(query: RestQuery().set("key", to: key))
         return try await restClient.request(request)
     }
 

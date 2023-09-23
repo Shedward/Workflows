@@ -30,9 +30,9 @@ public struct ValueMockRequestHanlder<RequestBody, ResponseBody>: MockRequestHan
 
 extension MockRestClient {
     public func addResponse<RequestBody, ResponseBody>(
-        for requestFilter: RestRequestFilter<RequestBody, ResponseBody> = .any(),
+        for requestFilter: RestRequestFilter<RequestBody, ResponseBody>,
         response: ResponseBody
-    ) where RequestBody: RestBodyEncodable, RequestBody: RestBodyDecodable {
+    ) where RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodable {
         let handler = ValueMockRequestHanlder(requestFilter: requestFilter, response: response)
         addHandler(AnyMockRequestHandler(handler))
     }

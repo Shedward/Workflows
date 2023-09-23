@@ -19,6 +19,10 @@ let package = Package(
         .target(
             name: "GoogleCloud",
             dependencies: ["RestClient"]
-        )
+        ),
+        .testTarget(
+            name: "GoogleCloudTests",
+            dependencies: ["GoogleCloud"]
+        ),
     ]
 )

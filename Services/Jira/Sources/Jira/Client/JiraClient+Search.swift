@@ -15,7 +15,7 @@ extension JiraClient {
         let request = RestRequest<EmptyBody, PageResponse<IssueDetails<Fields>, IssuesPageDynamicKeys>>(
             method: .get,
             path: "/search",
-            query: RestQuery
+            query: RestQuery()
                 .set("jql", to: query.rawValue)
                 .set("fields", to: Fields.fieldsDescription)
                 .merging(with: pagination.asRestQuery())

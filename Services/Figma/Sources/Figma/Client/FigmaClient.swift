@@ -18,7 +18,7 @@ struct FigmaClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("X-FIGMA-TOKEN", to: token)
                 )
             ]

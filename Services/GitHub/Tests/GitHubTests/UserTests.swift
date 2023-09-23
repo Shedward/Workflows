@@ -13,7 +13,7 @@ final class UserTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
-        await mock.setCurrentUser(UserResponse(id: 1, login: "mock", name: "Mock"))
+        await mock.setCurrentUserResponse(UserResponse(id: 1, login: "mock", name: "Mock"))
         let currentUser = try await github.currentUser()
         XCTAssertEqual(currentUser.name, "Mock")
     }

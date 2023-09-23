@@ -27,7 +27,7 @@ let logger = Logger(scope: .demoApp)
 
 func testGitHub() async throws {
     let github = GitHub(token: try debugCredentials.githubToken())
-    let repo = try await github.repo(owner: "hhru", name: "ios-apps")
+    let repo = github.repo(owner: "hhru", name: "ios-apps")
 
     let oldestPullRequests = try await repo
         .pullRequests(query: .init(state: .opened, sorting: .init(sortBy: .created, direction: .descending)))

@@ -22,8 +22,12 @@ public struct Sorting<SortingKey> {
 
 extension Sorting where SortingKey: RawRepresentable, SortingKey.RawValue == String {
     func asRestQuery() -> RestQuery {
-        return RestQuery
+        return RestQuery()
             .set("sort", to: sortBy.rawValue)
             .set("direction", to: direction.rawValue)
+    }
+
+    static func restQueryKeys() -> Set<RestQuery.Key> {
+        ["sort", "direction"]
     }
 }

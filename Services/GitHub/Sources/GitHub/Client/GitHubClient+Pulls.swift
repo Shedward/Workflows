@@ -3,6 +3,7 @@
 //  Created by Vladislav Maltsev on 22.07.2023.
 //
 
+import Prelude
 import RestClient
 
 extension GitHubClient {
@@ -16,7 +17,7 @@ extension GitHubClient {
         let request = RestRequest<EmptyBody, ListBody<PullRequestResponse>>(
             method: .get,
             path: "/repos/\(owner)/\(repoName)/pulls",
-            query: RestQuery
+            query: RestQuery()
                 .merging(with: query.asRestQuery())
                 .merging(with: pagination?.asRestQuery())
         )
@@ -27,25 +28,25 @@ extension GitHubClient {
 
 extension GitHubMock {
 
-    func setPullRequests(
-        owner: String, 
+    func setPullRequestsResponse(
+        owner: String,
         repoName: String,
         forQuery query: PullRequest.Query = .init(),
-        pullRequests: [PullRequestResponse]
+        response: [PullRequestResponse]
     ) async {
         let filter = RestRequestFilter<EmptyBody, ListBody<PullRequestResponse>>(
             method: .exact(.get),
             path: .exact("/repos/\(owner)/\(repoName)/pulls"),
-            query: .contains(query.asRestQuery())
+            query: .exact(query.asRestQuery(), forKeys: PullRequest.Query.restQueryKeys())
         )
 
-        await mockRestClient.addHandler(for: filter) { request in
+        await restClient.addHandler(for: filter) { request in
             let pagination = try? Pagination(restQuery: request.query)
 
             let currentPage = pagination?.page ?? 0
 
             if currentPage == 0 {
-                return ListBody(items: pullRequests)
+                return ListBody(items: response)
             } else {
                 return ListBody(items: [])
             }

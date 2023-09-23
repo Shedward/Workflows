@@ -21,7 +21,7 @@ public struct AccessTokenAuthorizerRequestDecorator: RequestDecorator {
     ) async throws -> RestRequest<Request, Response> where Request : RestBodyEncodable, Response : RestBodyDecodable {
         let accessToken = try await authorizer.accessToken()
         var request = request
-        request.headers.merge(.set("Authorization", to: "Bearer \(accessToken)"))
+        request.headers.merge(RestHeaders().set("Authorization", to: "Bearer \(accessToken)"))
         return request
     }
 }

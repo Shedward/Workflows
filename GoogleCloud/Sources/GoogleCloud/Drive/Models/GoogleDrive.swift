@@ -16,6 +16,10 @@ public struct GoogleDrive {
         self.client = GoogleDriveClient(authorizer: authorizer)
     }
 
+    init(mock: GoogleDriveMock) {
+        self.client = GoogleDriveClient(mock: mock)
+    }
+
     public func createFile(_ createFile: CreateFile) async throws -> FileDetails {
         let createRequest = CreateFileRequest(createFile: createFile)
         let newFileResponse = try await client.createFile(createFile: createRequest)

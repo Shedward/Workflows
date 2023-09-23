@@ -20,7 +20,7 @@ struct AuthorizerRequestDecorator: RequestDecorator {
         let token = try authorizer.creds().token()
 
         var request = request
-        request.headers.merge(RestHeaders.set("Authorization", to: "Basic \(token)"))
+        request.headers.merge(RestHeaders().set("Authorization", to: "Basic \(token)"))
         return request
     }
 }

@@ -129,9 +129,10 @@ public actor GoogleAuthorizer {
         let request = RestRequest<UrlEncodedBody, AuthorizationRefreshTokenResponse>(
             method: .post,
             path: "/token",
-            headers: .set("Content-Type", to: "application/x-www-form-urlencoded"),
+            headers: RestHeaders()
+                .set("Content-Type", to: "application/x-www-form-urlencoded"),
             body: UrlEncodedBody(
-                query: RestQuery
+                query: RestQuery()
                     .set("code", to: confirmation.code)
                     .set("client_id", to: request.clientId)
                     .set("grant_type", to: "authorization_code")
@@ -149,9 +150,10 @@ public actor GoogleAuthorizer {
         let request = RestRequest<UrlEncodedBody, AuthorizationAccessTokenResponse>(
             method: .post,
             path: "/token",
-            headers: .set("Content-Type", to: "application/x-www-form-urlencoded"),
+            headers: RestHeaders()
+                .set("Content-Type", to: "application/x-www-form-urlencoded"),
             body: UrlEncodedBody(
-                query: RestQuery
+                query: RestQuery()
                     .set("client_id", to: request.clientId)
                     .set("grant_type", to: "refresh_token")
                     .set("refresh_token", to: refreshToken)

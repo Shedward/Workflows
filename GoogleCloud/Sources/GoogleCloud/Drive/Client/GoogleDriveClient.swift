@@ -9,17 +9,17 @@ import Foundation
 import RestClient
 
 struct GoogleDriveClient {
-    let client: RestClient
+    let restClient: RestClient
 
     init(accessToken: String) {
         let endpoint = RestEndpoint(
             host: URL(string: "https://www.googleapis.com/drive")!
         )
-        self.client = NetworkRestClient(
+        self.restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Accept", to: "application/json")
                         .set("Content-Type", to: "application/json")
                         .set("Authorization", to: "Bearer \(accessToken)")
@@ -32,16 +32,20 @@ struct GoogleDriveClient {
         let endpoint = RestEndpoint(
             host: URL(string: "https://www.googleapis.com/drive")!
         )
-        self.client = NetworkRestClient(
+        self.restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Accept", to: "application/json")
                         .set("Content-Type", to: "application/json")
                 ),
                 AccessTokenAuthorizerRequestDecorator(authorizer: authorizer)
             ]
         )
+    }
+
+    init(mock: GoogleDriveMock) {
+        self.restClient = mock.restClient
     }
 }

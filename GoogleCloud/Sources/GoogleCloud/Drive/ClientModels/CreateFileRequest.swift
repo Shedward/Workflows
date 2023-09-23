@@ -7,7 +7,7 @@
 
 import RestClient
 
-public struct CreateFileRequest: JSONEncodableBody {
+public struct CreateFileRequest: JSONEncodableBody, Equatable {
     let name: String
     let mimeType: String?
     let parents: [String]

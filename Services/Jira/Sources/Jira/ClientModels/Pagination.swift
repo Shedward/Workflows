@@ -12,7 +12,8 @@ struct Pagination {
 
 extension Pagination {
     func asRestQuery() -> RestQuery {
-        .set("startAt", to: pageSize * page)
-        .set("maxResults", to: pageSize)
+        RestQuery()
+            .set("startAt", to: pageSize * page)
+            .set("maxResults", to: pageSize)
     }
 }

@@ -5,11 +5,8 @@
 //  Created by v.maltsev on 23.09.2023.
 //
 
+import Prelude
 import os
-
-public enum MockrestClientError: Error {
-    case noHandlerForRequest
-}
 
 public actor MockRestClient: RestClient {
 
@@ -31,7 +28,10 @@ public actor MockRestClient: RestClient {
         }
 
         guard let handler = possibleHandlers.last else {
-            throw MockrestClientError.noHandlerForRequest
+            throw Failure("""
+            MockRestClient have no handler for request
+            \(request.description)
+            """)
         }
 
         logger.trace("→ (Mock) Begin \(request.shortDescription, privacy: .public)")

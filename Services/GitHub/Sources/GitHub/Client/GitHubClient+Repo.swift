@@ -18,13 +18,13 @@ extension GitHubClient {
 
 extension GitHubMock {
 
-    func setRepo(owner: String, name: String, repo: RepoResponse) async {
-        await mockRestClient.addResponse(
+    func setRepoResponse(owner: String, name: String, response: RepoResponse) async {
+        await restClient.addResponse(
             for: RestRequestFilter<EmptyBody, RepoResponse>(
                 method: .exact(.get),
                 path: .exact("/repos/\(owner)/\(name)")
             ),
-            response: repo
+            response: response
         )
     }
 }

@@ -49,10 +49,15 @@ extension PullRequest {
 
 extension PullRequest.Query {
     func asRestQuery() -> RestQuery {
-        RestQuery
+        RestQuery()
             .set("state", to: state?.rawValue ?? "all")
             .set("head", to: head?.rawValue)
             .set("base", to: base?.rawValue)
             .merging(with: sorting?.asRestQuery())
+    }
+
+    static func restQueryKeys() -> Set<RestQuery.Key> {
+        Set<RestQuery.Key>(["state", "head", "base"])
+            .union(Sorting<PullRequest.SortingKey>.restQueryKeys())
     }
 }

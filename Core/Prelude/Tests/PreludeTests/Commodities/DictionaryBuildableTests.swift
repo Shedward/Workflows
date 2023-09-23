@@ -19,7 +19,7 @@ final class DictionaryBuildableTests: XCTestCase {
     }
 
     func testSetters() {
-        let singleSetter = TestingDictionary.set("First", to: "FirstValue")
+        let singleSetter = TestingDictionary().set("First", to: "FirstValue")
 
         XCTAssertEqual(
             singleSetter,

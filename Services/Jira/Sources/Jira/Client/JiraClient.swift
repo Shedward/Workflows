@@ -20,7 +20,7 @@ final class JiraClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Authorization", to: "Basic \(jiraToken)")
                         .set("Content-Type", to: "application/json")
                 )
@@ -36,7 +36,7 @@ final class JiraClient {
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
-                    headers: RestHeaders
+                    headers: RestHeaders()
                         .set("Content-Type", to: "application/json")
                 ),
                 AuthorizerRequestDecorator(authorizer: authorizer)
