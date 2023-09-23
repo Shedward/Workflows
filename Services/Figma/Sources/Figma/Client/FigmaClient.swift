@@ -14,7 +14,7 @@ struct FigmaClient {
     init(token: String) {
         let endpoint = RestEndpoint(host: URL(string: "https://api.figma.com")!)
 
-        restClient = RestClient(
+        restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(

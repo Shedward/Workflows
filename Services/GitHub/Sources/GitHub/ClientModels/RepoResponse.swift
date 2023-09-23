@@ -22,6 +22,13 @@ struct RepoResponse: JSONDecodableBody {
         case login
     }
 
+    init(id: Int, owner: String, name: String, description: String) {
+        self.id = id
+        self.owner = owner
+        self.name = name
+        self.description = description
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(Int.self, forKey: .id)

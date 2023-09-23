@@ -30,9 +30,9 @@ public actor GoogleAuthorizer {
 
     private let expiringTimeBuffer: TimeInterval = 15
 
-    private lazy var restClient: RestClient = {
+    private lazy var restClient: NetworkRestClient = {
         let endpoint = RestEndpoint(host: URL(string: "https://oauth2.googleapis.com/")!)
-        let client = RestClient(endpoint: endpoint)
+        let client = NetworkRestClient(endpoint: endpoint)
         return client
     }()
 

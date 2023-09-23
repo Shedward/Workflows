@@ -15,3 +15,16 @@ extension GitHubClient {
         return try await restClient.request(request)
     }
 }
+
+extension GitHubMock {
+
+    func setRepo(owner: String, name: String, repo: RepoResponse) async {
+        await mockRestClient.addResponse(
+            for: RestRequestFilter<EmptyBody, RepoResponse>(
+                method: .exact(.get),
+                path: .exact("/repos/\(owner)/\(name)")
+            ),
+            response: repo
+        )
+    }
+}

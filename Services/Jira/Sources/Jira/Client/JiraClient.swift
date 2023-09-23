@@ -16,7 +16,7 @@ final class JiraClient {
     static func jiraServerClient(host: URL, credentials: JiraServerCredentials) throws -> JiraClient {
         let endpoint = RestEndpoint(host: host.appending(path: "/rest/api/2"))
         let jiraToken = try credentials.token()
-        let restClient = RestClient(
+        let restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
@@ -32,7 +32,7 @@ final class JiraClient {
 
     static func jiraServerClient(host: URL, authorizer: JiraAuthorizer) -> JiraClient {
         let endpoint = RestEndpoint(host: host.appending(path: "/rest/api/2"))
-        let restClient = RestClient(
+        let restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(

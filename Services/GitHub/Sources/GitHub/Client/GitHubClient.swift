@@ -11,7 +11,7 @@ final class GitHubClient {
 
     init(token: String) {
         let endpoint = RestEndpoint(host: URL(string: "https://api.github.com")!)
-        restClient = RestClient(
+        restClient = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
@@ -22,5 +22,9 @@ final class GitHubClient {
                 )
             ]
         )
+    }
+
+    init(mock: GitHubMock) {
+        restClient = mock.mockRestClient
     }
 }

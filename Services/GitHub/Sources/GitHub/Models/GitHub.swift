@@ -10,13 +10,16 @@ public struct GitHub {
         self.client = GitHubClient(token: token)
     }
 
+    init(mock: GitHubMock) {
+        self.client = GitHubClient(mock: mock)
+    }
+
     public func currentUser() async throws -> User {
         let userResponse = try await client.getCurrentUser()
         return User(userResponse: userResponse, client: client)
     }
 
-    public func repo(owner: String, name: String) async throws -> Repo {
-        let repoResponse = try await client.getRepo(owner: owner, name: name)
-        return Repo(response: repoResponse, client: client)
+    public func repo(owner: String, name: String) -> Repo {
+        Repo(owner: owner, name: name, client: client)
     }
 }

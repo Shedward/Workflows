@@ -15,3 +15,16 @@ extension GitHubClient {
         return try await restClient.request(request)
     }
 }
+
+extension GitHubMock {
+
+    func setCurrentUser(_ userResponse: UserResponse) async {
+        await mockRestClient.addResponse(
+            for: RestRequestFilter<EmptyBody, UserResponse>(
+                method: .exact(.get),
+                path: .exact("/user")
+            ),
+            response: userResponse
+        )
+    }
+}

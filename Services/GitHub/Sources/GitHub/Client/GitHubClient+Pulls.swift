@@ -24,3 +24,31 @@ extension GitHubClient {
         return response.items
     }
 }
+
+extension GitHubMock {
+
+    func setPullRequests(
+        owner: String, 
+        repoName: String,
+        forQuery query: PullRequest.Query = .init(),
+        pullRequests: [PullRequestResponse]
+    ) async {
+        let filter = RestRequestFilter<EmptyBody, ListBody<PullRequestResponse>>(
+            method: .exact(.get),
+            path: .exact("/repos/\(owner)/\(repoName)/pulls"),
+            query: .contains(query.asRestQuery())
+        )
+
+        await mockRestClient.addHandler(for: filter) { request in
+            let pagination = try? Pagination(restQuery: request.query)
+
+            let currentPage = pagination?.page ?? 0
+
+            if currentPage == 0 {
+                return ListBody(items: pullRequests)
+            } else {
+                return ListBody(items: [])
+            }
+        }
+    }
+}

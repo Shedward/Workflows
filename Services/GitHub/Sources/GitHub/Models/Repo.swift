@@ -6,19 +6,20 @@
 import RestClient
 
 public struct Repo {
-    public let id: Int
     public let owner: String
     public let name: String
-    public let description: String
 
     private let client: GitHubClient
 
-    init(response: RepoResponse, client: GitHubClient) {
-        self.id = response.id
-        self.owner = response.owner
-        self.name = response.name
-        self.description = response.description
+    init(owner: String, name: String, client: GitHubClient) {
+        self.owner = owner
+        self.name = name
         self.client = client
+    }
+
+    public func details() async throws -> RepoDetails {
+        let repoResponse = try await client.getRepo(owner: owner, name: name)
+        return RepoDetails(response: repoResponse, client: client)
     }
 
     public func pullRequests(query: PullRequest.Query = .init()) -> PaginatingList<PullRequest> {

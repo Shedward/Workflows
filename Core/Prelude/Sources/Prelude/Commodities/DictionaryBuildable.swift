@@ -54,3 +54,20 @@ extension DictionaryBuildable {
         values = values.merging(another.values, uniquingKeysWith: { $1 })
     }
 }
+
+extension DictionaryBuildable where Value: Equatable {
+
+    public func contains(_ another: Self) -> Bool {
+        for (key, value) in another.values {
+            guard let anotherValue = another.values[key] else {
+                return false
+            }
+
+            guard value == anotherValue else {
+                return false
+            }
+        }
+
+        return true
+    }
+}

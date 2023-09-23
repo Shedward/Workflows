@@ -15,7 +15,7 @@ struct GoogleSheetsClient {
         let endpoint = RestEndpoint(
             host: URL(string: "https://sheets.googleapis.com")!
         )
-        self.client = RestClient(
+        self.client = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
@@ -32,7 +32,7 @@ struct GoogleSheetsClient {
         let endpoint = RestEndpoint(
             host: URL(string: "https://sheets.googleapis.com")!
         )
-        self.client = RestClient(
+        self.client = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(

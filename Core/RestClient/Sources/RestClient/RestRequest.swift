@@ -53,7 +53,7 @@ public enum RestMethod: String {
     case put = "PUT"
 }
 
-public struct RestQuery {
+public struct RestQuery: Equatable, DictionaryBuildable {
     public var values: [String: String]
 
     public init(values: [String: String]) {
@@ -61,7 +61,7 @@ public struct RestQuery {
     }
 }
 
-extension RestQuery: DictionaryBuildable {
+extension RestQuery {
     public static func set(_ key: String, to value: Int?) -> Self {
         guard let value else {
             return Self()
@@ -76,10 +76,22 @@ extension RestQuery: DictionaryBuildable {
     }
 }
 
-public struct RestHeaders: DictionaryBuildable {
+extension ValueFilter where T == RestQuery {
+    public static func contains(_ query: RestQuery) -> ValueFilter {
+        ValueFilter { $0.contains(query) }
+    }
+}
+
+public struct RestHeaders: Equatable, DictionaryBuildable {
     public var values: [String: String]
 
     public init(values: [String: String]) {
         self.values = values
+    }
+}
+
+extension ValueFilter where T == RestHeaders {
+    public static func contains(_ query: RestHeaders) -> ValueFilter {
+        ValueFilter { $0.contains(query) }
     }
 }

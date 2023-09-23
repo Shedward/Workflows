@@ -15,7 +15,7 @@ struct GoogleDriveClient {
         let endpoint = RestEndpoint(
             host: URL(string: "https://www.googleapis.com/drive")!
         )
-        self.client = RestClient(
+        self.client = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
@@ -32,7 +32,7 @@ struct GoogleDriveClient {
         let endpoint = RestEndpoint(
             host: URL(string: "https://www.googleapis.com/drive")!
         )
-        self.client = RestClient(
+        self.client = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: [
                 HeadersRequestDecorator(
