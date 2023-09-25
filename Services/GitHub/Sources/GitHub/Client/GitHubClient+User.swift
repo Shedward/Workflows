@@ -18,7 +18,7 @@ extension GitHubClient {
 
 extension GitHubMock {
 
-    func setCurrentUserResponse(_ userResponse: UserResponse) async {
+    func setCurrentUserResponse(_ userResponse: Result<UserResponse, Error>) async {
         await restClient.addResponse(
             for: RestRequestFilter<EmptyBody, UserResponse>(
                 method: .exact(.get),

@@ -9,11 +9,11 @@ public struct ValueMockRequestHanlder<RequestBody, ResponseBody>: MockRequestHan
     where RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodable {
 
     private let requestFilter: RestRequestFilter<RequestBody, ResponseBody>
-    private let response: ResponseBody
+    private let response: Result<ResponseBody, Error>
 
     init(
         requestFilter: RestRequestFilter<RequestBody, ResponseBody> = .any(),
-        response: ResponseBody
+        response: Result<ResponseBody, Error>
     ) {
         self.requestFilter = requestFilter
         self.response = response
@@ -24,14 +24,14 @@ public struct ValueMockRequestHanlder<RequestBody, ResponseBody>: MockRequestHan
     }
 
     public func response(for request: RestRequest<RequestBody, ResponseBody>) throws -> ResponseBody {
-        response
+        try response.get()
     }
 }
 
 extension MockRestClient {
     public func addResponse<RequestBody, ResponseBody>(
         for requestFilter: RestRequestFilter<RequestBody, ResponseBody>,
-        response: ResponseBody
+        response: Result<ResponseBody, Error>
     ) where RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodable {
         let handler = ValueMockRequestHanlder(requestFilter: requestFilter, response: response)
         addHandler(AnyMockRequestHandler(handler))

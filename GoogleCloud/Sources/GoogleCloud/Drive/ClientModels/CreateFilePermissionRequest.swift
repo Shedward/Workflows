@@ -7,11 +7,18 @@
 
 import RestClient
 
-struct CreateFilePermissionRequest: JSONEncodableBody {
+struct CreateFilePermissionRequest: JSONEncodableBody, Equatable {
     var type: String
     var role: String
     var emailAddress: String?
     var domain: String?
+
+    init(type: String, role: String, emailAddress: String?, domain: String?) {
+        self.type = type
+        self.role = role
+        self.emailAddress = emailAddress
+        self.domain = domain
+    }
 
     init(createPermission: CreateFilePermission) {
         switch createPermission.group {

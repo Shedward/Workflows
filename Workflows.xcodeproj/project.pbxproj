@@ -36,6 +36,7 @@
 		E1B9C7942A8AB8F000CA22DF /* OAuthHelperApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = OAuthHelperApp; sourceTree = "<group>"; };
 		E1B9C7952A8AB97F00CA22DF /* OAuthHelperMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthHelperMain.swift; sourceTree = "<group>"; };
 		E1B9C7B52A8ABB0600CA22DF /* OAuthHelper.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = OAuthHelper.entitlements; sourceTree = "<group>"; };
+		E1C82DF62AC165A80047EA75 /* TestsPrelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = TestsPrelude; sourceTree = "<group>"; };
 		E1CCAE162A8B4BDA0035FEF7 /* OAuthHelper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "OAuthHelper-Info.plist"; sourceTree = "<group>"; };
 		E1E52A642A9D3A390088E996 /* LocalStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalStorage; sourceTree = "<group>"; };
 		E1E52A652A9D4F4F0088E996 /* HeadHunter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = HeadHunter; sourceTree = "<group>"; };
@@ -122,6 +123,7 @@
 		63C94D2B2A6B1AFE009AC8E4 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				E1C82DF62AC165A80047EA75 /* TestsPrelude */,
 				630A76872A6B1BFA0038E21A /* Prelude */,
 				63C94D2C2A6B1B3B009AC8E4 /* RestClient */,
 			);

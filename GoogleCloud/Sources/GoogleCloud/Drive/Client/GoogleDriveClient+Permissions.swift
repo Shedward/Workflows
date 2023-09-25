@@ -19,3 +19,16 @@ extension GoogleDriveClient {
         _ = try await restClient.request(request)
     }
 }
+
+extension GoogleDriveMock {
+
+    func setCreatePermissionResponse(fileId: String, createPermission: CreateFilePermissionRequest, response: Result<Void, Error>) async {
+        let filter = RestRequestFilter<CreateFilePermissionRequest, EmptyBody>(
+            method: .exact(.post),
+            path: .exact("/v3/files/\(fileId)/permissions"),
+            body: .exact(createPermission)
+        )
+        
+        await restClient.addResponse(for: filter, response: response.map { EmptyBody() })
+    }
+}

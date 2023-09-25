@@ -32,7 +32,7 @@ extension GitHubMock {
         owner: String,
         repoName: String,
         forQuery query: PullRequest.Query = .init(),
-        response: [PullRequestResponse]
+        response: Result<[PullRequestResponse], Error>
     ) async {
         let filter = RestRequestFilter<EmptyBody, ListBody<PullRequestResponse>>(
             method: .exact(.get),
@@ -46,7 +46,7 @@ extension GitHubMock {
             let currentPage = pagination?.page ?? 0
 
             if currentPage == 0 {
-                return ListBody(items: response)
+                return ListBody(items: try response.get())
             } else {
                 return ListBody(items: [])
             }
