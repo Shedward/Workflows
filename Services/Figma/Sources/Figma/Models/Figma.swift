@@ -12,6 +12,10 @@ public struct Figma {
         client = FigmaClient(token: token)
     }
 
+    init(mock: FigmaMock) {
+        client = FigmaClient(mock: mock)
+    }
+
     public func me() async throws -> User {
         let response = try await client.me()
         return User(response: response, client: client)

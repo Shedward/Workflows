@@ -45,4 +45,20 @@ struct CommentResponse: JSONDecodableBody {
         let nodeId = try clientMetaContainer?.decodeIfPresent(String.self, forKey: .nodeId)
         self.nodeId = nodeId
     }
+
+    init(
+        id: String,
+        parentId: String?,
+        nodeId: String?,
+        message: String,
+        createdAt: Date,
+        resolvedAt: Date?
+    ) {
+        self.id = id
+        self.parentId = parentId
+        self.nodeId = nodeId
+        self.message = message
+        self.createdAt = createdAt
+        self.resolvedAt = resolvedAt
+    }
 }

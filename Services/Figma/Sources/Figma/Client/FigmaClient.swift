@@ -24,4 +24,8 @@ struct FigmaClient {
             ]
         )
     }
+
+    init(mock: FigmaMock) {
+        restClient = mock.restClient
+    }
 }

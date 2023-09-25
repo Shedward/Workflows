@@ -16,7 +16,7 @@ public struct File {
     }
 
     public func comments() async throws -> [Comment] {
-        let response = try await client.comments(at: key)
+        let response = try await client.comments(fileKey: key)
         let comments = response.comments.map { commentResponse in
             Comment(response: commentResponse, client: client)
         }

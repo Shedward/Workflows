@@ -13,7 +13,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../Core/RestClient")
+        .package(path: "../Core/RestClient"),
+        .package(path: "../Core/TestsPrelude")
     ],
     targets: [
         .target(
@@ -22,7 +23,7 @@ let package = Package(
         ),
         .testTarget(
             name: "FigmaTests",
-            dependencies: ["Figma"]
+            dependencies: ["Figma", "TestsPrelude"]
         ),
     ]
 )

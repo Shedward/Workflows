@@ -18,3 +18,14 @@ extension FigmaClient {
         return try await restClient.request(request)
     }
 }
+
+extension FigmaMock {
+    func setMeResponse(response: Result<UserResponse, Error>) async {
+        let filter = RestRequestFilter<EmptyBody, UserResponse>(
+            method: .exact(.get),
+            path: .exact("/v1/me")
+        )
+
+        await restClient.addResponse(for: filter, response: response)
+    }
+}
