@@ -7,8 +7,8 @@
 
 import RestClient
 
-struct CreateSpreadsheetRequest: JSONEncodableBody {
-    struct Properties: JSONEncodableBody {
+struct CreateSpreadsheetRequest: JSONEncodableBody, Equatable {
+    struct Properties: JSONEncodableBody, Equatable {
         var title: String
         var locale: String
     }
@@ -20,5 +20,9 @@ struct CreateSpreadsheetRequest: JSONEncodableBody {
             title: createSpreadsheet.title,
             locale: createSpreadsheet.locale
         )
+    }
+
+    init(properties: Properties) {
+        self.properties = properties
     }
 }

@@ -10,7 +10,7 @@ public enum CellValueStringInterpretation: String, Sendable {
     case interpreted = "USER_ENTERED"
 }
 
-public enum CellValue: Codable, Sendable {
+public enum CellValue: Codable, Sendable, Equatable {
     case empty
     case string(String)
     case number(Double)

@@ -44,4 +44,8 @@ struct GoogleSheetsClient {
             ]
         )
     }
+
+    init(mock: GoogleSheetsMock) {
+        self.client = mock.restClient
+    }
 }

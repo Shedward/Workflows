@@ -24,3 +24,24 @@ extension GoogleSheetsClient {
         _ = try await client.request(request)
     }
 }
+
+extension GoogleSheetsMock {
+    func setUpdateValues(
+        spreadsheetId: String,
+        valueRange: ValueRange,
+        stringInterpretation: CellValueStringInterpretation,
+        response: Result<Void, Error>
+    ) async {
+        let filter = RestRequestFilter<ValueRange, EmptyBody>(
+            method: .exact(.put),
+            path: .exact("v4/spreadsheets/\(spreadsheetId)/values/\(valueRange.range)"),
+            query: .exact(
+                RestQuery()
+                    .set("valueInputOption", to: stringInterpretation.rawValue)
+            ),
+            body: .exact(valueRange)
+        )
+
+        await restClient.addResponse(for: filter, response: response.map { EmptyBody() })
+    }
+}

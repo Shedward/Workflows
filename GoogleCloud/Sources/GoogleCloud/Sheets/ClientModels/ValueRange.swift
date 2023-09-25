@@ -7,7 +7,7 @@
 
 import RestClient
 
-struct ValueRange: JSONCodableBody {
+struct ValueRange: JSONCodableBody, Equatable {
     var range: String
     var majorDimension: Dimension = .rows
     var values: [[CellValue]]

@@ -16,6 +16,10 @@ public struct GoogleSheets {
         self.client = GoogleSheetsClient(authorizer: authorizer)
     }
 
+    init(mock: GoogleSheetsMock) {
+        self.client = GoogleSheetsClient(mock: mock)
+    }
+
     public func spreadsheet(id: String) -> Spreadsheet {
         Spreadsheet(client: client, id: id)
     }

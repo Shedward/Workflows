@@ -17,4 +17,10 @@ struct SpreadsheetResponse: JSONDecodableBody {
     let spreadsheetId: String
     let spreadsheetUrl: String
     let properties: Properties
+
+    init(spreadsheetId: String, spreadsheetUrl: String, properties: Properties) {
+        self.spreadsheetId = spreadsheetId
+        self.spreadsheetUrl = spreadsheetUrl
+        self.properties = properties
+    }
 }
