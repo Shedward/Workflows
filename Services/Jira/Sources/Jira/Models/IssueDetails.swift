@@ -11,6 +11,12 @@ public struct IssueDetails<Fields>: JSONDecodableBody, Sendable where Fields: De
     public let id: String
     public let key: String
     public let fields: Fields
+    
+    init(id: String, key: String, fields: Fields) {
+        self.id = id
+        self.key = key
+        self.fields = fields
+    }
 
     internal enum CodingKeys: CodingKey {
         case id

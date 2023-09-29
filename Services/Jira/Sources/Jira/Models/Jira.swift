@@ -18,6 +18,10 @@ public struct Jira {
     public init(serverHost: URL, authorizer: JiraAuthorizer) {
         client = JiraClient.jiraServerClient(host: serverHost, authorizer: authorizer)
     }
+    
+    init(mock: JiraMock) {
+        client = JiraClient.mock(mock)
+    }
 
     public func currentUser() async throws -> User {
         let response = try await client.getCurrentUser()

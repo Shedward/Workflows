@@ -45,4 +45,8 @@ final class JiraClient {
 
         return JiraClient(restClient: restClient)
     }
+    
+    static func mock(_ mock: JiraMock) -> JiraClient {
+        return JiraClient(restClient: mock.restClient)
+    }
 }
