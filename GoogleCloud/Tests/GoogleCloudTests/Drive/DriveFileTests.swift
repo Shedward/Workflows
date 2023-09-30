@@ -22,7 +22,13 @@ final class DriveFileTests: XCTestCase {
 
         let file = try await drive.createFile(createFile)
         XCTAssertEqual(file.name, "MockFile.txt")
-
+    }
+    
+    func testCreateFileFailure() async throws {
+        let mock = GoogleDriveMock()
+        let drive = GoogleDrive(mock: mock)
+        
+        let createFile = CreateFile(name: "MockFile.txt")
         await mock.setCreateFileResponse(
             createFile: CreateFileRequest(createFile: createFile),
             response: .failure(MockFailure("Request failed"))
@@ -46,7 +52,12 @@ final class DriveFileTests: XCTestCase {
         let fileDetails = try await drive.file(id: "2").details()
         XCTAssertEqual(fileDetails.id, "2")
         XCTAssertEqual(fileDetails.name, "ExistingFile.txt")
-
+    }
+    
+    func testGetFileFailure() async throws {
+        let mock = GoogleDriveMock()
+        let drive = GoogleDrive(mock: mock)
+        
         await mock.setGetFileResponse(
             fileId: "2",
             fields: ["id", "name"],
@@ -72,6 +83,13 @@ final class DriveFileTests: XCTestCase {
         let copyFile = try await drive.file(id: "1").copy(to: CreateFile(name: "CopyFile.txt"))
         XCTAssertEqual(copyFile.id, "2")
         XCTAssertEqual(copyFile.name, "CopyFile.txt")
+    }
+    
+    func testCopyFailure() async throws {
+        let mock = GoogleDriveMock()
+        let drive = GoogleDrive(mock: mock)
+        
+        let createCopyFile = CreateFileRequest(createFile: CreateFile(name: "CopyFile.txt"))
 
         await mock.setCopyFileResponse(
             sourceId: "1",

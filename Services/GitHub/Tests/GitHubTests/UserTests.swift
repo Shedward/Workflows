@@ -17,7 +17,12 @@ final class UserTests: XCTestCase {
         await mock.setCurrentUserResponse(.success(UserResponse(id: 1, login: "mock", name: "Mock")))
         let currentUser = try await github.currentUser()
         XCTAssertEqual(currentUser.name, "Mock")
-
+    }
+    
+    func testGetUserFailure() async throws {
+        let mock = GitHubMock()
+        let github = GitHub(mock: mock)
+        
         await mock.setCurrentUserResponse(.failure(MockFailure("Failed request")))
 
         await XCTExpectAsyncThrow(MockFailure("Failed request")) {

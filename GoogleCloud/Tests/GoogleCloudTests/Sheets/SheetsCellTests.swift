@@ -23,7 +23,12 @@ final class SheetsCellTests: XCTestCase {
 
         let cells = googleSheets.spreadsheet(id: "mock").cells("M0")
         try await cells.update(to: .string("mock value"))
-
+    }
+    
+    func testUpdateValuesFailure() async throws {
+        let mock = GoogleSheetsMock()
+        let googleSheets = GoogleSheets(mock: mock)
+        
         await mock.setUpdateValues(
             spreadsheetId: "mock",
             valueRange: ValueRange(cell: "M0", value: .string("mock value")),
@@ -32,6 +37,7 @@ final class SheetsCellTests: XCTestCase {
         )
 
         await XCTExpectAsyncThrow(MockFailure("Failed request")) {
+            let cells = googleSheets.spreadsheet(id: "mock").cells("M0")
             try await cells.update(to: .string("mock value"))
         }
     }

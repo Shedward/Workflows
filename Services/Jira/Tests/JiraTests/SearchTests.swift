@@ -14,7 +14,6 @@ import os
 
 final class SearchTests: XCTestCase {
     func testSearch() async throws {
-        
         let mock = JiraMock()
         let jira = Jira(mock: mock)
         
@@ -30,6 +29,11 @@ final class SearchTests: XCTestCase {
         let results = try await jira.searchIssues(jql: "assignee = mock.user").allItems()
         XCTAssertEqual(results.count, 2)
         XCTAssertEqual(results.first?.key, "MOCK-1")
+    }
+    
+    func testSearchFailure() async throws {
+        let mock = JiraMock()
+        let jira = Jira(mock: mock)
         
         await mock.setGetSearchResultsResponse(
             query: "assignee = mock.user",

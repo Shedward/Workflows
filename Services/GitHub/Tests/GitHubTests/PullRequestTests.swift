@@ -11,7 +11,6 @@ import TestsPrelude
 
 final class PullRequestTests: XCTestCase {
     func testGetPullRequests() async throws {
-
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
@@ -29,7 +28,12 @@ final class PullRequestTests: XCTestCase {
         XCTAssertEqual(allPullRequests.count, 1)
         let firstPullRequest = try XCTUnwrap(allPullRequests.first)
         XCTAssertEqual(firstPullRequest.title, "Mock Pull Request To Mock Repo")
-
+    }
+    
+    func testGetPullRequestsWithParameters() async throws {
+        let mock = GitHubMock()
+        let github = GitHub(mock: mock)
+        
         await mock.setPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
@@ -40,11 +44,17 @@ final class PullRequestTests: XCTestCase {
             ])
         )
 
+        let repo = github.repo(owner: "MockOwner", name: "MockRepo")
         let closedPullRequests = try await repo.pullRequests(query: .init(state: .closed)).allItems()
         XCTAssertEqual(closedPullRequests.count, 2)
         let firstClosedPullRequest = try XCTUnwrap(closedPullRequests.first)
         XCTAssertEqual(firstClosedPullRequest.title, "First closed mock pull request")
-
+    }
+    
+    func testGetPullRequestsFailure() async throws {
+        let mock = GitHubMock()
+        let github = GitHub(mock: mock)
+        
         await mock.setPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
@@ -53,6 +63,7 @@ final class PullRequestTests: XCTestCase {
         )
 
         await XCTExpectAsyncThrow(MockFailure("Failed request")) {
+            let repo = github.repo(owner: "MockOwner", name: "MockRepo")
             _ = try await repo.pullRequests(query: .init(state: .closed)).allItems()
         }
     }

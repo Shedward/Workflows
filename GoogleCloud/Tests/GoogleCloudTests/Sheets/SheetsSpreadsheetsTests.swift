@@ -28,10 +28,15 @@ final class SheetsSpreadsheetsTests: XCTestCase {
                 )
             )
         )
+        
         let response = try await googleSheets.createSpreadsheet(createSpreadsheet)
-
         XCTAssertEqual(response.url, "https://mock.sheet.url")
-
+    }
+    
+    func testCreateSpreadsheetsFailure() async throws {
+        let mock = GoogleSheetsMock()
+        let googleSheets = GoogleSheets(mock: mock)
+        
         await mock.setCreateSpreadsheetResponse(
             createRequest: CreateSpreadsheetRequest(
                 properties: .init(title: "MockSheet", locale: Locale.current.identifier)
@@ -40,6 +45,7 @@ final class SheetsSpreadsheetsTests: XCTestCase {
         )
 
         await XCTExpectAsyncThrow(MockFailure("Failed request")) {
+            let createSpreadsheet = CreateSpreadsheet(title: "MockSheet")
             _ = try await googleSheets.createSpreadsheet(createSpreadsheet)
         }
     }

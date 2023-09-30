@@ -37,5 +37,21 @@ final class RepoTests: XCTestCase {
             _ = try await repo.details()
         }
     }
+    
+    func testGetRepoFailure() async throws {
+        let mock = GitHubMock()
+        let github = GitHub(mock: mock)
+        
+        await mock.setRepoResponse(
+            owner: "mockOwner",
+            name: "Mock Repo",
+            response: .failure(MockFailure("Failed request"))
+        )
+
+        await XCTExpectAsyncThrow(MockFailure("Failed request")) {
+            let repo = github.repo(owner: "mockOwner", name: "Mock Repo")
+            _ = try await repo.details()
+        }
+    }
 }
 

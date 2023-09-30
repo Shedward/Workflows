@@ -40,20 +40,24 @@ final class CommentsTests: XCTestCase {
             )
         )
 
-        let file = figma.file(key: "mock_file")
-
-        let comments = try await file.comments()
+        let comments = try await figma.file(key: "mock_file").comments()
         XCTAssertEqual(comments.count, 2)
         let firstComment = try XCTUnwrap(comments.first)
         XCTAssertEqual(firstComment.message, "Mock comment message")
+    }
+    
 
+    func testCommentsFailure() async throws {
+        let mock = FigmaMock()
+        let figma = Figma(mock: mock)
+        
         await mock.setCommentsResponse(
             fileKey: "mock_file",
             response: .failure(MockFailure("Failed request"))
         )
 
         await XCTExpectAsyncThrow(MockFailure("Failed request")) {
-            _ = try await file.comments()
+            _ = try await figma.file(key: "mock_file").comments()
         }
     }
 }

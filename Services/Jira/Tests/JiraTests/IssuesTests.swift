@@ -22,6 +22,11 @@ final class IssuesTests: XCTestCase {
         
         let issue = try await jira.issue(key: "mock-1")
         XCTAssertEqual(issue.key, issue.key)
+    }
+    
+    func testGetIssueFailure() async throws {
+        let mock = JiraMock()
+        let jira = Jira(mock: mock)
         
         await mock.setGetIssueResponse(
             key: "mock-1",

@@ -28,7 +28,12 @@ final class DrivePermissionsTests: XCTestCase {
         try await googleDrive.file(id: "mock-file")
             .permissions()
             .create(.init(group: .user(emailAddress: "mock@user.com"), role: .writer))
-
+    }
+    
+    func testCreatePermissionFailure() async throws {
+        let mock = GoogleDriveMock()
+        let googleDrive = GoogleDrive(mock: mock)
+        
         await mock.setCreatePermissionResponse(
             fileId: "mock-file",
             createPermission: CreateFilePermissionRequest(

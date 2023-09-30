@@ -19,7 +19,12 @@ final class UserTests: XCTestCase {
         )
         let myUser = try await figma.me()
         XCTAssertEqual(myUser.handle, "@mock_user")
-
+    }
+    
+    func testMeFailure() async throws {
+        let mock = FigmaMock()
+        let figma = Figma(mock: mock)
+        
         await mock.setMeResponse(
             response: .failure(MockFailure("Failed request"))
         )
