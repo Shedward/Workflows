@@ -19,15 +19,21 @@ public actor MockRestClient: RestClient {
     public func request<Request, Response>(
         _ request: RestRequest<Request, Response>
     ) async throws -> Response where Request : RestBodyEncodable, Response : RestBodyDecodable {
-        let possibleHandlers = handlers
-            .compactMap { $0 as? AnyMockRequestHandler<Request, Response> }
-            .filter { $0.shouldAcceptRequest(request) }
-
-        if possibleHandlers.count > 1 {
-            logger.warning("Found \(possibleHandlers.count, privacy: .public) hanlders, last one is selected")
+        var firstHandler: AnyMockRequestHandler<Request, Response>?
+        handlers = handlers.filter { handler in
+            guard firstHandler == nil else { return true }
+            if
+                let possibleHandler = handler as? AnyMockRequestHandler<Request, Response>,
+                possibleHandler.shouldAcceptRequest(request) 
+            {
+                firstHandler = possibleHandler
+                return false
+            } else {
+                return true
+            }
         }
 
-        guard let handler = possibleHandlers.last else {
+        guard let handler = firstHandler else {
             throw Failure("""
             MockRestClient have no handler for request
             \(request.description)

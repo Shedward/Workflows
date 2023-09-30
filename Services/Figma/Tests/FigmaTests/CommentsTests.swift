@@ -14,7 +14,7 @@ final class CommentsTests: XCTestCase {
         let mock = FigmaMock()
         let figma = Figma(mock: mock)
 
-        await mock.setCommentsResponse(
+        await mock.addCommentsResponse(
             fileKey: "mock_file",
             response: .success(
                 CommentsListResponse(
@@ -51,7 +51,7 @@ final class CommentsTests: XCTestCase {
         let mock = FigmaMock()
         let figma = Figma(mock: mock)
         
-        await mock.setCommentsResponse(
+        await mock.addCommentsResponse(
             fileKey: "mock_file",
             response: .failure(MockFailure("Failed request"))
         )

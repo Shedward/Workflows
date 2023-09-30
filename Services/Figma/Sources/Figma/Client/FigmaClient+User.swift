@@ -20,7 +20,7 @@ extension FigmaClient {
 }
 
 extension FigmaMock {
-    func setMeResponse(response: Result<UserResponse, Error>) async {
+    func addMeResponse(response: Result<UserResponse, Error>) async {
         let filter = RestRequestFilter<EmptyBody, UserResponse>(
             method: .exact(.get),
             path: .exact("/v1/me")

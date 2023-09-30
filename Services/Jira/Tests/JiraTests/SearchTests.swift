@@ -17,9 +17,10 @@ final class SearchTests: XCTestCase {
         let mock = JiraMock()
         let jira = Jira(mock: mock)
         
-        await mock.setGetSearchResultsResponse(
+        await mock.addGetSearchResultsResponse(
             query: "assignee = mock.user",
             fields: NoFields.self,
+            pagination: Pagination(page: 0, pageSize: 50),
             response: .success([
                 .init(id: "1", key: "MOCK-1", fields: NoFields()),
                 .init(id: "2", key: "MOCK-2", fields: NoFields())
@@ -35,9 +36,10 @@ final class SearchTests: XCTestCase {
         let mock = JiraMock()
         let jira = Jira(mock: mock)
         
-        await mock.setGetSearchResultsResponse(
+        await mock.addGetSearchResultsResponse(
             query: "assignee = mock.user",
             fields: NoFields.self,
+            pagination: Pagination(page: 0, pageSize: 50),
             response: .failure(MockFailure("Failed request"))
         )
         

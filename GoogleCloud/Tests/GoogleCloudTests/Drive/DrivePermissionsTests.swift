@@ -14,7 +14,7 @@ final class DrivePermissionsTests: XCTestCase {
         let mock = GoogleDriveMock()
         let googleDrive = GoogleDrive(mock: mock)
 
-        await mock.setCreatePermissionResponse(
+        await mock.addCreatePermissionResponse(
             fileId: "mock-file",
             createPermission: CreateFilePermissionRequest(
                 type: "user",
@@ -34,7 +34,7 @@ final class DrivePermissionsTests: XCTestCase {
         let mock = GoogleDriveMock()
         let googleDrive = GoogleDrive(mock: mock)
         
-        await mock.setCreatePermissionResponse(
+        await mock.addCreatePermissionResponse(
             fileId: "mock-file",
             createPermission: CreateFilePermissionRequest(
                 type: "user",

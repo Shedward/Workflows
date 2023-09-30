@@ -43,7 +43,7 @@ extension GoogleDriveClient {
 
 extension GoogleDriveMock {
     
-    func setCreateFileResponse(createFile: CreateFileRequest, response: Result<FileResponse, Error>) async {
+    func addCreateFileResponse(createFile: CreateFileRequest, response: Result<FileResponse, Error>) async {
         let filter = RestRequestFilter<CreateFileRequest, FileResponse>(
             method: .exact(.post),
             path: .exact("/v3/files"),
@@ -53,7 +53,7 @@ extension GoogleDriveMock {
         await restClient.addResponse(for: filter, response: response)
     }
 
-    func setGetFileResponse(fileId: String, fields: [String], response: Result<FileResponse, Error>) async {
+    func addGetFileResponse(fileId: String, fields: [String], response: Result<FileResponse, Error>) async {
         let filter = RestRequestFilter<EmptyBody, FileResponse>(
             method: .exact(.get),
             path: .exact("/v3/files/\(fileId)"),
@@ -63,7 +63,7 @@ extension GoogleDriveMock {
         await restClient.addResponse(for: filter, response: response)
     }
 
-    func setCopyFileResponse(sourceId: String, to createFile: CreateFileRequest, response: Result<FileResponse, Error>) async {
+    func addCopyFileResponse(sourceId: String, to createFile: CreateFileRequest, response: Result<FileResponse, Error>) async {
         let filter = RestRequestFilter<CreateFileRequest, FileResponse>(
             method: .exact(.post),
             path: .exact("/v3/files/\(sourceId)/copy"),

@@ -47,8 +47,8 @@ public struct Jira {
     }
 
     public func searchIssues<Fields: IssueFields>(jql: JQLQuery, fields: Fields.Type) -> PaginatingList<IssueWithFields<Fields>> {
-        PaginatingList { [client] page, pageSize in
-            let defaultPageSize = 50
+        let defaultPageSize: Int = 50
+        return PaginatingList(pageSize: defaultPageSize) { [client] page, pageSize in
             let pagination = Pagination(page: page, pageSize: pageSize ?? defaultPageSize)
             let issuesResponse = try await client.getSearchResults(query: jql, pagination: pagination, fields: fields)
             let issues = issuesResponse.map { issueResponse in

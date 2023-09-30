@@ -15,7 +15,7 @@ final class DriveFileTests: XCTestCase {
         let drive = GoogleDrive(mock: mock)
 
         let createFile = CreateFile(name: "MockFile.txt")
-        await mock.setCreateFileResponse(
+        await mock.addCreateFileResponse(
             createFile: CreateFileRequest(createFile: createFile), 
             response: .success(FileResponse(id: "1", name: "MockFile.txt", webViewLink: nil))
         )
@@ -29,7 +29,7 @@ final class DriveFileTests: XCTestCase {
         let drive = GoogleDrive(mock: mock)
         
         let createFile = CreateFile(name: "MockFile.txt")
-        await mock.setCreateFileResponse(
+        await mock.addCreateFileResponse(
             createFile: CreateFileRequest(createFile: createFile),
             response: .failure(MockFailure("Request failed"))
         )
@@ -43,7 +43,7 @@ final class DriveFileTests: XCTestCase {
         let mock = GoogleDriveMock()
         let drive = GoogleDrive(mock: mock)
 
-        await mock.setGetFileResponse(
+        await mock.addGetFileResponse(
             fileId: "2",
             fields: ["id", "name"],
             response: .success(FileResponse(id: "2", name: "ExistingFile.txt", webViewLink: nil))
@@ -58,7 +58,7 @@ final class DriveFileTests: XCTestCase {
         let mock = GoogleDriveMock()
         let drive = GoogleDrive(mock: mock)
         
-        await mock.setGetFileResponse(
+        await mock.addGetFileResponse(
             fileId: "2",
             fields: ["id", "name"],
             response: .failure(MockFailure("Request failed"))
@@ -74,7 +74,7 @@ final class DriveFileTests: XCTestCase {
         let drive = GoogleDrive(mock: mock)
 
         let createCopyFile = CreateFileRequest(createFile: CreateFile(name: "CopyFile.txt"))
-        await mock.setCopyFileResponse(
+        await mock.addCopyFileResponse(
             sourceId: "1",
             to: createCopyFile,
             response: .success(FileResponse(id: "2", name: "CopyFile.txt", webViewLink: nil))
@@ -91,7 +91,7 @@ final class DriveFileTests: XCTestCase {
         
         let createCopyFile = CreateFileRequest(createFile: CreateFile(name: "CopyFile.txt"))
 
-        await mock.setCopyFileResponse(
+        await mock.addCopyFileResponse(
             sourceId: "1",
             to: createCopyFile,
             response: .failure(MockFailure("Request failed"))

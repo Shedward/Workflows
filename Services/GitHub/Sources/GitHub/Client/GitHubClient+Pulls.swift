@@ -28,28 +28,48 @@ extension GitHubClient {
 
 extension GitHubMock {
 
-    func setPullRequestsResponse(
+    func addPullRequestsResponse(
+        owner: String,
+        repoName: String,
+        forQuery query: PullRequest.Query = .init(),
+        pagination: Pagination,
+        response: Result<[PullRequestResponse], Error>
+    ) async {
+        let firstPageFilter = RestRequestFilter<EmptyBody, ListBody<PullRequestResponse>>(
+            method: .exact(.get),
+            path: .exact("/repos/\(owner)/\(repoName)/pulls"),
+            query: .exact(
+                RestQuery()
+                    .merging(with: query.asRestQuery())
+                    .merging(with: pagination.asRestQuery())
+            )
+        )
+
+        await restClient.addResponse(for: firstPageFilter, response: response.map { ListBody(items: $0) })
+    }
+    
+    func addPullRequestsResponse(
         owner: String,
         repoName: String,
         forQuery query: PullRequest.Query = .init(),
         response: Result<[PullRequestResponse], Error>
     ) async {
-        let filter = RestRequestFilter<EmptyBody, ListBody<PullRequestResponse>>(
-            method: .exact(.get),
-            path: .exact("/repos/\(owner)/\(repoName)/pulls"),
-            query: .exact(query.asRestQuery(), forKeys: PullRequest.Query.restQueryKeys())
+        await addPullRequestsResponse(
+            owner: owner,
+            repoName: repoName,
+            forQuery: query,
+            pagination: Pagination(page: 0),
+            response: response
         )
-
-        await restClient.addHandler(for: filter) { request in
-            let pagination = try? Pagination(restQuery: request.query)
-
-            let currentPage = pagination?.page ?? 0
-
-            if currentPage == 0 {
-                return ListBody(items: try response.get())
-            } else {
-                return ListBody(items: [])
-            }
+        
+        if case .success = response {
+            await addPullRequestsResponse(
+                owner: owner,
+                repoName: repoName,
+                forQuery: query,
+                pagination: Pagination(page: 1),
+                response: .success([])
+            )
         }
     }
 }

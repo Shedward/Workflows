@@ -14,7 +14,7 @@ final class RepoTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
-        await mock.setRepoResponse(
+        await mock.addRepoResponse(
             owner: "mockOwner",
             name: "Mock Repo",
             response: .success(
@@ -27,7 +27,7 @@ final class RepoTests: XCTestCase {
         XCTAssertEqual(repoDetails.name, "Mock Repo")
         XCTAssertEqual(repoDetails.description, "mock description")
 
-        await mock.setRepoResponse(
+        await mock.addRepoResponse(
             owner: "mockOwner",
             name: "Mock Repo",
             response: .failure(MockFailure("Failed request"))
@@ -42,7 +42,7 @@ final class RepoTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
         
-        await mock.setRepoResponse(
+        await mock.addRepoResponse(
             owner: "mockOwner",
             name: "Mock Repo",
             response: .failure(MockFailure("Failed request"))

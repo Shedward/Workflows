@@ -39,6 +39,9 @@ public struct PaginatingList<Item> {
         if newItems.isEmpty {
             canLoadNextPage = false
         }
+        if let pageSize, newItems.count < pageSize {
+            canLoadNextPage = false
+        }
         currentPage += 1
     }
 

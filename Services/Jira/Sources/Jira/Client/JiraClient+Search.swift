@@ -4,6 +4,7 @@
 //
 
 import RestClient
+import Prelude
 
 extension JiraClient {
 
@@ -28,9 +29,10 @@ extension JiraClient {
 
 extension JiraMock {
     
-    func setGetSearchResultsResponse<Fields: IssueFields>(
+    func addGetSearchResultsResponse<Fields: IssueFields>(
         query: JQLQuery,
         fields: Fields.Type,
+        pagination: Pagination,
         response: Result<[IssueDetails<Fields>], Error>
     ) async {
         let filter = RestRequestFilter<EmptyBody, PageResponse<IssueDetails<Fields>, IssuesPageDynamicKeys>>(
@@ -39,8 +41,8 @@ extension JiraMock {
             query: .exact(
                 RestQuery()
                     .set("jql", to: query.rawValue)
-                    .set("fields", to: Fields.fieldsDescription),
-                forKeys: ["jql", "fields"]
+                    .set("fields", to: Fields.fieldsDescription)
+                    .merging(with: pagination.asRestQuery())
             )
         )
         
@@ -54,6 +56,32 @@ extension JiraMock {
                 maxResults: pagination?.pageSize ?? .max,
                 total: successResponse.count,
                 items: currentPage == 0 ? successResponse : []
+            )
+        }
+    }
+    
+    func addGetSearchResultsResponse<Fields: IssueFields>(
+        query: JQLQuery,
+        fields: Fields.Type,
+        pageSize: Int,
+        response: Result<[IssueDetails<Fields>], Error>
+    ) async {
+        switch response {
+        case .success(let success):
+            for page in success.chunked(into: pageSize) {
+                await addGetSearchResultsResponse(
+                    query: query,
+                    fields: fields,
+                    pagination: Pagination(page: 0, pageSize: pageSize),
+                    response: .success(page)
+                )
+            }
+        case .failure(let failure):
+            await addGetSearchResultsResponse(
+                query: query,
+                fields: fields,
+                pagination: Pagination(page: 0, pageSize: pageSize),
+                response: .failure(failure)
             )
         }
     }

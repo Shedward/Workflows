@@ -26,7 +26,7 @@ extension GoogleSheetsClient {
 }
 
 extension GoogleSheetsMock {
-    func setUpdateValues(
+    func addUpdateValues(
         spreadsheetId: String,
         valueRange: ValueRange,
         stringInterpretation: CellValueStringInterpretation,

@@ -14,7 +14,7 @@ final class SheetsCellTests: XCTestCase {
         let mock = GoogleSheetsMock()
         let googleSheets = GoogleSheets(mock: mock)
 
-        await mock.setUpdateValues(
+        await mock.addUpdateValues(
             spreadsheetId: "mock",
             valueRange: ValueRange(cell: "M0", value: .string("mock value")),
             stringInterpretation: .interpreted,
@@ -29,7 +29,7 @@ final class SheetsCellTests: XCTestCase {
         let mock = GoogleSheetsMock()
         let googleSheets = GoogleSheets(mock: mock)
         
-        await mock.setUpdateValues(
+        await mock.addUpdateValues(
             spreadsheetId: "mock",
             valueRange: ValueRange(cell: "M0", value: .string("mock value")),
             stringInterpretation: .interpreted,

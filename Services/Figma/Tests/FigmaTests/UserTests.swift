@@ -14,7 +14,7 @@ final class UserTests: XCTestCase {
         let mock = FigmaMock()
         let figma = Figma(mock: mock)
 
-        await mock.setMeResponse(
+        await mock.addMeResponse(
             response: .success(UserResponse(id: "1", email: "mock@mock.mock", handle: "@mock_user"))
         )
         let myUser = try await figma.me()
@@ -25,7 +25,7 @@ final class UserTests: XCTestCase {
         let mock = FigmaMock()
         let figma = Figma(mock: mock)
         
-        await mock.setMeResponse(
+        await mock.addMeResponse(
             response: .failure(MockFailure("Failed request"))
         )
 

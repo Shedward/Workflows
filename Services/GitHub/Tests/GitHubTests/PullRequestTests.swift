@@ -14,7 +14,7 @@ final class PullRequestTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
 
-        await mock.setPullRequestsResponse(
+        await mock.addPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
             response: .success([
@@ -34,7 +34,7 @@ final class PullRequestTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
         
-        await mock.setPullRequestsResponse(
+        await mock.addPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
             forQuery: .init(state: .closed),
@@ -55,7 +55,7 @@ final class PullRequestTests: XCTestCase {
         let mock = GitHubMock()
         let github = GitHub(mock: mock)
         
-        await mock.setPullRequestsResponse(
+        await mock.addPullRequestsResponse(
             owner: "MockOwner",
             repoName: "MockRepo",
             forQuery: .init(state: .closed),

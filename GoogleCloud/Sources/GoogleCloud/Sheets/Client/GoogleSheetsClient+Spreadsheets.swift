@@ -20,7 +20,7 @@ extension GoogleSheetsClient {
 }
 
 extension GoogleSheetsMock {
-    func setCreateSpreadsheetResponse(createRequest: CreateSpreadsheetRequest, response: Result<SpreadsheetResponse, Error>) async {
+    func addCreateSpreadsheetResponse(createRequest: CreateSpreadsheetRequest, response: Result<SpreadsheetResponse, Error>) async {
         let filter = RestRequestFilter<CreateSpreadsheetRequest, SpreadsheetResponse>(
             method: .exact(.post),
             path: .exact("/v4/spreadsheets"),

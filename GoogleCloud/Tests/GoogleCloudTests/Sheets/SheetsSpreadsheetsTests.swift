@@ -16,7 +16,7 @@ final class SheetsSpreadsheetsTests: XCTestCase {
 
         let createSpreadsheet = CreateSpreadsheet(title: "MockSheet")
 
-        await mock.setCreateSpreadsheetResponse(
+        await mock.addCreateSpreadsheetResponse(
             createRequest: CreateSpreadsheetRequest(
                 properties: .init(title: "MockSheet", locale: Locale.current.identifier)
             ),
@@ -37,7 +37,7 @@ final class SheetsSpreadsheetsTests: XCTestCase {
         let mock = GoogleSheetsMock()
         let googleSheets = GoogleSheets(mock: mock)
         
-        await mock.setCreateSpreadsheetResponse(
+        await mock.addCreateSpreadsheetResponse(
             createRequest: CreateSpreadsheetRequest(
                 properties: .init(title: "MockSheet", locale: Locale.current.identifier)
             ),

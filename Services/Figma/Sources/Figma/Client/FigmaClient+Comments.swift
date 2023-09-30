@@ -20,7 +20,7 @@ extension FigmaClient {
 }
 
 extension FigmaMock {
-    func setCommentsResponse(
+    func addCommentsResponse(
         fileKey: String,
         response: Result<CommentsListResponse, Error>
     ) async {

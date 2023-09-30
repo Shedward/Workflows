@@ -23,12 +23,12 @@ final class CreateDecompositionTableTests: XCTestCase {
             projectKey: "MOCK_PROJECT"
         )
         
-        await mocks.jira.setGetIssueResponse(
+        await mocks.jira.addGetIssueResponse(
             key: "PORTFOLIO-MOCK",
             fields: SummaryFields.self,
             response: .success(.init(id: "mock-1", key: "PORTFOLIO-MOCK", fields: SummaryFields(summary: "Implement mock")))
         )
-        await mocks.googleDrive.setCopyFileResponse(
+        await mocks.googleDrive.addCopyFileResponse(
             sourceId: "mock_template_file_id",
             to: CreateFileRequest(
                 createFile: .init(
@@ -44,24 +44,24 @@ final class CreateDecompositionTableTests: XCTestCase {
                 )
             )
         )
-        await mocks.googleSheets.setUpdateValues(
+        await mocks.googleSheets.addUpdateValues(
             spreadsheetId: "mock_decomposition_file_id",
             valueRange: ValueRange(cell: "TITLE_CELL", value: .string("PORTFOLIO-MOCK")),
             stringInterpretation: .interpreted,
             response: .success(())
         )
-        await mocks.googleSheets.setUpdateValues(
+        await mocks.googleSheets.addUpdateValues(
             spreadsheetId: "mock_decomposition_file_id",
             valueRange: ValueRange(cell: "PROJECT_KEY_CELL", value: .string("MOCK_PROJECT")),
             stringInterpretation: .interpreted,
             response: .success(())
         )
-        await mocks.googleDrive.setCreatePermissionResponse(
+        await mocks.googleDrive.addCreatePermissionResponse(
             fileId: "mock_decomposition_file_id",
             createPermission: CreateFilePermissionRequest(type: "anyone", role: "reader", emailAddress: nil, domain: nil),
             response: .success(())
         )
-        await mocks.googleDrive.setGetFileResponse(
+        await mocks.googleDrive.addGetFileResponse(
             fileId: "mock_decomposition_file_id",
             fields: ["id", "name", "webViewLink"],
             response: .success(

@@ -21,7 +21,7 @@ extension JiraClient {
 
 extension JiraMock {
     
-    func setGetIssueResponse<Fields: IssueFields>(key: String, fields: Fields.Type, response: Result<IssueDetails<Fields>, Error>) async {
+    func addGetIssueResponse<Fields: IssueFields>(key: String, fields: Fields.Type, response: Result<IssueDetails<Fields>, Error>) async {
         let filter = RestRequestFilter<EmptyBody, IssueDetails<Fields>>(
             method: .exact(.get),
             path: .exact("issue/\(key)"),
