@@ -39,11 +39,3 @@ extension PreparePullRequest: WorkflowAction {
         return Output(task: .init(issue: issue))
     }
 }
-
-private struct SummaryFields: IssueFields {
-    let summary: String
-    let issuelinks: CodableVoid
-    let status: CodableVoid
-
-    static let fieldKeys: [IssueFieldKey] = ["summary", "issuelinks", "issuetype", "status"]
-}

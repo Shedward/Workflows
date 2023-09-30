@@ -14,6 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core/Prelude"),
+        .package(path: "../Core/TestsPrelude"),
         .package(path: "../System/LocalStorage"),
         .package(path: "../System/SecureStorage"),
         .package(path: "../System/Git"),
@@ -30,6 +31,13 @@ let package = Package(
                 "Git",
                 "GoogleCloud",
                 "Jira"
+            ]
+        ),
+        .testTarget(
+            name: "HeadHunterTests",
+            dependencies: [
+                "HeadHunter",
+                "TestsPrelude"
             ]
         )
     ]

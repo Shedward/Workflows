@@ -86,6 +86,13 @@
         "identifier" : "GoogleCloudTests",
         "name" : "GoogleCloudTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/..\/Workflows\/HeadHunter",
+        "identifier" : "HeadHunterTests",
+        "name" : "HeadHunterTests"
+      }
     }
   ],
   "version" : 1

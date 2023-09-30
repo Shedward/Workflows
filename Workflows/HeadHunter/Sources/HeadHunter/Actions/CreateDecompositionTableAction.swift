@@ -41,7 +41,6 @@ extension CreateDecompositionTableAction: WorkflowAction {
     }
 
     public struct Output {
-        public let decompositionSpreadsheet: Spreadsheet
         public let decompositonUrl: String
     }
 
@@ -66,13 +65,12 @@ extension CreateDecompositionTableAction: WorkflowAction {
         }
 
         return Output(
-            decompositionSpreadsheet: spreadsheet,
             decompositonUrl: decompositionUrl
         )
     }
 }
 
-private struct SummaryFields: IssueFields {
+struct SummaryFields: IssueFields {
     let summary: String
 
     static var fieldKeys: [IssueFieldKey] {
