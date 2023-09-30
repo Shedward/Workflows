@@ -56,16 +56,16 @@ final class PaginatingListTests: XCTestCase {
         var paginatingList = testingPaginatingList()
 
         try await paginatingList.loadNextPage()
-        XCTAssertEqual(paginatingList.items, [1, 2, 3])
+        XCTAssertEqual(paginatingList.loadedItems, [1, 2, 3])
 
         try await paginatingList.loadNextPage()
-        XCTAssertEqual(paginatingList.items, [1, 2, 3, 4, 5, 6])
+        XCTAssertEqual(paginatingList.loadedItems, [1, 2, 3, 4, 5, 6])
 
         try await paginatingList.loadAll()
-        XCTAssertEqual(paginatingList.items, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        XCTAssertEqual(paginatingList.loadedItems, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
         try await paginatingList.reload()
-        XCTAssertEqual(paginatingList.items, [1, 2, 3])
+        XCTAssertEqual(paginatingList.loadedItems, [1, 2, 3])
     }
 
     func testPageSizeReshape() async throws {

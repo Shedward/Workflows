@@ -10,7 +10,7 @@ public struct PaginatingList<Item> {
     private var currentPage: Int
     private var canLoadNextPage: Bool
 
-    public private(set) var items: [Item] = []
+    public private(set) var loadedItems: [Item] = []
     private let pageSize: Int?
 
     public init(pageSize: Int? = nil, fetch: @escaping FetchBlock) {
@@ -21,7 +21,7 @@ public struct PaginatingList<Item> {
     }
 
     public mutating func reset() {
-        items = []
+        loadedItems = []
         currentPage = 0
         canLoadNextPage = true
     }
@@ -35,7 +35,7 @@ public struct PaginatingList<Item> {
         guard canLoadNextPage else { return }
 
         let newItems = try await page(currentPage, pageSize: pageSize)
-        items.append(contentsOf: newItems)
+        loadedItems.append(contentsOf: newItems)
         if newItems.isEmpty {
             canLoadNextPage = false
         }
@@ -43,7 +43,7 @@ public struct PaginatingList<Item> {
     }
 
     public mutating func loadAll(maxCount: Int = .max) async throws {
-        while canLoadNextPage && items.count < maxCount {
+        while canLoadNextPage && loadedItems.count < maxCount {
             try await loadNextPage()
         }
     }
@@ -55,7 +55,7 @@ public struct PaginatingList<Item> {
     public func allItems(maxCount: Int = .max) async throws -> [Item] {
         var list = self
         try await list.loadAll(maxCount: maxCount)
-        return list.items
+        return list.loadedItems
     }
 
     public func withPageSize(_ pageSize: Int?) -> PaginatingList<Item> {
@@ -69,7 +69,7 @@ public struct PaginatingList<Item> {
             return newOtherItems
         }
 
-        otherList.items = try items.map(transform)
+        otherList.loadedItems = try loadedItems.map(transform)
         otherList.currentPage = currentPage
         otherList.canLoadNextPage = canLoadNextPage
 

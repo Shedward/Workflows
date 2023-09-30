@@ -7,7 +7,7 @@ import os
 
 public extension Logger {
     static var defaultSubsystemPrefix: String = "me.shedward.workflows"
-    static var enabledScopes: [LoggerScope] = [.global]
+    static var enabledScopes: [LoggerScope] = [.global, LoggerScope(name: "Debug")]
 
     init(subsystem: String = defaultSubsystemPrefix, scope: LoggerScope) {
         if Logger.enabledScopes.contains(scope) {

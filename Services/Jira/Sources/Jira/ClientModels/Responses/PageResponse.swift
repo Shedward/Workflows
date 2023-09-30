@@ -17,6 +17,13 @@ struct PageResponse<Item, DynamicKeys>: JSONDecodableBody
     let maxResults: Int
     let total: Int
     let items: [Item]
+    
+    init(startAt: Int, maxResults: Int, total: Int, items: [Item]) {
+        self.startAt = startAt
+        self.maxResults = maxResults
+        self.total = total
+        self.items = items
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: ArbitraryCodingKey.self)

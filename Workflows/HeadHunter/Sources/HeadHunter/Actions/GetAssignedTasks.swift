@@ -32,7 +32,7 @@ extension GetAssignedTasks: WorkflowAction {
     public func perform(_ input: Void = ()) async throws -> Output {
         let query = JQLQuery(rawValue: "assignee = currentUser() AND type in (Task, Bug) AND statusCategory != Done")
 
-        let issues = try await deps.jira.searchIssues(jql: query, fields: TaskIssueFields.self)
+        let issues = deps.jira.searchIssues(jql: query, fields: TaskIssueFields.self)
         let tasks = issues.map(HeadHunter.Task.init)
 
         return Output(

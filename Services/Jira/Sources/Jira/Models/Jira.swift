@@ -43,10 +43,10 @@ public struct Jira {
     }
 
     public func searchIssues(jql: JQLQuery) async throws -> PaginatingList<Issue> {
-        try await searchIssues(jql: jql, fields: NoFields.self)
+        searchIssues(jql: jql, fields: NoFields.self)
     }
 
-    public func searchIssues<Fields: IssueFields>(jql: JQLQuery, fields: Fields.Type) async throws -> PaginatingList<IssueWithFields<Fields>> {
+    public func searchIssues<Fields: IssueFields>(jql: JQLQuery, fields: Fields.Type) -> PaginatingList<IssueWithFields<Fields>> {
         PaginatingList { [client] page, pageSize in
             let defaultPageSize = 50
             let pagination = Pagination(page: page, pageSize: pageSize ?? defaultPageSize)

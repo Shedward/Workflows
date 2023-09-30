@@ -7,6 +7,7 @@
 
 @testable import Jira
 import XCTest
+import TestsPrelude
 
 final class IssuesTests: XCTestCase {
     func testGetIssue() async throws {
@@ -21,5 +22,15 @@ final class IssuesTests: XCTestCase {
         
         let issue = try await jira.issue(key: "mock-1")
         XCTAssertEqual(issue.key, issue.key)
+        
+        await mock.setGetIssueResponse(
+            key: "mock-1",
+            fields: NoFields.self,
+            response: .failure(MockFailure("Failed request"))
+        )
+        
+        await XCTExpectAsyncThrow(MockFailure("Failed request")) {
+            _ = try await jira.issue(key: "mock-1")
+        }
     }
 }

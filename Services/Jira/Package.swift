@@ -14,6 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core/Prelude"),
+        .package(path: "../Core/TestsPrelude"),
         .package(path: "../Core/RestClient"),
         .package(path: "../System/SecureStorage"),
     ],
@@ -24,7 +25,7 @@ let package = Package(
         ),
         .testTarget(
             name: "JiraTests",
-            dependencies: ["Jira"]
+            dependencies: ["Jira", "TestsPrelude"]
         ),
     ]
 )

@@ -25,3 +25,36 @@ extension JiraClient {
         return response.items
     }
 }
+
+extension JiraMock {
+    
+    func setGetSearchResultsResponse<Fields: IssueFields>(
+        query: JQLQuery,
+        fields: Fields.Type,
+        response: Result<[IssueDetails<Fields>], Error>
+    ) async {
+        let filter = RestRequestFilter<EmptyBody, PageResponse<IssueDetails<Fields>, IssuesPageDynamicKeys>>(
+            method: .exact(.get),
+            path: .exact("/search"),
+            query: .exact(
+                RestQuery()
+                    .set("jql", to: query.rawValue)
+                    .set("fields", to: Fields.fieldsDescription),
+                forKeys: ["jql", "fields"]
+            )
+        )
+        
+        await restClient.addHandler(for: filter) { request in
+            let successResponse = try response.get()
+            let pagination = try? Pagination(restQuery: request.query)
+            let currentPage = pagination?.page ?? 0
+            
+            return PageResponse(
+                startAt: currentPage,
+                maxResults: pagination?.pageSize ?? .max,
+                total: successResponse.count,
+                items: currentPage == 0 ? successResponse : []
+            )
+        }
+    }
+}

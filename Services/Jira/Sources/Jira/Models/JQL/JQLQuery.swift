@@ -10,3 +10,9 @@ public struct JQLQuery {
         self.rawValue = rawValue
     }
 }
+
+extension JQLQuery: ExpressibleByStringLiteral {
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(rawValue: value)
+    }
+}

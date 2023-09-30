@@ -28,20 +28,20 @@ extension Pagination {
         ["per_page", "page"]
     }
 
-    init?(restQuery: RestQuery) throws {
+    init(restQuery: RestQuery) throws {
         guard let pageString = restQuery.values["page"] else {
             throw Failure("Not found required `page` in RestQuery")
         }
 
         guard let page = Int(pageString) else {
-            throw Failure("`page` is not a number in Rest Query")
+            throw Failure("`page` is not a number in RestQuery")
         }
 
         self.page = page
 
         if let perPageString = restQuery.values["per_page"] {
             guard let perPage = Int(perPageString) else {
-                throw Failure("`per_page` is not a number in Rest Query")
+                throw Failure("`per_page` is not a number in RestQuery")
             }
 
             self.perPage = perPage
