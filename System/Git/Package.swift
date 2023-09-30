@@ -13,7 +13,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../System/Executable")
+        .package(path: "../System/Executable"),
+        .package(path: "../Core/TestsPrelude")
     ],
     targets: [
         .target(
@@ -22,7 +23,7 @@ let package = Package(
         ),
         .testTarget(
             name: "GitTests",
-            dependencies: ["Git"]
+            dependencies: ["Git", "TestsPrelude"]
         ),
     ]
 )

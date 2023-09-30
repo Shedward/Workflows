@@ -31,8 +31,12 @@ public struct ExecutableTermination {
     public var isSuccessful: Bool {
         reason == .exit && status == 0
     }
+    
+    public static var successful: ExecutableTermination {
+        .init(reason: .exit, status: 0)
+    }
 
-    init(reason: Reason, status: Int32) {
+    public init(reason: Reason = .exit, status: Int32) {
         self.reason = reason
         self.status = status
     }

@@ -11,6 +11,6 @@ public struct GoogleDriveMock {
     let restClient: MockRestClient
 
     public init() {
-        self.restClient = MockRestClient()
+        self.restClient = MockRestClient("GoogleDrive")
     }
 }

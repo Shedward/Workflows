@@ -7,5 +7,4 @@ import Prelude
 
 public extension LoggerScope {
     static let network = LoggerScope(name: "Network")
-    static let mocks = LoggerScope(name: "Mocks")
 }

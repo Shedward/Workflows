@@ -10,10 +10,12 @@ import os
 
 public actor MockRestClient: RestClient {
 
+    private let label: StaticString
     private var handlers: [ErasedAnyMockRequestHandler] = []
-    private let logger = Logger(scope: .mocks)
+    private let logger = Logger(scope: .network)
 
-    public init() {
+    public init(_ label: StaticString) {
+        self.label = label
     }
 
     public func request<Request, Response>(
@@ -28,26 +30,26 @@ public actor MockRestClient: RestClient {
             {
                 firstHandler = possibleHandler
                 return false
-            } else {
-                return true
             }
+                
+            return true
         }
 
         guard let handler = firstHandler else {
             throw Failure("""
-            MockRestClient have no handler for request
+            MockRestClient(\(label)) have no handler for request
             \(request.description)
             """)
         }
 
-        logger.trace("→ (Mock) Begin \(request.shortDescription, privacy: .public)")
+        logger.trace("→ Mock(\(self.label) Begin \(request.shortDescription, privacy: .public)")
 
         do {
             let response = try handler.response(for: request)
 
             logger.trace(
             """
-            ← (Mock) Finished \(request, privacy: .public)
+            ← Mock(\(self.label) Finished \(request, privacy: .public)
             \(String(describing: response), privacy: .public)
             """
             )
@@ -56,7 +58,7 @@ public actor MockRestClient: RestClient {
         } catch {
             logger.error(
                 """
-                ← (Mock) Failed \(request.shortDescription, privacy: .public)
+                ← Mock(\(self.label) Failed \(request.shortDescription, privacy: .public)
 
                 Error:
                 \(error, privacy: .public)

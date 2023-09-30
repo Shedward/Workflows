@@ -11,9 +11,12 @@ import Foundation
 
 public struct Repository {
     private let git: Executable
+    
+    public let path: String
 
-    init(git: Executable) {
+    init(git: Executable, path: String) {
         self.git = git
+        self.path = path
     }
 
     public func currentBranch() async throws -> Ref {
@@ -28,6 +31,25 @@ public struct Repository {
     }
 
     public func push() async throws {
-        try await git.run("push")
+        try await git.run("push").finished()
+    }
+}
+
+extension GitMock {
+    func addCurrentBranch(workingDirectory: String, ref: Result<String, Error>) async {
+        let filter = MockExecutionFilter(
+            workingDirectory: .exact(workingDirectory),
+            arguments: .exact(["rev-parse", "--abbrev-ref", "HEAD"])
+        )
+        await executable.addOutput(filter: filter, result: ref)
+    }
+    
+    func addPush(workingDirectory: String, result: Result<Void, Error>) async {
+        let filter = MockExecutionFilter(
+            workingDirectory: .exact(workingDirectory),
+            arguments: .exact(["push"])
+        )
+        
+        await executable.addResult(filter: filter, result: result)
     }
 }

@@ -11,6 +11,6 @@ public struct GoogleSheetsMock {
     let restClient: MockRestClient
 
     public init() {
-        self.restClient = MockRestClient()
+        self.restClient = MockRestClient("GoogleSheets")
     }
 }

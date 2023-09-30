@@ -11,6 +11,6 @@ struct JiraMock {
     let restClient: MockRestClient
     
     init() {
-        self.restClient = MockRestClient()
+        self.restClient = MockRestClient("Jira")
     }
 }

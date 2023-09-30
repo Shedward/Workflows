@@ -11,6 +11,6 @@ struct FigmaMock {
     let restClient: MockRestClient
 
     init() {
-        self.restClient = MockRestClient()
+        self.restClient = MockRestClient("Figma")
     }
 }

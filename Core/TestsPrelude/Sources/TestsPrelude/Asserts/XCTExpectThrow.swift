@@ -19,6 +19,10 @@ public func XCTExpectThrow(
         try failingBlock()
         XCTFail("Expected throw, but no throws occured", file: file, line: line)
     } catch {
+        if expectedError == nil {
+            return
+        }
+
         guard
             let expectedError,
             let mockFailure = error as? MockFailure,

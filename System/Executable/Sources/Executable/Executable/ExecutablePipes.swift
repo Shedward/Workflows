@@ -17,7 +17,7 @@ public struct ExecutablePipes: Sendable {
     public var output: ExecutablePipe?
     public var error: ExecutablePipe?
 
-    init(
+    public init(
         input: ExecutablePipe? = FileHandle.standardInput,
         output: ExecutablePipe? = FileHandle.standardOutput,
         error: ExecutablePipe? = FileHandle.standardError
