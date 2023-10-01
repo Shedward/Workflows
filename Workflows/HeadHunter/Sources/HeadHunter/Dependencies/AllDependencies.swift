@@ -9,3 +9,4 @@ public typealias AllDependencies =
     ConfigStorageDependency
     & AllGoogleCloudDependencies
     & AllJiraDependencies
+    & GitDependency

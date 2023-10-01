@@ -9,6 +9,7 @@ import GoogleCloud
 import SecureStorage
 import LocalStorage
 import Jira
+import Git
 
 public struct NetworkDependencies: AllDependencies {
     public var configStorage: ConfigStorage
@@ -19,6 +20,8 @@ public struct NetworkDependencies: AllDependencies {
 
     public var jiraAuthorizer: JiraAuthorizer
     public var jira: Jira
+    
+    public var git: Git
 
     public init() throws {
         self.configStorage = FileConfigStorage()
@@ -35,6 +38,8 @@ public struct NetworkDependencies: AllDependencies {
         let jiraConfig = try configStorage.load(JiraConfig.self, at: "jira")
         self.jiraAuthorizer = JiraAuthorizer(credentialsStorage: secureStorage.accessor(for: .jira))
         self.jira = Jira(serverHost: jiraConfig.host, authorizer: jiraAuthorizer)
+        
+        self.git = Git()
     }
 }
 

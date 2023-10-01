@@ -9,4 +9,8 @@ import Foundation
 
 public struct MainRepositoryConfig: Decodable {
     public let repositoryPath: String
+    
+    public init(repositoryPath: String) {
+        self.repositoryPath = repositoryPath
+    }
 }

@@ -8,6 +8,7 @@
 import GoogleCloud
 import Jira
 import LocalStorage
+import Git
 
 public protocol GoogleDriveDependency {
     var googleDrive: GoogleDrive { get set }
@@ -40,4 +41,8 @@ public typealias AllJiraDependencies =
 
 public protocol ConfigStorageDependency {
     var configStorage: ConfigStorage { get set }
+}
+
+public protocol GitDependency {
+    var git: Git { get set }
 }
