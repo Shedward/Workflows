@@ -78,12 +78,12 @@ extension RestQuery {
     }
 }
 
-extension ValueFilter where T == RestQuery {
-    public static func contains(_ query: RestQuery) -> ValueFilter {
+extension Filter where T == RestQuery {
+    public static func contains(_ query: RestQuery) -> Filter {
         .custom { $0.contains(query) }
     }
 
-    public static func exact(_ query: RestQuery, forKeys keys: Set<RestQuery.Key>) -> ValueFilter {
+    public static func exact(_ query: RestQuery, forKeys keys: Set<RestQuery.Key>) -> Filter {
         .custom { $0.withKeys(keys) == query }
     }
 }
@@ -96,8 +96,8 @@ public struct RestHeaders: Equatable, DictionaryBuildable {
     }
 }
 
-extension ValueFilter where T == RestHeaders {
-    public static func contains(_ query: RestHeaders) -> ValueFilter {
+extension Filter where T == RestHeaders {
+    public static func contains(_ query: RestHeaders) -> Filter {
         .custom { $0.contains(query) }
     }
 }

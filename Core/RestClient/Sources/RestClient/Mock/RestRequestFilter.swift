@@ -8,18 +8,18 @@
 import Prelude
 
 public struct RestRequestFilter<RequestBody: RestBodyEncodable, ResponseBody: RestBodyDecodable> {
-    let method: ValueFilter<RestMethod>
-    let path: ValueFilter<String?>
-    let query: ValueFilter<RestQuery>
-    let headers: ValueFilter<RestHeaders>
-    let body: ValueFilter<RequestBody>
+    let method: Filter<RestMethod>
+    let path: Filter<String?>
+    let query: Filter<RestQuery>
+    let headers: Filter<RestHeaders>
+    let body: Filter<RequestBody>
 
     public init(
-        method: ValueFilter<RestMethod> = .any(),
-        path: ValueFilter<String?> = .any(),
-        query: ValueFilter<RestQuery> = .any(),
-        headers: ValueFilter<RestHeaders> = .any(),
-        body: ValueFilter<RequestBody> = .any()
+        method: Filter<RestMethod> = .any(),
+        path: Filter<String?> = .any(),
+        query: Filter<RestQuery> = .any(),
+        headers: Filter<RestHeaders> = .any(),
+        body: Filter<RequestBody> = .any()
     ) {
         self.method = method
         self.path = path

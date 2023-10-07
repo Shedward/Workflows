@@ -25,18 +25,18 @@ public struct MockExecutionContext: CustomStringConvertible {
 }
 
 public struct MockExecutionFilter {
-    var workingDirectory: ValueFilter<String?>
-    var arguments: ValueFilter<[String]>
-    var environment: ValueFilter<[String : String]>
+    var workingDirectory: Filter<String?>
+    var arguments: Filter<[String]>
+    var environment: Filter<[String : String]>
     
     public static func any() -> MockExecutionFilter {
         .init()
     }
     
     public init(
-        workingDirectory: ValueFilter<String?> = .any(),
-        arguments: ValueFilter<[String]> = .any(),
-        environment: ValueFilter<[String : String]> = .any()
+        workingDirectory: Filter<String?> = .any(),
+        arguments: Filter<[String]> = .any(),
+        environment: Filter<[String : String]> = .any()
     ) {
         self.workingDirectory = workingDirectory
         self.arguments = arguments
