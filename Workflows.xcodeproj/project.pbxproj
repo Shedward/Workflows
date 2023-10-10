@@ -16,6 +16,7 @@
 
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
+		6319CB132AD155B800F7A00E /* Workflows */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Workflows; sourceTree = "<group>"; };
 		63322F1A2A7512CF002CBC8C /* Git */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Git; sourceTree = "<group>"; };
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63A3111B2A877DE500A9642E /* Figma */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Figma; sourceTree = "<group>"; };
@@ -165,6 +166,7 @@
 		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
 			isa = PBXGroup;
 			children = (
+				6319CB132AD155B800F7A00E /* Workflows */,
 				E1E52A652A9D4F4F0088E996 /* HeadHunter */,
 			);
 			path = Workflows;
