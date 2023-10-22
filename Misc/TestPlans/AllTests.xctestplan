@@ -93,6 +93,13 @@
         "identifier" : "HeadHunterTests",
         "name" : "HeadHunterTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/..\/Workflows\/Workflows",
+        "identifier" : "WorkflowsTests",
+        "name" : "WorkflowsTests"
+      }
     }
   ],
   "version" : 1

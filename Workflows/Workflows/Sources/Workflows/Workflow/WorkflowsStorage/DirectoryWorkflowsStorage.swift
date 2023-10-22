@@ -80,6 +80,12 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         }.value
     }
     
+    public func stopWorkflow(_ id: WorkflowId) async throws {
+        try await Task(priority: .userInitiated) {
+            try fileManager.removeItem(at: workflowPath(id: id))
+        }.value
+    }
+    
     private func loadWorkflow(id: WorkflowId) throws -> Workflow {
         let workflowConfig = self.workflowConfig(id: id)
         let workflowDetails = try Failure.wrap("Reading workflow config at \(workflowConfig)") {

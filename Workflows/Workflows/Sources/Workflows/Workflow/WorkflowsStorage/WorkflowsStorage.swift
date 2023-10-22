@@ -15,4 +15,5 @@ public protocol WorkflowsStorage {
     func workflow(_ id: WorkflowId) async throws -> Workflow
     
     func startWorkflow(name: String) async throws -> Workflow
+    func stopWorkflow(_ workflow: WorkflowId) async throws
 }

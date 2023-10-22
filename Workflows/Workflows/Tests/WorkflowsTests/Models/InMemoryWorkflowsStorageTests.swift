@@ -1,5 +1,5 @@
 //
-//  DirectoryWorkflowsStorageTests.swift
+//  InMemoryWorkflowsStorageTests.swift
 //
 //
 //  Created by Vlad Maltsev on 23.10.2023.
@@ -8,20 +8,15 @@
 @testable import Workflows
 import XCTest
 
-final class DirectoryWorkflowsStorageTests: XCTestCase {
-    private var temporaryUrl: URL!
-    private var storage: DirectoryWorkflowsStorage!
+final class InMemoryWorkflowsStorageTests: XCTestCase {
+    private var storage: InMemoryWorkflowsStorage!
     
     override func setUp() async throws {
-        let directory = NSTemporaryDirectory()
-        temporaryUrl = URL(filePath: directory)
-            .appending(path: "DirectoryWorkflowsStorageTests-" + UUID().uuidString)
-        storage = DirectoryWorkflowsStorage(directory: temporaryUrl)
-        try FileManager.default.createDirectory(at: temporaryUrl, withIntermediateDirectories: true)
+        storage = InMemoryWorkflowsStorage()
     }
     
     override func tearDown() async throws {
-        temporaryUrl = nil
+        storage = nil
     }
     
     func testEmptyWorkflowStorage() async throws {
