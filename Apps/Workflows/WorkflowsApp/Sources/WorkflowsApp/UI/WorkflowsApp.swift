@@ -44,7 +44,6 @@ public struct WorkflowsApp: App {
             .spacing(.s0)
             .spacedPadding()
             .backgroundColor(\.background.primary)
-            .frame(maxWidth: 300)
         } label: {
             HStack {
                 Image(systemName: "flowchart")

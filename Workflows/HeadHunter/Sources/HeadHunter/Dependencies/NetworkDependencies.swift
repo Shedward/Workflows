@@ -12,7 +12,7 @@ import Jira
 import Git
 
 public struct NetworkDependencies: AllDependencies {
-    public var configStorage: ConfigStorage
+    public var configStorage: CodableStorage
 
     public var googleDrive: GoogleCloud.GoogleDrive
     public var googleSheets: GoogleCloud.GoogleSheets
@@ -24,7 +24,7 @@ public struct NetworkDependencies: AllDependencies {
     public var git: Git
 
     public init() throws {
-        self.configStorage = FileConfigStorage()
+        self.configStorage = DirectoryCodableStorage()
 
         let secureStorage = SecItemStorage<SecureStorageAccounts>(service: "me.workflows.Workflows")
 

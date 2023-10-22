@@ -84,7 +84,7 @@ func googleAuthorizer() throws -> GoogleAuthorizer {
     }
     
     let secureStorage = SecItemStorage<Accounts>(service: "me.workflows.OAuthHelper")
-    let configStorage = FileConfigStorage()
+    let configStorage = DirectoryCodableStorage()
     let authorizer = GoogleAuthorizer(
         request: try configStorage.load(at: "google-authorizer"),
         tokensStorage: secureStorage.accessor(for: .google)

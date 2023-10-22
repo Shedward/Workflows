@@ -40,7 +40,7 @@ public typealias AllJiraDependencies =
     & JiraAuthorizerDependency
 
 public protocol ConfigStorageDependency {
-    var configStorage: ConfigStorage { get set }
+    var configStorage: CodableStorage { get set }
 }
 
 public protocol GitDependency {

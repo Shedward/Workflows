@@ -20,8 +20,8 @@ final class Dependencies {
         SecItemStorage<Accounts>(service: "me.workflows.Workflows")
     }()
 
-    lazy var configStorage: ConfigStorage = {
-        FileConfigStorage()
+    lazy var configStorage: CodableStorage = {
+        DirectoryCodableStorage()
     }()
 
     lazy var googleAuthorizer: GoogleAuthorizer = {
