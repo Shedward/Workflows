@@ -100,6 +100,13 @@
         "identifier" : "WorkflowsTests",
         "name" : "WorkflowsTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/..\/System\/FileSystem",
+        "identifier" : "FileSystemTests",
+        "name" : "FileSystemTests"
+      }
     }
   ],
   "version" : 1
