@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Prelude
+import os
 
 enum InMemoryFileItem {
     case directory
@@ -16,11 +18,14 @@ enum InMemoryFileSystemError: Error {
     case fileNotFound
     case noDirectory
     case itemIsNotFile
+    case cantCreateFolder(Path)
 }
 
 public final class InMemoryFileSystem: FileSystem {
     
-    private var items: [Path: InMemoryFileItem]
+    var items: [Path: InMemoryFileItem]
+    
+    private let logger = Logger(scope: .debug)
     
     init(items: [Path: InMemoryFileItem] = [:]) {
         self.items = items
@@ -30,10 +35,15 @@ public final class InMemoryFileSystem: FileSystem {
         FileItem(fileSystem: self, path: path)
     }
     
-    public func items(at path: Path) throws -> [FileItem] {
-        items
+    public func items(in path: Path) throws -> [FileItem] {
+        let path = path.normalizeAsDirectory()
+        guard haveDirectory(at: path) else {
+            throw InMemoryFileSystemError.noDirectory
+        }
+        
+        return items
             .filter { key, _ in
-                key.string.starts(with: path.string)
+                key.dropLast() == path
             }
             .map { FileItem(fileSystem: self, path: $0.key) }
     }
@@ -50,6 +60,26 @@ public final class InMemoryFileSystem: FileSystem {
         items[path] = nil
     }
     
+    public func createDirectory(at path: Path) throws {
+        let components = path.string.split(separator: "/")
+        
+        for index in components.indices {
+            let pathString = components[...index].joined(separator: "/")
+            let subpath = Path("/" + pathString + "/")
+            if let item = items[subpath] {
+                switch item {
+                case .directory:
+                    continue
+                case .file:
+                    throw InMemoryFileSystemError.cantCreateFolder(subpath)
+                }
+            } else {
+                items[subpath] = .directory
+                logger.info("Created directory at \(subpath.string, privacy: .public)")
+            }
+        }
+    }
+    
     public func loadData(at path: Path) throws -> Data {
         guard let item = items[path] else {
             throw InMemoryFileSystemError.fileNotFound
@@ -63,20 +93,26 @@ public final class InMemoryFileSystem: FileSystem {
     }
     
     public func save(data: Data, at path: Path) throws {
-        guard haveDirectory(at: path) else {
+        guard haveDirectory(at: path.dropLast()) else {
             throw InMemoryFileSystemError.noDirectory
         }
         
         items[path] = .file(data)
     }
     
-    private func haveDirectory(at path: Path) -> Bool {
+    private func haveFile(at path: Path) -> Bool {
         if case .some(.file) = items[path] {
-            return false
+            true
+        } else {
+            false
         }
-        
-        return items.contains { key, item in
-            key.string.starts(with: path.string)
+    }
+    
+    private func haveDirectory(at path: Path) -> Bool {
+        if case .some(.directory) = items[path] {
+            true
+        } else {
+            false
         }
     }
 }

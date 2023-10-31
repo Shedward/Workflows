@@ -19,7 +19,7 @@ public struct Path: Hashable {
     }
     
     public init(_ path: String) {
-        url = URL(filePath: path)
+        url = URL(filePath: path).standardizedFileURL
     }
     
     public func appending(_ path: String) -> Path {
@@ -28,6 +28,10 @@ public struct Path: Hashable {
     
     public func dropLast() -> Path {
         Path(url: url.deletingLastPathComponent())
+    }
+    
+    func normalizeAsDirectory() -> Path {
+        Path(url: URL(filePath: url.path(), directoryHint: .isDirectory))
     }
 }
 

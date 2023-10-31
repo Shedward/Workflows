@@ -18,9 +18,9 @@ public final class FileManagerFileSystem: FileSystem {
         FileItem(fileSystem: self, path: path)
     }
     
-    public func items(at path: Path) throws -> [FileItem] {
-        try fileManager.contentsOfDirectory(at: path.url, includingPropertiesForKeys: nil).map { url in
-            item(at: Path(url: url))
+    public func items(in path: Path) throws -> [FileItem] {
+        try fileManager.contentsOfDirectory(at: url(path), includingPropertiesForKeys: nil).map { url in
+            item(at: self.path(url))
         }
     }
     
@@ -29,14 +29,26 @@ public final class FileManagerFileSystem: FileSystem {
     }
     
     public func deleteItem(at path: Path) throws {
-        try fileManager.removeItem(at: path.url)
+        try fileManager.removeItem(at: url(path))
+    }
+    
+    public func createDirectory(at path: Path) throws {
+        try fileManager.createDirectory(atPath: path.string, withIntermediateDirectories: true)
     }
     
     public func loadData(at path: Path) throws -> Data {
-        try Data(contentsOf: path.url)
+        try Data(contentsOf: url(path))
     }
     
     public func save(data: Data, at path: Path) throws {
-        try data.write(to: path.url)
+        try data.write(to: url(path))
+    }
+    
+    private func url(_ path: Path) -> URL {
+        URL(fileURLWithPath: path.string)
+    }
+    
+    private func path(_ url: URL) -> Path {
+        Path(url.path())
     }
 }
