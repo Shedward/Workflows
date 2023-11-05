@@ -10,8 +10,19 @@ import Foundation
 public final class FileManagerFileSystem: FileSystem {
     private let fileManager: FileManager
     
-    init(fileManager: FileManager = .default) {
+    public init(fileManager: FileManager = .default) {
         self.fileManager = fileManager
+    }
+    
+    public func homeDirectory() -> FileItem {
+        let path = Path(url: fileManager.homeDirectoryForCurrentUser)
+        return FileItem(fileSystem: self, path: path)
+    }
+    
+    public func temporaryDirectory() -> FileItem {
+        let directory = NSTemporaryDirectory()
+        let temporaryUrl = URL(filePath: directory)
+        return FileItem(fileSystem: self, path: Path(url: temporaryUrl))
     }
     
     public func item(at path: Path) -> FileItem {

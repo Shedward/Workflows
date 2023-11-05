@@ -40,3 +40,9 @@ extension Path: ExpressibleByStringLiteral {
         self.init(value)
     }
 }
+
+extension Path: CustomStringConvertible {
+    public var description: String {
+        "Path(\(string))"
+    }
+}

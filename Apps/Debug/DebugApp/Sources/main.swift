@@ -83,10 +83,10 @@ func googleAuthorizer() throws -> GoogleAuthorizer {
         case google
     }
     
+    let deps = try NetworkDependencies()
     let secureStorage = SecItemStorage<Accounts>(service: "me.workflows.OAuthHelper")
-    let configStorage = DirectoryCodableStorage()
     let authorizer = GoogleAuthorizer(
-        request: try configStorage.load(at: "google-authorizer"),
+        request: try deps.configStorage.load(at: "google-authorizer"),
         tokensStorage: secureStorage.accessor(for: .google)
     )
     return authorizer

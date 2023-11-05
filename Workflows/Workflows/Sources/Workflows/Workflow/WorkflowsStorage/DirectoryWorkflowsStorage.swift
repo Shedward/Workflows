@@ -6,13 +6,13 @@
 //
 
 import LocalStorage
+import FileSystem
 import Prelude
 import Foundation
 
 public class DirectoryWorkflowsStorage: WorkflowsStorage {
 
-    private let directory: URL
-    private let fileManager: FileManager
+    private let rootItem: FileItem
     private let formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
@@ -20,29 +20,28 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
     }()
     
     public var configs: CodableStorage {
-        DirectoryCodableStorage(at: directory.appending(component: ".configs"))
+        DirectoryCodableStorage(at: rootItem.appending(".config"))
     }
     
     public var sharedCache: WorkflowsCache {
         WorkflowsCache()
     }
     
-    public init(directory: URL, fileManager: FileManager = .default) {
-        self.directory = directory
-        self.fileManager = fileManager
+    public init(at rootItem: FileItem) {
+        self.rootItem = rootItem
     }
     
     public func workflows() async throws -> [Workflow] {
         try await Task(priority: .userInitiated) { () -> [Workflow] in
-            let content = try Failure.wrap("Extracting content of \(directory)") {
-                try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [], options: .skipsHiddenFiles)
+            let childs = try Failure.wrap("Extracting content of \(rootItem)") {
+                try rootItem.childs()
             }
             
-            let workflows = try content.compactMap { workflowPath -> Workflow? in
-                let id = WorkflowId(rawValue: workflowPath.lastPathComponent)
+            let workflows = try childs.compactMap { possibleWorkflowItem -> Workflow? in
+                let id = WorkflowId(rawValue: possibleWorkflowItem.name)
                 
                 let workflowConfig = self.workflowConfig(id: id)
-                guard fileManager.fileExists(atPath: workflowConfig.path()) else {
+                guard workflowConfig.isExists else {
                     return nil
                 }
                 return try loadWorkflow(id: id)
@@ -61,51 +60,50 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         try await Task(priority: .userInitiated) { () -> Workflow in
             let id = try firstFreeWorkflowId(name: name)
             
-            let workflowPath = self.workflowPath(id: id)
-            try Failure.wrap("Creating workflow directory at \(workflowPath)") {
-                try fileManager.createDirectory(at: workflowPath, withIntermediateDirectories: true)
+            let workflowItem = self.workflowItem(id: id)
+            try Failure.wrap("Creating workflow directory at \(workflowItem)") {
+                try workflowItem.createDirectory()
             }
             
             let workflowDetails = WorkflowDetails(id: id, name: name)
             let workflowConfig = self.workflowConfig(id: id)
             try Failure.wrap("Creating workflow config at \(workflowConfig)") {
-                let data = try JSONEncoder().encode(workflowDetails)
-                try data.write(to: workflowConfig)
+                try workflowConfig.save(workflowDetails)
             }
             
             return Workflow(
                 details: workflowDetails,
-                storage: DirectoryCodableStorage(at: workflowPath)
+                storage: DirectoryCodableStorage(at: workflowItem)
             )
         }.value
     }
     
     public func stopWorkflow(_ id: WorkflowId) async throws {
         try await Task(priority: .userInitiated) {
-            try fileManager.removeItem(at: workflowPath(id: id))
+            try workflowItem(id: id).delete()
         }.value
     }
     
     private func loadWorkflow(id: WorkflowId) throws -> Workflow {
         let workflowConfig = self.workflowConfig(id: id)
-        let workflowDetails = try Failure.wrap("Reading workflow config at \(workflowConfig)") {
-            let data = try Data(contentsOf: workflowConfig)
-            let workflowDetails = try JSONDecoder().decode(WorkflowDetails.self, from: data)
-            return workflowDetails
+        let workflowDetails: WorkflowDetails = try Failure.wrap(
+            "Reading workflow config at \(workflowConfig)"
+        ) {
+            try workflowConfig.load()
         }
         
         return Workflow(
             details: workflowDetails,
-            storage: DirectoryCodableStorage(at: workflowPath(id: id))
+            storage: DirectoryCodableStorage(at: workflowItem(id: id))
         )
     }
     
-    private func workflowPath(id: WorkflowId) -> URL {
-        directory.appending(path: id.rawValue)
+    private func workflowItem(id: WorkflowId) -> FileItem {
+        rootItem.appending(id.rawValue + "/")
     }
     
-    private func workflowConfig(id: WorkflowId) -> URL {
-        workflowPath(id: id).appending(path: "workflow.json")
+    private func workflowConfig(id: WorkflowId) -> FileItem {
+        workflowItem(id: id).appending("workflow.json")
     }
     
     private func firstFreeWorkflowId(name: String, maxRetries: Int = 10) throws -> WorkflowId {
@@ -113,7 +111,7 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         for index in 0..<maxRetries {
             let id = WorkflowId(name: name, suffix: "\(timestamp)-\(index)")
             
-            if !fileManager.fileExists(atPath: workflowPath(id: id).path()) {
+            if !workflowItem(id: id).isExists {
                 return id
             }
         }

@@ -13,12 +13,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../Core/Prelude")
+        .package(path: "../Core/Prelude"),
+        .package(path: "../System/FileSystem")
     ],
     targets: [
         .target(
             name: "LocalStorage",
-            dependencies: ["Prelude"]
+            dependencies: ["Prelude", "FileSystem"]
         ),
         .testTarget(
             name: "LocalStorageTests",

@@ -13,11 +13,15 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../Core/TestsPrelude")
+        .package(path: "../Core/TestsPrelude"),
+        .package(path: "../Core/Prelude")
     ],
     targets: [
         .target(
-            name: "FileSystem"
+            name: "FileSystem",
+            dependencies: [
+                "Prelude"
+            ]
         ),
         .testTarget(
             name: "FileSystemTests",

@@ -1,15 +1,16 @@
 //
-//  CachedTests.swift
+//  FileCacheStorageTests.swift
 //
 //
-//  Created by Vladislav Maltsev on 13.08.2023.
+//  Created by Vlad Maltsev on 05.11.2023.
 //
 
+@testable import FileSystem
 import XCTest
 import Prelude
+import TestsPrelude
 
-final class CachedTests: XCTestCase {
-
+final class FileCacheStorageTests: XCTestCase {
     private class NextNumberFetcher {
         var nextNumber: Int = 0
 
@@ -19,8 +20,10 @@ final class CachedTests: XCTestCase {
         }
     }
 
-    func testInMemoryBasicUsage() async throws {
-        let storage = AnyCacheStorage<Int>.inMemory
+    func testFileBasicUsage() async throws {
+        let fileSystem = InMemoryFileSystem()
+        let cacheFile = fileSystem.item(at: "/mock.json")
+        let storage = AnyCacheStorage<Int>.file(cacheFile)
         let fetcher = NextNumberFetcher()
         
         let cachedNumber = Cached<Int>(storage: storage) {

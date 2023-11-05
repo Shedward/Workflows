@@ -10,6 +10,7 @@ import SecureStorage
 import LocalStorage
 import Jira
 import Git
+import FileSystem
 
 public struct NetworkDependencies: AllDependencies {
     public var configStorage: CodableStorage
@@ -24,7 +25,8 @@ public struct NetworkDependencies: AllDependencies {
     public var git: Git
 
     public init() throws {
-        self.configStorage = DirectoryCodableStorage()
+        let fileSystem = FileManagerFileSystem()
+        self.configStorage = DirectoryCodableStorage(at: fileSystem.homeDirectory().appending(".workflows"))
 
         let secureStorage = SecItemStorage<SecureStorageAccounts>(service: "me.workflows.Workflows")
 

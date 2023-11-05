@@ -6,22 +6,19 @@
 //
 
 @testable import Workflows
+import FileSystem
 import XCTest
 
 final class DirectoryWorkflowsStorageTests: XCTestCase {
-    private var temporaryUrl: URL!
     private var storage: DirectoryWorkflowsStorage!
     
     override func setUp() async throws {
-        let directory = NSTemporaryDirectory()
-        temporaryUrl = URL(filePath: directory)
-            .appending(path: "DirectoryWorkflowsStorageTests-" + UUID().uuidString)
-        storage = DirectoryWorkflowsStorage(directory: temporaryUrl)
-        try FileManager.default.createDirectory(at: temporaryUrl, withIntermediateDirectories: true)
+        let fileSystem = InMemoryFileSystem()
+        storage = DirectoryWorkflowsStorage(at: fileSystem.rootItem)
     }
     
     override func tearDown() async throws {
-        temporaryUrl = nil
+        storage = nil
     }
     
     func testEmptyWorkflowStorage() async throws {
@@ -43,7 +40,6 @@ final class DirectoryWorkflowsStorageTests: XCTestCase {
         try await storage.stopWorkflow(w1.id)
         let workflowsAfterStop = try await storage.workflows()
         XCTAssertEqual(workflowsAfterStop.count, 2)
-        
     }
     
     func testWorkflowStorage() async throws {

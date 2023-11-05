@@ -9,7 +9,7 @@ import Foundation
 import Prelude
 import os
 
-enum InMemoryFileItem {
+public enum InMemoryFileItem {
     case directory
     case file(Data)
 }
@@ -25,9 +25,9 @@ public final class InMemoryFileSystem: FileSystem {
     
     var items: [Path: InMemoryFileItem]
     
-    private let logger = Logger(scope: .debug)
-    
-    init(items: [Path: InMemoryFileItem] = [:]) {
+    public init(items: [Path: InMemoryFileItem] = [:]) {
+        var items = items
+        items["/"] = .directory
         self.items = items
     }
     
@@ -57,7 +57,10 @@ public final class InMemoryFileSystem: FileSystem {
             throw InMemoryFileSystemError.fileNotFound
         }
         
-        items[path] = nil
+        items = items.filter { currentPath, _ in
+            !currentPath.string.starts(with: path.string) &&
+            currentPath != path
+        }
     }
     
     public func createDirectory(at path: Path) throws {
@@ -75,7 +78,6 @@ public final class InMemoryFileSystem: FileSystem {
                 }
             } else {
                 items[subpath] = .directory
-                logger.info("Created directory at \(subpath.string, privacy: .public)")
             }
         }
     }
