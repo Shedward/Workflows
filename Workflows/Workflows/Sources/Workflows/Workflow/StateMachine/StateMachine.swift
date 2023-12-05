@@ -15,7 +15,7 @@ public actor StateMachine<S: State> {
     public let id = UUID()
     public private(set) var state: S
     private let storage: ThrowingAccessor<S>
-    private let logger = Logger(scope: .debug)
+    private let logger = Logger(scope: .workflows)
     
     public init(initialState: S, storage: ThrowingAccessor<S>) {
         self.state = initialState

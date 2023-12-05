@@ -36,7 +36,7 @@ final class StateMachineTests: XCTestCase {
         XCTAssertEqual(currentState3.id, "Review")
         
         let anotherStateMachine = try await StateMachine<TaskState>(storage: storage.accessor(for: "task"))
-        let currentState4 = await stateMachine.state.description
+        let currentState4 = await anotherStateMachine.state.description
         XCTAssertEqual(currentState4.id, "Review")
     }
 }
