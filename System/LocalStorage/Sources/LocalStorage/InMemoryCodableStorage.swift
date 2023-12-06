@@ -28,4 +28,8 @@ public final class InMemoryCodableStorage: CodableStorage {
     public func save<T>(_ value: T, at key: String) throws where T : Encodable {
         stored[key] = value
     }
+    
+    public func exists(at key: String) -> Bool {
+        stored[key] != nil
+    }
 }

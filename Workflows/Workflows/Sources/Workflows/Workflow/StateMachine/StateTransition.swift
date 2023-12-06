@@ -28,6 +28,6 @@ public struct StateTransition<S: State>: Identifiable, CustomStringConvertible {
     }
     
     public var description: String {
-        "StateTransition<\(S.self)>(id: \(i)"
+        "StateTransition<\(S.self)>(id: \(id))"
     }
 }

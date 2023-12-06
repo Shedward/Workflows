@@ -11,9 +11,9 @@ public protocol WorkflowsStorage {
     var configs: CodableStorage { get }
     var sharedCache: WorkflowsCache { get }
     
-    func workflows() async throws -> [Workflow]
-    func workflow(_ id: WorkflowId) async throws -> Workflow
+    func workflows() async throws -> [AnyWorkflow]
+    func workflow(_ id: WorkflowId) async throws -> AnyWorkflow
     
-    func startWorkflow(name: String) async throws -> Workflow
+    func startWorkflow<S: State>(name: String, initialState: S) async throws -> AnyWorkflow
     func stopWorkflow(_ workflow: WorkflowId) async throws
 }

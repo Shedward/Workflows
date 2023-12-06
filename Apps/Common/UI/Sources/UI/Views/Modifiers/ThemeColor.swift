@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ThemeColor.swift
 //  
 //
 //  Created by v.maltsev on 16.09.2023.

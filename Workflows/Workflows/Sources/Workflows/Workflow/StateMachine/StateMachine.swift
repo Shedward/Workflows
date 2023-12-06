@@ -39,9 +39,9 @@ public actor StateMachine<S: State> {
         )
     }
     
-    public var transitions: [StateMachineTransition<S>] {
+    public var transitions: [StateTransition<S>] {
         state.description.transitions.map { transition in
-            StateMachineTransition(stateMachine: self, transition: transition)
+            StateTransition(stateMachine: self, transition: transition)
         }
     }
 }

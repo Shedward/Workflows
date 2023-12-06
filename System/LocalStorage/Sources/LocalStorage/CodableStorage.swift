@@ -10,6 +10,7 @@ import Foundation
 public protocol CodableStorage {
     func load<T: Decodable>(at key: String) throws -> T
     func save<T: Encodable>(_ value: T, at key: String) throws
+    func exists(at key: String) -> Bool
 }
 
 public extension CodableStorage {

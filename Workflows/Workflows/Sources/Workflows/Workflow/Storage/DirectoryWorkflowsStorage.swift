@@ -13,6 +13,7 @@ import Foundation
 public class DirectoryWorkflowsStorage: WorkflowsStorage {
 
     private let rootItem: FileItem
+    private let dynamicLoader: DynamicWorkflowLoader
     private let formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
@@ -27,37 +28,39 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         WorkflowsCache()
     }
     
-    public init(at rootItem: FileItem) {
+    public init(at rootItem: FileItem, dynamicLoader: DynamicWorkflowLoader) {
         self.rootItem = rootItem
+        self.dynamicLoader = dynamicLoader
     }
     
-    public func workflows() async throws -> [Workflow] {
-        try await Task(priority: .userInitiated) { () -> [Workflow] in
+    public func workflows() async throws -> [AnyWorkflow] {
+        try await Task(priority: .userInitiated) { () -> [AnyWorkflow] in
             let childs = try Failure.wrap("Extracting content of \(rootItem)") {
                 try rootItem.childs()
             }
             
-            let workflows = try childs.compactMap { possibleWorkflowItem -> Workflow? in
+            let workflows = try childs.compactMap { possibleWorkflowItem -> AnyWorkflow? in
                 let id = WorkflowId(rawValue: possibleWorkflowItem.name)
+                let possibleWorkflowStorage = DirectoryCodableStorage(at: possibleWorkflowItem)
                 
-                let workflowConfig = self.workflowConfig(id: id)
-                guard workflowConfig.isExists else {
+                guard possibleWorkflowStorage.exists(at: WorkflowKeys.workflow) else {
                     return nil
                 }
+                
                 return try loadWorkflow(id: id)
             }
             return workflows
         }.value
     }
     
-    public func workflow(_ id: WorkflowId) async throws -> Workflow {
-        try await Task(priority: .userInitiated) { () -> Workflow in
+    public func workflow(_ id: WorkflowId) async throws -> AnyWorkflow {
+        try await Task(priority: .userInitiated) { () -> AnyWorkflow in
             try loadWorkflow(id: id)
         }.value
     }
     
-    public func startWorkflow(name: String) async throws -> Workflow {
-        try await Task(priority: .userInitiated) { () -> Workflow in
+    public func startWorkflow<S>(name: String, initialState: S) async throws -> AnyWorkflow where S : State {
+        try await Task(priority: .userInitiated) { () -> AnyWorkflow in
             let id = try firstFreeWorkflowId(name: name)
             
             let workflowItem = self.workflowItem(id: id)
@@ -65,16 +68,14 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
                 try workflowItem.createDirectory()
             }
             
-            let workflowDetails = WorkflowDetails(id: id, name: name)
-            let workflowConfig = self.workflowConfig(id: id)
-            try Failure.wrap("Creating workflow config at \(workflowConfig)") {
-                try workflowConfig.save(workflowDetails)
+            let storage = DirectoryCodableStorage(at: workflowItem)
+            let details = WorkflowDetails(id: id, type: WorkflowType(S.self), name: name)
+            
+            let workflow = try Failure.wrap("Creating workflow config at \(details)") {
+                try Workflow.create(details: details, initialState: initialState, storage: storage)
             }
             
-            return Workflow(
-                details: workflowDetails,
-                storage: DirectoryCodableStorage(at: workflowItem)
-            )
+            return workflow.asAny()
         }.value
     }
     
@@ -83,27 +84,16 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
             try workflowItem(id: id).delete()
         }.value
     }
-    
-    private func loadWorkflow(id: WorkflowId) throws -> Workflow {
-        let workflowConfig = self.workflowConfig(id: id)
-        let workflowDetails: WorkflowDetails = try Failure.wrap(
-            "Reading workflow config at \(workflowConfig)"
-        ) {
-            try workflowConfig.load()
-        }
-        
-        return Workflow(
-            details: workflowDetails,
-            storage: DirectoryCodableStorage(at: workflowItem(id: id))
-        )
+
+    private func loadWorkflow(id: WorkflowId) throws -> AnyWorkflow {
+        let storage = DirectoryCodableStorage(at: workflowItem(id: id))
+        let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
+        let workflow = try dynamicLoader.load(details: details, from: storage)
+        return workflow
     }
     
     private func workflowItem(id: WorkflowId) -> FileItem {
         rootItem.appending(id.rawValue + "/")
-    }
-    
-    private func workflowConfig(id: WorkflowId) -> FileItem {
-        workflowItem(id: id).appending("workflow.json")
     }
     
     private func firstFreeWorkflowId(name: String, maxRetries: Int = 10) throws -> WorkflowId {

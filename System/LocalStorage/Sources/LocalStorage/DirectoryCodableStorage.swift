@@ -29,6 +29,10 @@ public struct DirectoryCodableStorage: CodableStorage {
         try fileItem.save(value, encoder: encoder)
     }
     
+    public func exists(at key: String) -> Bool {
+        item(at: key).isExists
+    }
+    
     private func item(at key: String) -> FileItem {
         directory.appending(key + ".json")
     }

@@ -1,8 +1,13 @@
 //
-//  File.swift
-//  
+//  AnyWorkflowLoader.swift
+//
 //
 //  Created by Vlad Maltsev on 06.12.2023.
 //
 
-import Foundation
+import LocalStorage
+
+public protocol AnyWorkflowLoader {
+    var type: WorkflowType { get }
+    func load(from storage: CodableStorage) throws -> AnyWorkflow
+}
