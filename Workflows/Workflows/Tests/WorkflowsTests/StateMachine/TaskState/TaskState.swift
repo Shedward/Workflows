@@ -8,6 +8,9 @@
 import Workflows
 
 enum TaskState: State {
+    
+    typealias Dependencies = Void
+    
     case todo(ToDo)
     case inProgress(InProgress)
     case review(Review)

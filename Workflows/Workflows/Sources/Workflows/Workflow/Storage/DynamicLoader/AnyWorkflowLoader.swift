@@ -9,5 +9,5 @@ import LocalStorage
 
 public protocol AnyWorkflowLoader {
     var type: WorkflowType { get }
-    func load(from storage: CodableStorage) throws -> AnyWorkflow
+    func load<Dependencies>(from storage: CodableStorage, dependencies: Dependencies) throws -> AnyWorkflow
 }

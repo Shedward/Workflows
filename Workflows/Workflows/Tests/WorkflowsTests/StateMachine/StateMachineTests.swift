@@ -14,7 +14,7 @@ final class StateMachineTests: XCTestCase {
     func testBasicUsage() async throws {
         let storage = InMemoryCodableStorage()
         let initialState = TaskState.todo(.init(id: "mock"))
-        let stateMachine = StateMachine(initialState: initialState, storage: storage.accessor(for: "task"))
+        let stateMachine = StateMachine(initialState: initialState, storage: storage.accessor(for: "task"), dependencies: ())
         
         let currentState = await stateMachine.state.description
         XCTAssertEqual(currentState.id, "ToDo")
@@ -35,7 +35,7 @@ final class StateMachineTests: XCTestCase {
         let currentState3 = await stateMachine.state.description
         XCTAssertEqual(currentState3.id, "Review")
         
-        let anotherStateMachine = try await StateMachine<TaskState>(storage: storage.accessor(for: "task"))
+        let anotherStateMachine = try await StateMachine<TaskState>(storage: storage.accessor(for: "task"), dependencies: ())
         let currentState4 = await anotherStateMachine.state.description
         XCTAssertEqual(currentState4.id, "Review")
     }

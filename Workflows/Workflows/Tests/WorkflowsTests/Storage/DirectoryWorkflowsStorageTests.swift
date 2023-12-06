@@ -10,14 +10,14 @@ import FileSystem
 import XCTest
 
 final class DirectoryWorkflowsStorageTests: XCTestCase {
-    private var workflowsStorage: DirectoryWorkflowsStorage!
+    private var workflowsStorage: WorkflowsStorage<Void>!
     
     override func setUp() async throws {
         let fileSystem = InMemoryFileSystem()
         let loader = DynamicWorkflowLoader {
             WorkflowLoader(TaskState.self)
         }
-        workflowsStorage = DirectoryWorkflowsStorage(at: fileSystem.rootItem, dynamicLoader: loader)
+        workflowsStorage = WorkflowsStorage<Void>(at: fileSystem.rootItem, dynamicLoader: loader, dependencies: ())
     }
     
     override func tearDown() async throws {

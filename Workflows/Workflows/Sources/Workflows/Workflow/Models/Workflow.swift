@@ -24,7 +24,7 @@ struct Workflow<S: State> {
         self.stateMachine = stateMachine
     }
     
-    static func load(storage: CodableStorage) throws -> Self {
+    static func load(storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
         let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
         let state = try storage.load(S.self, at: WorkflowKeys.state)
         
@@ -33,18 +33,20 @@ struct Workflow<S: State> {
             storage: storage,
             stateMachine: StateMachine(
                 initialState: state,
-                storage: storage.accessor(for: WorkflowKeys.state)
+                storage: storage.accessor(for: WorkflowKeys.state), 
+                dependencies: dependencies
             )
         )
     }
     
-    static func create(details: WorkflowDetails, initialState: S, storage: CodableStorage) throws -> Self {
+    static func create(details: WorkflowDetails, initialState: S, storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
         let workflow = Workflow(
             details: details,
             storage: storage,
             stateMachine: StateMachine(
                 initialState: initialState,
-                storage: storage.accessor(for: WorkflowKeys.state)
+                storage: storage.accessor(for: WorkflowKeys.state), 
+                dependencies: dependencies
             )
         )
         

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Prelude
 import LocalStorage
 
 public struct WorkflowLoader<S: State>: AnyWorkflowLoader {
@@ -19,8 +20,11 @@ public struct WorkflowLoader<S: State>: AnyWorkflowLoader {
         self.type = id
     }
     
-    public func load(from storage: CodableStorage) throws -> AnyWorkflow {
-        let workflow = try Workflow<S>.load(storage: storage)
+    public func load<Dependencies>(from storage: CodableStorage, dependencies: Dependencies) throws -> AnyWorkflow {
+        guard let workflowsDependencies = dependencies as? S.Dependencies else {
+            throw Failure("Can't cast \(Swift.type(of: dependencies)) to \(S.Dependencies.self)")
+        }
+        let workflow = try Workflow<S>.load(storage: storage, dependencies: workflowsDependencies)
         return workflow.asAny()
     }
 }

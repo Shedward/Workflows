@@ -10,10 +10,11 @@ import FileSystem
 import Prelude
 import Foundation
 
-public class DirectoryWorkflowsStorage: WorkflowsStorage {
+class WorkflowsStorage<Dependencies> {
 
     private let rootItem: FileItem
     private let dynamicLoader: DynamicWorkflowLoader
+    private let dependencies: Dependencies
     private let formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate]
@@ -28,9 +29,10 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         WorkflowsCache()
     }
     
-    public init(at rootItem: FileItem, dynamicLoader: DynamicWorkflowLoader) {
+    public init(at rootItem: FileItem, dynamicLoader: DynamicWorkflowLoader, dependencies: Dependencies) {
         self.rootItem = rootItem
         self.dynamicLoader = dynamicLoader
+        self.dependencies = dependencies
     }
     
     public func workflows() async throws -> [AnyWorkflow] {
@@ -59,7 +61,10 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
         }.value
     }
     
-    public func startWorkflow<S>(name: String, initialState: S) async throws -> AnyWorkflow where S : State {
+    public func startWorkflow<S>(
+        name: String,
+        initialState: S
+    ) async throws -> AnyWorkflow where S: State, S.Dependencies == Dependencies {
         try await Task(priority: .userInitiated) { () -> AnyWorkflow in
             let id = try firstFreeWorkflowId(name: name)
             
@@ -72,7 +77,7 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
             let details = WorkflowDetails(id: id, type: WorkflowType(S.self), name: name)
             
             let workflow = try Failure.wrap("Creating workflow config at \(details)") {
-                try Workflow.create(details: details, initialState: initialState, storage: storage)
+                try Workflow.create(details: details, initialState: initialState, storage: storage, dependencies: self.dependencies)
             }
             
             return workflow.asAny()
@@ -88,7 +93,7 @@ public class DirectoryWorkflowsStorage: WorkflowsStorage {
     private func loadWorkflow(id: WorkflowId) throws -> AnyWorkflow {
         let storage = DirectoryCodableStorage(at: workflowItem(id: id))
         let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
-        let workflow = try dynamicLoader.load(details: details, from: storage)
+        let workflow = try dynamicLoader.load(details: details, from: storage, dependencies: dependencies)
         return workflow
     }
     

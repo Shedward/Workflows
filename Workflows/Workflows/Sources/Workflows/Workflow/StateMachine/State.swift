@@ -6,5 +6,7 @@
 //
 
 public protocol State: Codable {
+    associatedtype Dependencies
+    
     var description: StateDescription<Self> { get }
 }

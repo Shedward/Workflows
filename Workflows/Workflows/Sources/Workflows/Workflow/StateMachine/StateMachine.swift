@@ -12,19 +12,23 @@ import os
 
 public actor StateMachine<S: State> {
 
-    public let id = UUID()
+    nonisolated public let id = UUID()
+    nonisolated public let dependencies: S.Dependencies
     public private(set) var state: S
+    
     private let storage: ThrowingAccessor<S>
     private let logger = Logger(scope: .workflows)
     
-    public init(initialState: S, storage: ThrowingAccessor<S>) {
+    public init(initialState: S, storage: ThrowingAccessor<S>, dependencies: S.Dependencies) {
         self.state = initialState
         self.storage = storage
+        self.dependencies = dependencies
     }
     
-    public init(storage: ThrowingAccessor<S>) async throws {
+    public init(storage: ThrowingAccessor<S>, dependencies: S.Dependencies) async throws {
         self.state = try storage.get()
         self.storage = storage
+        self.dependencies = dependencies
     }
     
     public func move(to state: S) async throws {

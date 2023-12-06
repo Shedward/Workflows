@@ -32,11 +32,11 @@ public struct DynamicWorkflowLoader {
         self.init(loaders: builder())
     }
     
-    public func load(details: WorkflowDetails, from storage: CodableStorage) throws -> AnyWorkflow {
+    public func load<Dependencies>(details: WorkflowDetails, from storage: CodableStorage, dependencies: Dependencies) throws -> AnyWorkflow {
         guard let loader = loaders[details.type] else {
             throw Failure("Failed to find loader for \(details.type)")
         }
         
-        return try loader.load(from: storage)
+        return try loader.load(from: storage, dependencies: dependencies)
     }
 }
