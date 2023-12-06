@@ -1,11 +1,11 @@
 //
-//  StateMachineTransition.swift
+//  StateTransition.swift
 //
 //
 //  Created by Vlad Maltsev on 04.12.2023.
 //
 
-public struct StateMachineTransition<S: State>: Identifiable, CustomStringConvertible {
+public struct StateTransition<S: State>: Identifiable, CustomStringConvertible {
     
     private let stateMachine: StateMachine<S>
     private let transition: AnyTransition<S>
@@ -28,6 +28,6 @@ public struct StateMachineTransition<S: State>: Identifiable, CustomStringConver
     }
     
     public var description: String {
-        "StateMachineTransition<\(S.self)>(id: \(id))"
+        "StateTransition<\(S.self)>(id: \(i)"
     }
 }
