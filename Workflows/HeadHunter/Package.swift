@@ -19,7 +19,8 @@ let package = Package(
         .package(path: "../System/SecureStorage"),
         .package(path: "../System/Git"),
         .package(path: "../Services/GoogleCloud"),
-        .package(path: "../Services/Jira")
+        .package(path: "../Services/Jira"),
+        .package(path: "../Workflows/Workflows")
     ],
     targets: [
         .target(
@@ -30,7 +31,8 @@ let package = Package(
                 "SecureStorage",
                 "Git",
                 "GoogleCloud",
-                "Jira"
+                "Jira",
+                "Workflows"
             ]
         ),
         .testTarget(

@@ -10,7 +10,7 @@ import FileSystem
 import Prelude
 import Foundation
 
-class WorkflowsStorage<Dependencies> {
+public class WorkflowsStorage<Dependencies> {
 
     private let rootItem: FileItem
     private let dynamicLoader: DynamicWorkflowLoader
