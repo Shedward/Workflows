@@ -19,7 +19,7 @@ public final class NewWorkflowService {
         self.providers = builder()
     }
     
-    func workflows() async throws -> [NewWorkflowSection] {
+    public func workflows() async throws -> [NewWorkflowSection] {
         var sections: [NewWorkflowSection] = []
         
         for provider in providers {

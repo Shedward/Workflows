@@ -60,6 +60,6 @@ public final class FileManagerFileSystem: FileSystem {
     }
     
     private func path(_ url: URL) -> Path {
-        Path(url.path())
+        Path(url.path(percentEncoded: false))
     }
 }

@@ -12,6 +12,9 @@ import UI
 
 struct ActiveWorkflowsList: View {
     
+    @Binding
+    var navigationPath: NavigationPath
+    
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
     
@@ -19,46 +22,28 @@ struct ActiveWorkflowsList: View {
     private var workflows: Loading<[AnyWorkflow], Error> = .loading
     
     var body: some View {
-        Group {
-            switch workflows {
-            case .loading:
-                LoadingView()
-            case .loaded(let value):
-                if value.isEmpty {
-                    ContentUnavailableView {
-                        Label("No Workflows", systemImage: "sparkles")
-                    } actions: {
-                        Button("Create") {
-                            createWorkflow()
-                        }
-                    }
-                } else {
-                    List {
-                        ForEach(value) { workflow in
-                            WorkflowCell(details: workflow.details)
-                        }
-                    }
+        LoadingList { (item: AnyWorkflow) in
+            WorkflowCell(details: item.details)
+        } load: {
+            try await dependencies.workflowsStorage.workflows()
+        } empty: {
+            ContentUnavailableView {
+                Label("No Workflows", systemImage: "sparkles")
+            } actions: {
+                Button("Create") {
+                    createWorkflow()
                 }
-            case .failure(let error):
-                FailureView(error)
             }
         }
-        .task { await reload() }
-        .refreshable { await reload() }
-    }
-    
-    private func reload() async {
-        await _workflows.assignAsync {
-            try await dependencies.workflowsStorage.workflows()
-        }
+        .navigationTitle("Workflows")
     }
     
     private func createWorkflow() {
-        
+        navigationPath.append(Navigations.NewWorkflowsList())
     }
 }
 
 #Preview {
-    ActiveWorkflowsList()
+    ActiveWorkflowsList(navigationPath: .constant(.init()))
         .frame(width: 300)
 }

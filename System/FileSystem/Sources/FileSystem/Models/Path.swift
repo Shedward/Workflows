@@ -15,7 +15,7 @@ public struct Path: Hashable {
     }
     
     public var string: String {
-        url.path()
+        url.path(percentEncoded: false)
     }
     
     public init(_ path: String) {

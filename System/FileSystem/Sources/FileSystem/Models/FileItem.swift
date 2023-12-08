@@ -22,7 +22,7 @@ public struct FileItem {
     }
     
     public var name: String {
-        path.url.lastPathComponent
+        path.url.lastPathComponent.removingPercentEncoding ?? "<failed-to-removed-percent-encoding>"
     }
     
     public func parrent() throws -> FileItem {

@@ -7,33 +7,50 @@
 
 import Foundation
 
-public protocol AnyNewWorkflow {
+public struct AnyNewWorkflow: Identifiable {
     
-    var id: String { get }
-    var name: String { get }
+    public let id: String
+    public let name: String
     
-    func createWorkflow() async throws -> AnyWorkflow
+    private let createWorkflowAction: () async throws -> AnyWorkflow
+    
+    init<S: State>(_ wrapped: NewWorkflow<S>) {
+        self.id = wrapped.id
+        self.name = wrapped.name
+        self.createWorkflowAction = wrapped.createWorkflow
+    }
+    
+    public func createWorkflow() async throws -> AnyWorkflow {
+        try await createWorkflowAction()
+    }
 }
 
-public struct NewWorkflow<S: State>: AnyNewWorkflow {
+public struct NewWorkflow<S: State>: Identifiable {
     public typealias Dependencies = S.Dependencies
+    
     public let initialState: S
     private let storage: WorkflowsStorage<S.Dependencies>
-
-    public var id: String {
-        initialState.description.id
-    }
-
-    public var name: String {
-        initialState.description.name
-    }
     
-    public init(initialState: S, storage: WorkflowsStorage<S.Dependencies>) {
+    public let id: String
+    public let name: String
+    
+    public init(
+        id: String,
+        name: String,
+        initialState: S,
+        storage: WorkflowsStorage<S.Dependencies>
+    ) {
+        self.id = id
+        self.name = name
         self.initialState = initialState
         self.storage = storage
     }
     
     public func createWorkflow() async throws -> AnyWorkflow {
         try await storage.startWorkflow(name: name, initialState: initialState)
+    }
+    
+    public func asAny() -> AnyNewWorkflow {
+        AnyNewWorkflow(self)
     }
 }

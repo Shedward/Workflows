@@ -11,6 +11,7 @@ public struct LoadingView: View {
     public var body: some View {
         ProgressView()
             .progressViewStyle(.circular)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     public init() {
