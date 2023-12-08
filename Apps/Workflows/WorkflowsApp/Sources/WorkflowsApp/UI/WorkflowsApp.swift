@@ -33,7 +33,7 @@ public struct WorkflowsApp: App {
                     }
             }
             .frame(width: WorkflowsApp.size.width, height: WorkflowsApp.size.height)
-            .spacing(.s0)
+            .spacing(.s1)
             .backgroundColor(\.background.primary)
         } label: {
             Image(systemName: "flowchart")

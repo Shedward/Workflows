@@ -35,6 +35,22 @@ struct ActiveWorkflowsList: View {
                 }
             }
         }
+        .bottomInset(20)
+        .scrollIndicators(.hidden)
+        .overlay(alignment: .bottom) {
+            BottomToolbar {
+                Button {
+                    createWorkflow()
+                } label: {
+                    Label("Start new", systemImage: "plus")
+                }
+                Spacer()
+                Button {
+                } label: {
+                    Label("Settings", systemImage: "gear")
+                }
+            }
+        }
         .navigationTitle("Workflows")
     }
     

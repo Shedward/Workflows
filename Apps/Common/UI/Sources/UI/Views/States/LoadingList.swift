@@ -17,6 +17,8 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
     private let load: () async throws -> [Item]
     private let empty: () -> Empty
     
+    private var contentInsets = EdgeInsets()
+    
     public init(
         cell: @escaping (Item) -> Cell,
         load: @escaping () async throws -> [Item],
@@ -43,6 +45,10 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
             case .failure(let error):
                 FailureView(error)
             }
+            
+            Rectangle()
+                .fill(.clear)
+                .frame(height: contentInsets.bottom)
         }
         .task { await reload() }
         .refreshable { await reload() }
@@ -52,5 +58,11 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
         await _items.assignAsync {
             try await load()
         }
+    }
+    
+    public func bottomInset(_ bottomInset: CGFloat) -> Self {
+        var view = self
+        view.contentInsets.bottom = bottomInset
+        return view
     }
 }

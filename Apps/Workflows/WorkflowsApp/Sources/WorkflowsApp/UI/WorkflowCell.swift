@@ -21,6 +21,7 @@ struct WorkflowCell: View {
             Text(details.name)
                 .font(\.body)
         }
+        .spacing()
     }
 }
 

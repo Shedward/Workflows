@@ -22,7 +22,7 @@ public enum RelativeSpacing: Int {
 public struct Spacing {
     public let value: CGFloat
 
-    static let step: CGFloat = 6
+    static let step: CGFloat = 4
 
     public static let s0 = Spacing(value: 18)
     public static let s1 = s0.relative(.d1)
