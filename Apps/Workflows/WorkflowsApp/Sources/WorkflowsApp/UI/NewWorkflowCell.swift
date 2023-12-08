@@ -11,16 +11,28 @@ import Workflow
 
 struct NewWorkflowCell: View {
     
-    let newWorkflow: AnyNewWorkflow
+    let description: NewWorkflowDescription
     
     var body: some View {
         SpacedHStack(alignment: .center) {
-            Text(newWorkflow.name)
+            Image(systemName: description.iconName)
+            Text(description.name)
                 .font(\.body)
                 .lineLimit(2)
-                .bold()
             Spacer()
             Image(systemName: "chevron.forward")
         }
+        .contentShape(Rectangle())
+        .spacing()
     }
+}
+
+#Preview {
+    NewWorkflowCell(
+        description: .init(
+            id: "id",
+            name: "Name name name",
+            iconName: "suitcase"
+        )
+    )
 }

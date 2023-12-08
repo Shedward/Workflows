@@ -7,16 +7,29 @@
 
 import Foundation
 
-public struct AnyNewWorkflow: Identifiable {
-    
+public struct NewWorkflowDescription: Identifiable {
     public let id: String
     public let name: String
+    public let iconName: String
     
+    public init(id: String, name: String, iconName: String) {
+        self.id = id
+        self.name = name
+        self.iconName = iconName
+    }
+}
+
+public struct AnyNewWorkflow: Identifiable {
+    
+    public let description: NewWorkflowDescription
     private let createWorkflowAction: () async throws -> AnyWorkflow
     
+    public var id: String {
+        description.id
+    }
+    
     init<S: State>(_ wrapped: NewWorkflow<S>) {
-        self.id = wrapped.id
-        self.name = wrapped.name
+        self.description = wrapped.description
         self.createWorkflowAction = wrapped.createWorkflow
     }
     
@@ -28,26 +41,30 @@ public struct AnyNewWorkflow: Identifiable {
 public struct NewWorkflow<S: State>: Identifiable {
     public typealias Dependencies = S.Dependencies
     
+    public var id: String {
+        description.id
+    }
+    
     public let initialState: S
     private let storage: WorkflowsStorage<S.Dependencies>
     
-    public let id: String
-    public let name: String
+    public let description: NewWorkflowDescription
     
     public init(
-        id: String,
-        name: String,
+        description: NewWorkflowDescription,
         initialState: S,
         storage: WorkflowsStorage<S.Dependencies>
     ) {
-        self.id = id
-        self.name = name
+        self.description = description
         self.initialState = initialState
         self.storage = storage
     }
     
     public func createWorkflow() async throws -> AnyWorkflow {
-        try await storage.startWorkflow(name: name, initialState: initialState)
+        try await storage.startWorkflow(
+            name: description.name,
+            initialState: initialState
+        )
     }
     
     public func asAny() -> AnyNewWorkflow {

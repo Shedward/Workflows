@@ -24,6 +24,7 @@ struct ActiveWorkflowsList: View {
     var body: some View {
         LoadingList { (item: AnyWorkflow) in
             WorkflowCell(details: item.details)
+                .listRowSeparator(.hidden)
         } load: {
             try await dependencies.workflowsStorage.workflows()
         } empty: {
@@ -35,8 +36,8 @@ struct ActiveWorkflowsList: View {
                 }
             }
         }
-        .bottomInset(20)
-        .scrollIndicators(.hidden)
+        .contentInsets(bottom: 32)
+        .listStyle(.plain)
         .overlay(alignment: .bottom) {
             BottomToolbar {
                 Button {

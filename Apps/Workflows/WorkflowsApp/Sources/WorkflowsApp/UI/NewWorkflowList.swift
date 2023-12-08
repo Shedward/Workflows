@@ -26,7 +26,7 @@ struct NewWorkflowList: View {
             Button {
                 createWorkflow(item)
             } label: {
-                NewWorkflowCell(newWorkflow: item)
+                NewWorkflowCell(description: item.description)
             }
             .buttonStyle(.plain)
         } load: {

@@ -31,6 +31,12 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
     
     public var body: some View {
         List {
+            if contentInsets.top > 0 {
+                Rectangle()
+                    .fill(.clear)
+                    .frame(height: contentInsets.top)
+            }
+            
             switch items {
             case .loading:
                 LoadingView()
@@ -46,10 +52,13 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
                 FailureView(error)
             }
             
-            Rectangle()
-                .fill(.clear)
-                .frame(height: contentInsets.bottom)
+            if contentInsets.bottom > 0 {
+                Rectangle()
+                    .fill(.clear)
+                    .frame(height: contentInsets.bottom)
+            }
         }
+        .scrollIndicators(.hidden)
         .task { await reload() }
         .refreshable { await reload() }
     }
@@ -60,9 +69,13 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
         }
     }
     
-    public func bottomInset(_ bottomInset: CGFloat) -> Self {
+    public func contentInsets(
+        top: CGFloat = 0,
+        bottom: CGFloat = 0
+    ) -> Self {
         var view = self
-        view.contentInsets.bottom = bottomInset
+        view.contentInsets.top = top
+        view.contentInsets.bottom = bottom
         return view
     }
 }
