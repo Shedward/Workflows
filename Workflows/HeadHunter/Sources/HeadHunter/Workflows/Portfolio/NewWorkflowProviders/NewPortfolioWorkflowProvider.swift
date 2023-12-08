@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 07.12.2023.
 //
 
-import Workflows
+import Workflow
 
 public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
 

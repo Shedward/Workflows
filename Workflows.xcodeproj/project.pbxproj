@@ -16,13 +16,13 @@
 
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
-		6319CB132AD155B800F7A00E /* Workflows */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Workflows; sourceTree = "<group>"; };
 		63322F1A2A7512CF002CBC8C /* Git */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Git; sourceTree = "<group>"; };
 		637C31762AE7011A0091EAC3 /* FileSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FileSystem; sourceTree = "<group>"; };
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
 		63A3111B2A877DE500A9642E /* Figma */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Figma; sourceTree = "<group>"; };
 		63A971A12A6C202200A4EF8B /* GitHub */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GitHub; sourceTree = "<group>"; };
 		63A971A22A6EFB4400A4EF8B /* SecureStorage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SecureStorage; sourceTree = "<group>"; };
+		63B0C3802B23205E0049A39B /* Workflow */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Workflow; sourceTree = "<group>"; };
 		63C497F72A7187AA0081CA41 /* Jira */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Jira; sourceTree = "<group>"; };
 		63C498132A7442900081CA41 /* Executable */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Executable; sourceTree = "<group>"; };
 		63C94D2C2A6B1B3B009AC8E4 /* RestClient */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RestClient; sourceTree = "<group>"; };
@@ -168,7 +168,7 @@
 		E18EAAEB2A8A6738009C6AE5 /* Workflows */ = {
 			isa = PBXGroup;
 			children = (
-				6319CB132AD155B800F7A00E /* Workflows */,
+				63B0C3802B23205E0049A39B /* Workflow */,
 				E1E52A652A9D4F4F0088E996 /* HeadHunter */,
 			);
 			path = Workflows;

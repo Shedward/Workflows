@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Workflows",
+    name: "Workflow",
     platforms: [.macOS(.v13)],
     products: [
         .library(
-            name: "Workflows",
-            targets: ["Workflows"]
+            name: "Workflow",
+            targets: ["Workflow"]
         ),
     ],
     dependencies: [
@@ -17,14 +17,14 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Workflows",
+            name: "Workflow",
             dependencies: [
                 "LocalStorage"
             ]
         ),
         .testTarget(
-            name: "WorkflowsTests",
-            dependencies: ["Workflows"]
+            name: "WorkflowTests",
+            dependencies: ["Workflow"]
         ),
     ]
 )

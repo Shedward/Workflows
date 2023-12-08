@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 06.12.2023.
 //
 
-import Workflows
+import Workflow
 import Jira
 
 public enum PortfolioState: State {
