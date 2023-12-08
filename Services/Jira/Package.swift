@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Jira",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     products: [
         .library(
             name: "Jira",

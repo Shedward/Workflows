@@ -10,11 +10,11 @@ import Foundation
 public struct WorkflowId: Codable {
     let rawValue: String
     
-    init(rawValue: String) {
+    public init(rawValue: String) {
         self.rawValue = rawValue
     }
     
-    init(name: String, suffix: String? = nil) {
+    public init(name: String, suffix: String? = nil) {
         let encodedName = name
             .components(separatedBy: .alphanumerics.inverted)
             .filter { !$0.isEmpty }

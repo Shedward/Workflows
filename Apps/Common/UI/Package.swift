@@ -5,16 +5,22 @@ import PackageDescription
 
 let package = Package(
     name: "UI",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     products: [
         .library(
             name: "UI",
             targets: ["UI"]
         ),
+    ], 
+    dependencies: [
+        .package(path: "../Core/Prelude")
     ],
     targets: [
         .target(
-            name: "UI"
+            name: "UI",
+            dependencies: [
+                "Prelude"
+            ]
         )
     ]
 )

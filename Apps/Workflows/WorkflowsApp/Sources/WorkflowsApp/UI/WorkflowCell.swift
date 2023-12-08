@@ -7,17 +7,33 @@
 
 import SwiftUI
 import UI
+import Workflow
 
 struct WorkflowCell: View {
+    
+    let details: WorkflowDetails
+    
+    var body: some View {
+        SpacedVStack(alignment: .leading) {
+            Text(details.type.id)
+                .font(\.caption)
+                .bold()
+            Text(details.name)
+                .font(\.body)
+        }
+    }
+}
+
+struct DepWorkflowCell: View {
     let key: String
     let icon: Image
     let statusIcon: Image?
     let name: String
     let state: String
-
+    
     @Environment(\.spacing)
     private var spacing: Spacing
-
+    
     var body: some View {
         SpacedHStack(alignment: .top) {
             SpacedVStack {
@@ -51,9 +67,20 @@ struct WorkflowCell: View {
 }
 
 #Preview {
+    WorkflowCell(
+        details: WorkflowDetails(
+            id: WorkflowId(name: "Test"),
+            type: WorkflowType("PreviewType"),
+            name: "Preview name"
+        )
+    )
+    .spacing(.d2)
+}
+
+#Preview {
     SpacedVStack {
         ForEach(0..<1) { _ in
-            WorkflowCell(
+            DepWorkflowCell(
                 key: "MOB-22623",
                 icon: Image(systemName: "briefcase"), 
                 statusIcon: nil,
@@ -65,7 +92,7 @@ struct WorkflowCell: View {
 
         SpacedVStack {
             ForEach(0..<2) { _ in
-                WorkflowCell(
+                DepWorkflowCell(
                     key: "MOB-22623",
                     icon: Image(systemName: "checkmark.rectangle"),
                     statusIcon: nil,

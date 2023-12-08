@@ -15,35 +15,10 @@ public struct WorkflowsApp: App {
 
     public var body: some Scene {
         MenuBarExtra {
-            SpacedVStack {
-                ForEach(0..<2) { _ in
-                    WorkflowCell(
-                        key: "MOB-22623",
-                        icon: Image(systemName: "briefcase"), 
-                        statusIcon: nil,
-                        name: "Реализовать экран списка окна",
-                        state: "В работе"
-                    )
-                }
-                .spacing(.d1)
-
-                SpacedVStack {
-                    ForEach(0..<2) { _ in
-                        WorkflowCell(
-                            key: "MOB-22623",
-                            icon: Image(systemName: "briefcase"),
-                            statusIcon: nil,
-                            name: "Реализовать экран списка окна",
-                            state: "В работе"
-                        )
-                    }
-                }
-                .spacedFrame(\.background.tertiary)
-                .spacing(.d2)
-            }
-            .spacing(.s0)
-            .spacedPadding()
-            .backgroundColor(\.background.primary)
+            ActiveWorkflowsList()
+                .frame(width: 300, height: 400)
+                .spacing(.s0)
+                .backgroundColor(\.background.primary)
         } label: {
             HStack {
                 Image(systemName: "flowchart")

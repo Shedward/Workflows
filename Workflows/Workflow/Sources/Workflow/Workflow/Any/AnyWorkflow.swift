@@ -7,7 +7,11 @@
 
 import LocalStorage
 
-public struct AnyWorkflow {
+public struct AnyWorkflow: Identifiable {
+    
+    public var id: WorkflowId {
+        details.id
+    }
     
     public let details: WorkflowDetails
     public let storage: CodableStorage

@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "DebugApp",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     dependencies: [
         .package(path: "../Services/GitHub"),
         .package(path: "../Services/Jira"),
