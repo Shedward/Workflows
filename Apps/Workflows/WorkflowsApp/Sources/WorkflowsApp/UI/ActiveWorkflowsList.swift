@@ -19,14 +19,16 @@ struct ActiveWorkflowsList: View {
     private var dependencies: AllDependencies
     
     @SwiftUI.State
-    private var workflows: Loading<[AnyWorkflow], Error> = .loading
+    private var listViewModel: LoadingListViewModel<AnyWorkflow>?
+
+    init(navigationPath: Binding<NavigationPath>) {
+        self._navigationPath = navigationPath
+    }
     
     var body: some View {
-        LoadingList { (item: AnyWorkflow) in
+        LoadingList(viewModel: listViewModel) { (item: AnyWorkflow) in
             WorkflowCell(details: item.details)
                 .listRowSeparator(.hidden)
-        } load: {
-            try await dependencies.workflowsStorage.workflows()
         } empty: {
             ContentUnavailableView {
                 Label("No Workflows", systemImage: "sparkles")
@@ -45,6 +47,11 @@ struct ActiveWorkflowsList: View {
                 } label: {
                     Label("Start new", systemImage: "plus")
                 }
+                Button {
+                    listViewModel?.reload()
+                } label: {
+                    Label("Reload", systemImage: "arrow.triangle.2.circlepath")
+                }
                 Spacer()
                 Button {
                 } label: {
@@ -53,6 +60,12 @@ struct ActiveWorkflowsList: View {
             }
         }
         .navigationTitle("Workflows")
+        .task {
+            listViewModel = LoadingListViewModel {
+                try await dependencies.workflowsStorage.workflows()
+            }
+            await listViewModel?.reload()
+        }
     }
     
     private func createWorkflow() {

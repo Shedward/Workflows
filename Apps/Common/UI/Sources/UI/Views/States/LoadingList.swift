@@ -7,25 +7,50 @@
 
 import SwiftUI
 import Prelude
+import Combine
+
+@Observable
+public final class LoadingListViewModel<Item: Identifiable> {
+    
+    internal var items: Loading<[Item], Error> = .loading
+    private let load: () async throws -> [Item]
+    
+    public init(_ load: @escaping () async throws -> [Item]) {
+        self.load = load
+    }
+    
+    public func reload() async {
+        self.items = .loading
+        do {
+            self.items = .loaded(try await load())
+        } catch {
+            self.items = .failure(error)
+        }
+    }
+    
+    public func reload() {
+        Task {
+            await reload()
+        }
+    }
+}
 
 public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
-    
-    @State
-    private var items: Loading<[Item], Error> = .loading
+
+    var viewModel: LoadingListViewModel<Item>?
 
     private let cell: (Item) -> Cell
-    private let load: () async throws -> [Item]
     private let empty: () -> Empty
     
     private var contentInsets = EdgeInsets()
     
     public init(
+        viewModel: LoadingListViewModel<Item>?,
         cell: @escaping (Item) -> Cell,
-        load: @escaping () async throws -> [Item],
         empty: @escaping () -> Empty
     ) {
         self.cell = cell
-        self.load = load
+        self.viewModel = viewModel
         self.empty = empty
     }
     
@@ -37,7 +62,7 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
                     .frame(height: contentInsets.top)
             }
             
-            switch items {
+            switch viewModel?.items ?? .loading {
             case .loading:
                 LoadingView()
             case .loaded(let items):
@@ -59,13 +84,8 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
             }
         }
         .scrollIndicators(.hidden)
-        .task { await reload() }
-        .refreshable { await reload() }
-    }
-    
-    private func reload() async {
-        await _items.assignAsync {
-            try await load()
+        .task {
+            await viewModel?.reload()
         }
     }
     

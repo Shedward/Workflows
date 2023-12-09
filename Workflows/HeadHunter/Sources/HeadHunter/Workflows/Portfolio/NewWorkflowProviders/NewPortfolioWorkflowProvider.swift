@@ -20,7 +20,6 @@ public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
     }
     
     public func workflows() async throws -> [AnyNewWorkflow] {
-        try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000)
         return (1...10).map { id in
             let taskId = "PORTFOLIO-\(id)"
             let initialState = PortfolioState.toDo(.init(taskId: taskId))

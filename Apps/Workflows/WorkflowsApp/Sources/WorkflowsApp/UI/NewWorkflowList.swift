@@ -22,15 +22,16 @@ struct NewWorkflowList: View {
     private var workflows: Loading<[AnyNewWorkflow], Error> = .loading
     
     var body: some View {
-        LoadingList { (item: AnyNewWorkflow) in
+        let listViewModel = LoadingListViewModel {
+            try await dependencies.newWorkflowsService.workflows().flatMap { try $0.workflows.get() }
+        }
+        LoadingList(viewModel: listViewModel) { (item: AnyNewWorkflow) in
             Button {
                 createWorkflow(item)
             } label: {
                 NewWorkflowCell(description: item.description)
             }
             .buttonStyle(.plain)
-        } load: {
-            try await dependencies.newWorkflowsService.workflows().flatMap { try $0.workflows.get() }
         } empty: {
             ContentUnavailableView {
                 Label("No Possible Workflows", systemImage: "sparkles")
