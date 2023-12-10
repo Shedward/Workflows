@@ -15,8 +15,7 @@ struct NewWorkflowList: View {
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
     
-    @Binding
-    var navigationPath: NavigationPath
+    let navigation: Navigation
     
     @SwiftUI.State
     private var workflows: Loading<[AnyNewWorkflow], Error> = .loading
@@ -44,12 +43,12 @@ struct NewWorkflowList: View {
     private func createWorkflow(_ item: AnyNewWorkflow) {
         Task {
             _ = try await item.createWorkflow()
-            navigationPath.removeLast(navigationPath.count)
+            navigation.popToRoot()
         }
     }
 }
 
 #Preview {
-    NewWorkflowList(navigationPath: .constant(.init()))
+    NewWorkflowList(navigation: Navigation())
         .frame(width: 300, height: 300)
 }

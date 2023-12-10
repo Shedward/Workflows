@@ -84,6 +84,7 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
             }
         }
         .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.always)
         .task {
             await viewModel?.reload()
         }

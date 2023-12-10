@@ -5,7 +5,13 @@
 //  Created by Vlad Maltsev on 08.12.2023.
 //
 
-extension Navigations {
+import SwiftUI
+
+extension Navigation {
     struct ActiveWorkflowsList: Hashable {
+    }
+    
+    func showActiveWorkflows() {
+        path.append(ActiveWorkflowsList())
     }
 }

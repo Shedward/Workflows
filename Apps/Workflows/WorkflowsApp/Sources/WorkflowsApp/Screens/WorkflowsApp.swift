@@ -8,28 +8,22 @@
 import SwiftUI
 import UI
 
-@Observable
-public class WorkflowsAppViewModel {
-    var navigation = NavigationPath()
-}
-
 public struct WorkflowsApp: App {
     
     static let size = CGSize(width: 300, height: 400)
 
     @Bindable
-    private var viewModel: WorkflowsAppViewModel
-
+    private var navigation = Navigation()
+    
     public init() {
-        viewModel = WorkflowsAppViewModel()
     }
 
     public var body: some Scene {
         MenuBarExtra {
-            NavigationStack(path: $viewModel.navigation) {
-                ActiveWorkflowsList(navigationPath: $viewModel.navigation)
-                    .navigationDestination(for: Navigations.NewWorkflowsList.self) { _ in
-                        NewWorkflowList(navigationPath: $viewModel.navigation)
+            NavigationStack(path: $navigation.path) {
+                ActiveWorkflowsList(navigation: navigation)
+                    .navigationDestination(for: Navigation.NewWorkflowsList.self) { _ in
+                        NewWorkflowList(navigation: navigation)
                     }
             }
             .frame(width: WorkflowsApp.size.width, height: WorkflowsApp.size.height)

@@ -12,18 +12,13 @@ import UI
 
 struct ActiveWorkflowsList: View {
     
-    @Binding
-    var navigationPath: NavigationPath
-    
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
+
+    let navigation: Navigation
     
     @SwiftUI.State
     private var listViewModel: LoadingListViewModel<AnyWorkflow>?
-
-    init(navigationPath: Binding<NavigationPath>) {
-        self._navigationPath = navigationPath
-    }
     
     var body: some View {
         LoadingList(viewModel: listViewModel) { (item: AnyWorkflow) in
@@ -69,11 +64,11 @@ struct ActiveWorkflowsList: View {
     }
     
     private func createWorkflow() {
-        navigationPath.append(Navigations.NewWorkflowsList())
+        navigation.showNewWorkflows()
     }
 }
 
 #Preview {
-    ActiveWorkflowsList(navigationPath: .constant(.init()))
+    ActiveWorkflowsList(navigation: Navigation())
         .frame(width: 300)
 }

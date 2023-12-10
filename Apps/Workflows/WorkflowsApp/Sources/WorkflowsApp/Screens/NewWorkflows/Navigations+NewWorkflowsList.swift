@@ -5,7 +5,11 @@
 //  Created by Vlad Maltsev on 08.12.2023.
 //
 
-extension Navigations {
+extension Navigation {
     struct NewWorkflowsList: Hashable {
+    }
+    
+    func showNewWorkflows() {
+        path.append(NewWorkflowsList())
     }
 }
