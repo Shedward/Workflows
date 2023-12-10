@@ -62,11 +62,13 @@ public class WorkflowsStorage<Dependencies> {
     }
     
     public func startWorkflow<S>(
-        name: String,
-        initialState: S
+        initialState: S,
+        key: String?,
+        name: String?
     ) async throws -> AnyWorkflow where S: State, S.Dependencies == Dependencies {
         try await Task(priority: .userInitiated) { () -> AnyWorkflow in
-            let id = try firstFreeWorkflowId(name: name)
+            let postfix = [key, name].compactMap { $0 }.joined(separator: ":") 
+            let id = try firstFreeWorkflowId(postfix: postfix)
             
             let workflowItem = self.workflowItem(id: id)
             try Failure.wrap("Creating workflow directory at \(workflowItem)") {
@@ -74,7 +76,12 @@ public class WorkflowsStorage<Dependencies> {
             }
             
             let storage = DirectoryCodableStorage(at: workflowItem)
-            let details = WorkflowDetails(id: id, type: WorkflowType(S.self), name: name)
+            let details = WorkflowDetails(
+                id: id,
+                type: WorkflowType(S.self),
+                key: key,
+                name: name
+            )
             
             let workflow = try Failure.wrap("Creating workflow config at \(details)") {
                 try Workflow.create(details: details, initialState: initialState, storage: storage, dependencies: self.dependencies)
@@ -101,16 +108,16 @@ public class WorkflowsStorage<Dependencies> {
         rootItem.appending(id.rawValue + "/")
     }
     
-    private func firstFreeWorkflowId(name: String, maxRetries: Int = 10) throws -> WorkflowId {
+    private func firstFreeWorkflowId(postfix: String, maxRetries: Int = 10) throws -> WorkflowId {
         let timestamp = formatter.string(from: Date())
         for index in 0..<maxRetries {
-            let id = WorkflowId(name: name, suffix: "\(timestamp)-\(index)")
+            let id = WorkflowId(name: postfix, suffix: "\(timestamp)-\(index)")
             
             if !workflowItem(id: id).isExists {
                 return id
             }
         }
         
-        throw Failure("Not found free folder for \(name) after \(maxRetries) tries, clean workflows folder or increase limit")
+        throw Failure("Not found free folder for \(postfix) after \(maxRetries) tries, clean workflows folder or increase limit")
     }
 }

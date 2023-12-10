@@ -15,16 +15,25 @@ public struct AnyWorkflow: Identifiable {
     
     public let details: WorkflowDetails
     public let storage: CodableStorage
-    public var state: AnyState {
-        getState()
-    }
     
-    private let getState: () -> AnyState
+    private let getState: () async -> AnyState
     
     init<S: State>(_ wrapped: Workflow<S>) {
         self.details = wrapped.details
         self.storage = wrapped.storage
-        self.getState = { wrapped.stateMachine.asAny() }
+        self.getState = {
+            let state = await wrapped.stateMachine.state
+            let transitions = await wrapped.stateMachine.transitions
+            return AnyState(
+                id: state.description.id,
+                name: state.description.name,
+                transitions: transitions.map { $0.asAny() }
+            )
+        }
+    }
+    
+    public func state() async -> AnyState {
+        await getState()
     }
 }
 

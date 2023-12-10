@@ -11,20 +11,46 @@ struct SpacedFrameModifier: ViewModifier {
     
     @Environment(\.spacing)
     private var spacing: Spacing
+    
+    @Environment(\.theme)
+    private var theme: Theme
 
     let background: ColorToken
+    let border: ColorToken?
+    let borderWidth: CGFloat
 
     func body(content: Content) -> some View {
         content
             .padding(spacing.value)
             .backgroundColor(background)
-            .clipShape(RoundedRectangle(cornerRadius: spacing.relative(.d1).value))
+            .clipShape(shape)
+            .overlay {
+                if let border {
+                    shape.stroke(theme.color(for: border))
+                } else {
+                    Color.clear
+                }
+            }
+    }
+    
+    private var shape: some Shape {
+        RoundedRectangle(cornerRadius: spacing.relative(.d1).value)
     }
 }
 
 extension View {
-    public func spacedFrame(_ background: ColorToken) -> some View {
-        modifier(SpacedFrameModifier(background: background))
+    public func spacedFrame(
+        _ background: ColorToken,
+        border: ColorToken? = nil,
+        borderWidth: CGFloat = 1
+    ) -> some View {
+        modifier(
+            SpacedFrameModifier(
+                background: background,
+                border: border,
+                borderWidth: borderWidth
+            )
+        )
     }
 }
 

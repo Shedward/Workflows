@@ -13,7 +13,7 @@ enum WorkflowKeys {
     static let state = "state"
 }
 
-struct Workflow<S: State> {
+public struct Workflow<S: State> {
     let details: WorkflowDetails
     let storage: CodableStorage
     let stateMachine: StateMachine<S>
@@ -24,7 +24,7 @@ struct Workflow<S: State> {
         self.stateMachine = stateMachine
     }
     
-    static func load(storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
+    public static func load(storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
         let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
         let state = try storage.load(S.self, at: WorkflowKeys.state)
         
@@ -39,7 +39,7 @@ struct Workflow<S: State> {
         )
     }
     
-    static func create(details: WorkflowDetails, initialState: S, storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
+    public static func create(details: WorkflowDetails, initialState: S, storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
         let workflow = Workflow(
             details: details,
             storage: storage,

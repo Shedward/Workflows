@@ -16,9 +16,17 @@ struct NewWorkflowCell: View {
     var body: some View {
         SpacedHStack(alignment: .center) {
             Image(systemName: description.iconName)
-            Text(description.name)
-                .font(\.body)
-                .lineLimit(2)
+            SpacedVStack {
+                if let key = description.key {
+                    Text(key)
+                        .font(\.caption)
+                }
+                if let name = description.name {
+                    Text(name)
+                        .font(\.body)
+                        .lineLimit(2)
+                }
+            }
             Spacer()
             Image(systemName: "chevron.forward")
         }
@@ -30,7 +38,8 @@ struct NewWorkflowCell: View {
 #Preview {
     NewWorkflowCell(
         description: .init(
-            id: "id",
+            id: "id", 
+            key: "WORK-001",
             name: "Name name name",
             iconName: "suitcase"
         )

@@ -9,11 +9,13 @@ import Foundation
 
 public struct NewWorkflowDescription: Identifiable {
     public let id: String
-    public let name: String
+    public let key: String?
+    public let name: String?
     public let iconName: String
     
-    public init(id: String, name: String, iconName: String) {
+    public init(id: String, key: String?, name: String?, iconName: String) {
         self.id = id
+        self.key = key
         self.name = name
         self.iconName = iconName
     }
@@ -62,8 +64,9 @@ public struct NewWorkflow<S: State>: Identifiable {
     
     public func createWorkflow() async throws -> AnyWorkflow {
         try await storage.startWorkflow(
-            name: description.name,
-            initialState: initialState
+            initialState: initialState,
+            key: description.key,
+            name: description.name
         )
     }
     

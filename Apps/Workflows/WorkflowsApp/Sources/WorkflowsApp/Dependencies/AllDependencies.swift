@@ -10,4 +10,6 @@ import Workflow
 protocol AllDependencies {
     var workflowsStorage: WorkflowsStorage<Void> { get }
     var newWorkflowsService: NewWorkflowService { get }
+    var workflowTypeAppearance: WorkflowAppearanceService { get }
+    var activeWorkflowService: ActiveWorkflowService { get }
 }

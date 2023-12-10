@@ -25,8 +25,9 @@ public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
             let initialState = PortfolioState.toDo(.init(taskId: taskId))
             return NewWorkflow(
                 description: .init(
-                    id: taskId,
-                    name: "\(taskId): Реализовать компонент \(id)",
+                    id: taskId, 
+                    key: taskId,
+                    name: "Реализовать компонент \(id)",
                     iconName: "suitcase"
                 ),
                 initialState: initialState,

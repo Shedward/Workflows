@@ -10,7 +10,7 @@ import SwiftUI
 extension Theme {
     public static let system = Theme(
         colors: Colors(
-            content: ColorsByLevel(
+            content: .init(
                 primary: Color(.labelColor),
                 secondary: Color(.secondaryLabelColor),
                 tertiary: Color(.tertiaryLabelColor)
@@ -20,7 +20,7 @@ extension Theme {
                 secondary: Color(.tertiaryLabelColor),
                 tertiary: Color(.separatorColor)
             ),
-            background: ColorsByLevel(
+            background: .init(
                 primary: Color(.textBackgroundColor),
                 secondary: Color(.controlBackgroundColor),
                 tertiary: Color(.windowBackgroundColor)

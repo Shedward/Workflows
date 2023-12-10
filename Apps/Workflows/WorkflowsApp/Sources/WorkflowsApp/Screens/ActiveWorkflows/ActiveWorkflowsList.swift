@@ -22,8 +22,13 @@ struct ActiveWorkflowsList: View {
     
     var body: some View {
         LoadingList(viewModel: listViewModel) { (item: AnyWorkflow) in
-            WorkflowCell(details: item.details)
-                .listRowSeparator(.hidden)
+            Button {
+                openWorkflow(item)
+            } label: {
+                WorkflowCell(workflow: item)
+            }
+            .buttonStyle(.plain)
+            .listRowSeparator(.hidden)
         } empty: {
             ContentUnavailableView {
                 Label("No Workflows", systemImage: "sparkles")
@@ -65,6 +70,11 @@ struct ActiveWorkflowsList: View {
     
     private func createWorkflow() {
         navigation.showNewWorkflows()
+    }
+    
+    private func openWorkflow(_ workflow: AnyWorkflow) {
+        dependencies.activeWorkflowService.makeActive(workflow)
+        listViewModel?.reload()
     }
 }
 
