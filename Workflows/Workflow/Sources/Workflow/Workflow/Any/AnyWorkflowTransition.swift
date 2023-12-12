@@ -1,17 +1,17 @@
 //
-//  AnyStateTransition.swift
+//  AnyWorkflowTransition.swift
 //
 //
 //  Created by Vlad Maltsev on 06.12.2023.
 //
 
-public struct AnyStateTransition: Identifiable {
+public struct AnyWorkflowTransition: Identifiable {
     
     private let getId: () -> String
     private let getName: () -> String
     private let call: () async throws -> Void
     
-    public init<S: State>(_ wrapped: StateTransition<S>) {
+    public init<S: State>(_ wrapped: WorkflowTransition<S>) {
         self.getId = { wrapped.id }
         self.getName = { wrapped.name }
         self.call = { try await wrapped.callAsFunction() }
@@ -30,8 +30,8 @@ public struct AnyStateTransition: Identifiable {
     }
 }
 
-extension StateTransition {
-    func asAny() -> AnyStateTransition {
-        AnyStateTransition(self)
+extension WorkflowTransition {
+    func asAny() -> AnyWorkflowTransition {
+        AnyWorkflowTransition(self)
     }
 }

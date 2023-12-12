@@ -14,47 +14,77 @@ enum WorkflowKeys {
     static let state = "state"
 }
 
-public struct Workflow<S: State> {
+public final class Workflow<S: State> {
     
-    let details: WorkflowDetails
-    let storage: CodableStorage
+    public let details: WorkflowDetails
+    public let storage: WorkflowStorage
     let stateMachine: StateMachine<S>
     
-    private init(details: WorkflowDetails, storage: CodableStorage, stateMachine: StateMachine<S>) {
+    private init(
+        details: WorkflowDetails,
+        storage: WorkflowStorage,
+        stateMachine: StateMachine<S>
+    ) {
         self.details = details
         self.storage = storage
         self.stateMachine = stateMachine
     }
     
-    public static func load(storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
-        let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
-        let state = try storage.load(S.self, at: WorkflowKeys.state)
+    public static func load(
+        storage: WorkflowStorage,
+        dependencies: S.Dependencies
+    ) throws -> Workflow<S> {
+        let details = try storage.data.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
+        let state = try storage.data.load(S.self, at: WorkflowKeys.state)
         
         return Workflow(
             details: details,
             storage: storage,
             stateMachine: StateMachine(
                 initialState: state,
-                storage: storage.accessor(for: WorkflowKeys.state), 
+                storage: storage.data.accessor(for: WorkflowKeys.state),
                 dependencies: dependencies
             )
         )
     }
     
-    public static func create(details: WorkflowDetails, initialState: S, storage: CodableStorage, dependencies: S.Dependencies) throws -> Self {
+    public static func create(
+        details: WorkflowDetails,
+        initialState: S, 
+        storage: WorkflowStorage,
+        dependencies: S.Dependencies
+    ) throws -> Workflow<S> {
         let workflow = Workflow(
             details: details,
             storage: storage,
             stateMachine: StateMachine(
                 initialState: initialState,
-                storage: storage.accessor(for: WorkflowKeys.state), 
+                storage: storage.data.accessor(for: WorkflowKeys.state),
                 dependencies: dependencies
             )
         )
         
-        try storage.save(details, at: WorkflowKeys.workflow)
-        try storage.save(initialState, at: WorkflowKeys.state)
+        try storage.data.save(details, at: WorkflowKeys.workflow)
+        try storage.data.save(initialState, at: WorkflowKeys.state)
         
         return workflow
+    }
+    
+    public var state: S {
+        stateMachine.state
+    }
+    
+    public var transitions: [AnyWorkflowTransition] {
+        stateMachine.state.description.transitions.map {
+            WorkflowTransition(workflow: self, transition: $0.toAny()).asAny()
+        }
+    }
+    
+    public func move(to state: S) throws {
+        try stateMachine.move(to: state)
+    }
+    
+    public func delete() async throws {
+        try await storage.deleteAllWorkflowData()
     }
 }

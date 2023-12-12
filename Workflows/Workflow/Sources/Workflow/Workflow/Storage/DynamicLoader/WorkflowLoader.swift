@@ -20,11 +20,14 @@ public struct WorkflowLoader<S: State>: AnyWorkflowLoader {
         self.type = id
     }
     
-    public func load<Dependencies>(from storage: CodableStorage, dependencies: Dependencies) throws -> AnyWorkflow {
+    public func load<Dependencies>(from storage: WorkflowStorage, dependencies: Dependencies) throws -> AnyWorkflow {
         guard let workflowsDependencies = dependencies as? S.Dependencies else {
             throw Failure("Can't cast \(Swift.type(of: dependencies)) to \(S.Dependencies.self)")
         }
-        let workflow = try Workflow<S>.load(storage: storage, dependencies: workflowsDependencies)
+        let workflow = try Workflow<S>.load(
+            storage: storage,
+            dependencies: workflowsDependencies
+        )
         return workflow.asAny()
     }
 }

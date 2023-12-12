@@ -45,10 +45,4 @@ public final class StateMachine<S: State> {
             """
         )
     }
-    
-    public var transitions: [StateTransition<S>] {
-        state.description.transitions.map { transition in
-            StateTransition(stateMachine: self, transition: transition)
-        }
-    }
 }

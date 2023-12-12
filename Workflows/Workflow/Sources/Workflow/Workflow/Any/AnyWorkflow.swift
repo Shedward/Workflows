@@ -16,37 +16,19 @@ public struct AnyWorkflow: Identifiable {
     }
 
     public let details: WorkflowDetails
-    public let storage: CodableStorage
+    public let storage: WorkflowStorage
     public let statePublisher: AnyPublisher<AnyState, Never>
     
     private let getState: () -> AnyState
 
-    init<S: State>(_ wrapped: Workflow<S>) {
-        self.details = wrapped.details
-        self.storage = wrapped.storage
-        self.getState = {
-            let state = wrapped.stateMachine.state
-            let transitions = wrapped.stateMachine.transitions
-            return AnyState(
-                id: state.description.id,
-                name: state.description.name,
-                transitions: transitions.map { $0.asAny() }
-            )
-        }
+    init<S: State>(_ workflow: Workflow<S>) {
+        self.details = workflow.details
+        self.storage = workflow.storage
+        self.getState = { AnyState(state: workflow.stateMachine.state, workflow: workflow) }
 
-        let stateMachine = wrapped.stateMachine
         self.statePublisher =
-            wrapped.stateMachine.$state
-                .map { state in
-                    AnyState(
-                        id: state.description.id,
-                        name: state.description.name,
-                        transitions: state.description.transitions.map { transition in
-                            StateTransition(stateMachine: stateMachine, transition: transition)
-                                .asAny()
-                        }
-                    )
-                }
+            workflow.stateMachine.$state
+                .map { AnyState(state: $0, workflow: workflow) }
                 .receive(on: RunLoop.main)
                 .eraseToAnyPublisher()
     }

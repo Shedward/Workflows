@@ -16,8 +16,8 @@ extension TaskState {
         let id = "StartTask"
         let name = "Начать задачу"
         
-        func callAsFunction(_ stateMachine: StateMachine<TaskState>) async throws {
-            try stateMachine.move(
+        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
+            try workflow.move(
                 to: .inProgress(TaskState.InProgress(id: todo.id, branch: todo.id))
             )
         }

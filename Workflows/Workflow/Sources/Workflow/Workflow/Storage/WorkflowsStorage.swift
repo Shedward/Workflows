@@ -83,16 +83,26 @@ public class WorkflowsStorage<Dependencies> {
                 try workflowItem.createDirectory()
             }
             
-            let storage = DirectoryCodableStorage(at: workflowItem)
             let details = WorkflowDetails(
                 id: id,
                 type: WorkflowType(S.self),
                 key: key,
                 name: name
             )
-            
+
             let workflow = try Failure.wrap("Creating workflow config at \(details)") {
-                try Workflow.create(details: details, initialState: initialState, storage: storage, dependencies: self.dependencies)
+                let storage = WorkflowStorage(
+                    data: DirectoryCodableStorage(at: workflowItem),
+                    deleteAllWorkflowData: {
+                        try await self.endWorkflow(id)
+                    }
+                )
+                return try Workflow.create(
+                    details: details,
+                    initialState: initialState,
+                    storage: storage,
+                    dependencies: self.dependencies
+                )
             }
             
             didUpdateSubject.send(())
@@ -100,7 +110,7 @@ public class WorkflowsStorage<Dependencies> {
         }.value
     }
     
-    public func stopWorkflow(_ id: WorkflowId) async throws {
+    public func endWorkflow(_ id: WorkflowId) async throws {
         try await Task(priority: .userInitiated) {
             try workflowItem(id: id).delete()
             didUpdateSubject.send(())
@@ -108,8 +118,14 @@ public class WorkflowsStorage<Dependencies> {
     }
 
     private func loadWorkflow(id: WorkflowId) throws -> AnyWorkflow {
-        let storage = DirectoryCodableStorage(at: workflowItem(id: id))
-        let details = try storage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
+        let dataStorage = DirectoryCodableStorage(at: workflowItem(id: id))
+        let details = try dataStorage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
+        let storage = WorkflowStorage(
+            data: dataStorage,
+            deleteAllWorkflowData: {
+                try await self.endWorkflow(id)
+            }
+        )
         let workflow = try dynamicLoader.load(details: details, from: storage, dependencies: dependencies)
         return workflow
     }

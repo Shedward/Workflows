@@ -36,4 +36,8 @@ public struct DirectoryCodableStorage: CodableStorage {
     private func item(at key: String) -> FileItem {
         directory.appending(key + ".json")
     }
+    
+    public func eraseAll() throws {
+        try directory.delete()
+    }
 }

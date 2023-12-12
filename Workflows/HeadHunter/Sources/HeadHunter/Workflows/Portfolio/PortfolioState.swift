@@ -22,18 +22,23 @@ public enum PortfolioState: State {
         case .toDo(let todo):
             StateDescription(id: "Portfolio.ToDo", name: "Сделать") {
                 StartEstimation(todo: todo)
+                Delete()
             }
         case .estimation(let estimation):
             StateDescription(id: "Portfolio.Estimation", name: "Оценка") {
                 FinishEstimation(estimation: estimation)
                 BackToToDo(taskId: estimation.taskId)
+                Delete()
             }
         case .inProgress(let inProgress):
             StateDescription(id: "Portfolio.InProgress", name: "В работе") {
                 BackToToDo(taskId: inProgress.taskId)
+                Delete()
             }
         case .finished:
-            StateDescription(id: "Portfolio.Finished", name: "Завершена")
+            StateDescription(id: "Portfolio.Finished", name: "Завершена") {
+                Delete()
+            }
         }
     }
 }

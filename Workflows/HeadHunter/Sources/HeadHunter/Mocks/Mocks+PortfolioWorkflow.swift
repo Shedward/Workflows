@@ -18,7 +18,7 @@ extension Mocks {
                 name: name
             ),
             initialState: PortfolioState.toDo(.init(taskId: "PORTFOLIO-mock")),
-            storage: InMemoryCodableStorage(),
+            storage: .mock,
             dependencies: ()
         )
     }

@@ -15,8 +15,8 @@ extension PortfolioState {
         
         let estimation: PortfolioState.Estimation
         
-        func callAsFunction(_ stateMachine: StateMachine<PortfolioState>) async throws {
-            try stateMachine.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
+        func callAsFunction(_ workflow: Workflow<PortfolioState>) async throws {
+            try workflow.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
         }
     }
 }

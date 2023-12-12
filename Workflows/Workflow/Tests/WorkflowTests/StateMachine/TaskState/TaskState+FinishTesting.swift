@@ -16,8 +16,8 @@ extension TaskState {
         let id = "StartTesting"
         let name = "Начать тестирование"
         
-        func callAsFunction(_ stateMachine: StateMachine<TaskState>) async throws {
-            try stateMachine.move(
+        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
+            try workflow.move(
                 to: .done(TaskState.Done(id: testing.id))
             )
         }

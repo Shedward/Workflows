@@ -32,4 +32,8 @@ public final class InMemoryCodableStorage: CodableStorage {
     public func exists(at key: String) -> Bool {
         stored[key] != nil
     }
+    
+    public func eraseAll() throws {
+        stored = [:]
+    }
 }

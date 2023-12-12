@@ -16,8 +16,8 @@ extension TaskState {
         let id = "SendToReview"
         let name = "Отправить на ревью"
         
-        func callAsFunction(_ stateMachine: StateMachine<TaskState>) async throws {
-            try stateMachine.move(
+        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
+            try workflow.move(
                 to: .review(
                     TaskState.Review(
                         id: inProgress.id,

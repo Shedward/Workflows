@@ -11,7 +11,7 @@ public protocol Transition: Identifiable, CustomStringConvertible {
     var id: String { get }
     var name: String { get }
     
-    func callAsFunction(_ stateMachine: StateMachine<S>) async throws
+    func callAsFunction(_ workflow: Workflow<S>) async throws
 }
 
 extension Transition {
@@ -24,7 +24,7 @@ public class AnyTransition<S: State>: Transition {
     
     private let getId: () -> String
     private let getName: () -> String
-    private let call: (StateMachine<S>) async throws -> Void
+    private let call: (Workflow<S>) async throws -> Void
     
     public var id: String {
         getId()
@@ -40,7 +40,7 @@ public class AnyTransition<S: State>: Transition {
         self.call = wrapped.callAsFunction
     }
     
-    public func callAsFunction(_ stateMachine: StateMachine<S>) async throws {
+    public func callAsFunction(_ stateMachine: Workflow<S>) async throws {
         try await call(stateMachine)
     }
 }
