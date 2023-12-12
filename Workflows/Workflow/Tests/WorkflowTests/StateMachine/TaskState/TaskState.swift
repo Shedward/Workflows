@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 17.11.2023.
 //
 
-import Workflows
+import Workflow
 
 enum TaskState: State {
     

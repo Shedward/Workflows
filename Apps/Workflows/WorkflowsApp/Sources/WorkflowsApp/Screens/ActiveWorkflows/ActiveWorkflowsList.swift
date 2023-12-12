@@ -64,7 +64,11 @@ struct ActiveWorkflowsList: View {
             listViewModel = LoadingListViewModel {
                 try await dependencies.workflowsStorage.workflows()
             }
+            listViewModel?.shouldShowLoading = false
             await listViewModel?.reload()
+        }
+        .onReceive(dependencies.workflowsStorage.didUpdate) {
+            listViewModel?.reload()
         }
     }
     

@@ -19,93 +19,93 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/System\/Executable",
+        "containerPath" : "container:System\/Executable",
         "identifier" : "ExecutableTests",
         "name" : "ExecutableTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/Services\/Figma",
+        "containerPath" : "container:Services\/Figma",
         "identifier" : "FigmaTests",
         "name" : "FigmaTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/System\/Git",
+        "containerPath" : "container:System\/FileSystem",
+        "identifier" : "FileSystemTests",
+        "name" : "FileSystemTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:System\/Git",
         "identifier" : "GitTests",
         "name" : "GitTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/Services\/GitHub",
+        "containerPath" : "container:Services\/GitHub",
         "identifier" : "GitHubTests",
         "name" : "GitHubTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/Services\/Jira",
-        "identifier" : "JiraTests",
-        "name" : "JiraTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..\/..\/System\/LocalStorage",
-        "identifier" : "LocalStorageTests",
-        "name" : "LocalStorageTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..\/..\/Core\/Prelude",
-        "identifier" : "PreludeTests",
-        "name" : "PreludeTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..\/..\/Core\/RestClient",
-        "identifier" : "RestClientTests",
-        "name" : "RestClientTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..\/..\/System\/SecureStorage",
-        "identifier" : "SecureStorageTests",
-        "name" : "SecureStorageTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:..\/..\/..\/GoogleCloud",
+        "containerPath" : "container:GoogleCloud",
         "identifier" : "GoogleCloudTests",
         "name" : "GoogleCloudTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/Workflows\/HeadHunter",
+        "containerPath" : "container:Workflows\/HeadHunter",
         "identifier" : "HeadHunterTests",
         "name" : "HeadHunterTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/Workflows\/Workflows",
-        "identifier" : "WorkflowsTests",
-        "name" : "WorkflowsTests"
+        "containerPath" : "container:Services\/Jira",
+        "identifier" : "JiraTests",
+        "name" : "JiraTests"
       }
     },
     {
       "target" : {
-        "containerPath" : "container:..\/..\/..\/System\/FileSystem",
-        "identifier" : "FileSystemTests",
-        "name" : "FileSystemTests"
+        "containerPath" : "container:System\/LocalStorage",
+        "identifier" : "LocalStorageTests",
+        "name" : "LocalStorageTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Core\/Prelude",
+        "identifier" : "PreludeTests",
+        "name" : "PreludeTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Core\/RestClient",
+        "identifier" : "RestClientTests",
+        "name" : "RestClientTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:System\/SecureStorage",
+        "identifier" : "SecureStorageTests",
+        "name" : "SecureStorageTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Workflows\/Workflow",
+        "identifier" : "WorkflowTests",
+        "name" : "WorkflowTests"
       }
     }
   ],

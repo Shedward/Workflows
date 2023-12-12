@@ -12,6 +12,8 @@ import Combine
 @Observable
 public final class LoadingListViewModel<Item: Identifiable> {
     
+    public var shouldShowLoading: Bool = true
+    
     internal var items: Loading<[Item], Error> = .loading
     private let load: () async throws -> [Item]
     
@@ -20,7 +22,9 @@ public final class LoadingListViewModel<Item: Identifiable> {
     }
     
     public func reload() async {
-        self.items = .loading
+        if shouldShowLoading {
+            self.items = .loading
+        }
         do {
             self.items = .loaded(try await load())
         } catch {
@@ -32,6 +36,11 @@ public final class LoadingListViewModel<Item: Identifiable> {
         Task {
             await reload()
         }
+    }
+    
+    public func showLoading(_ shouldShowLoading: Bool) -> Self {
+        self.shouldShowLoading = shouldShowLoading
+        return self
     }
 }
 

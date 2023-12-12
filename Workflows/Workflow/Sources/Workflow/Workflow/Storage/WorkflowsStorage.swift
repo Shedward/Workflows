@@ -9,6 +9,7 @@ import LocalStorage
 import FileSystem
 import Prelude
 import Foundation
+import Combine
 
 public class WorkflowsStorage<Dependencies> {
 
@@ -27,6 +28,13 @@ public class WorkflowsStorage<Dependencies> {
     
     public var sharedCache: WorkflowsCache {
         WorkflowsCache()
+    }
+    
+    private let didUpdateSubject = PassthroughSubject<Void, Never>()
+    public var didUpdate: AnyPublisher<Void, Never> {
+        didUpdateSubject
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
     }
     
     public init(at rootItem: FileItem, dynamicLoader: DynamicWorkflowLoader, dependencies: Dependencies) {
@@ -63,8 +71,8 @@ public class WorkflowsStorage<Dependencies> {
     
     public func startWorkflow<S>(
         initialState: S,
-        key: String?,
-        name: String?
+        key: String? = nil,
+        name: String? = nil
     ) async throws -> AnyWorkflow where S: State, S.Dependencies == Dependencies {
         try await Task(priority: .userInitiated) { () -> AnyWorkflow in
             let postfix = [key, name].compactMap { $0 }.joined(separator: ":") 
@@ -87,6 +95,7 @@ public class WorkflowsStorage<Dependencies> {
                 try Workflow.create(details: details, initialState: initialState, storage: storage, dependencies: self.dependencies)
             }
             
+            didUpdateSubject.send(())
             return workflow.asAny()
         }.value
     }
@@ -94,6 +103,7 @@ public class WorkflowsStorage<Dependencies> {
     public func stopWorkflow(_ id: WorkflowId) async throws {
         try await Task(priority: .userInitiated) {
             try workflowItem(id: id).delete()
+            didUpdateSubject.send(())
         }.value
     }
 

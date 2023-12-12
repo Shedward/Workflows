@@ -51,22 +51,31 @@ struct WorkflowCell: View {
             Text(workflow.details.name ?? "")
                 .font(\.body)
             
-            if isActive {
+            if let state, isActive {
                 Divider()
                 
                 SpacedHStack {
                     Spacer()
-                    Button("На ревью") {}
+                    Menu("Transitions") {
+                        ForEach(state.transitions) { transition in
+                            Button(transition.name) {
+                                _Concurrency.Task {
+                                    try await transition.callAsFunction()
+                                }
+                            }
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             }
         }
         .spacedFrame(
-            \.background.tertiary ,
+            \.background.tertiary,
              border: isActive ? stateAppearance.tintColor : \.accessory.tertiary
         )
         .spacing(.d2)
-        .task {
-            state = await workflow.state()
+        .onReceive(workflow.statePublisher) { state in
+            self.state = state
         }
     }
 }

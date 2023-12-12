@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 06.12.2023.
 //
 
-public struct AnyStateTransition {
+public struct AnyStateTransition: Identifiable {
     
     private let getId: () -> String
     private let getName: () -> String

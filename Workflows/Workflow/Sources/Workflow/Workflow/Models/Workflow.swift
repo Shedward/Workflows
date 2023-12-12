@@ -7,6 +7,7 @@
 
 import Prelude
 import LocalStorage
+import Dispatch
 
 enum WorkflowKeys {
     static let workflow = "workflow"
@@ -14,6 +15,7 @@ enum WorkflowKeys {
 }
 
 public struct Workflow<S: State> {
+    
     let details: WorkflowDetails
     let storage: CodableStorage
     let stateMachine: StateMachine<S>

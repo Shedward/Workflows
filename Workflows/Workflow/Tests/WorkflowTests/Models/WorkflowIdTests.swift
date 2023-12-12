@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 22.10.2023.
 //
 
-@testable import Workflows
+@testable import Workflow
 import XCTest
 
 final class WorkflowIdTests: XCTestCase {

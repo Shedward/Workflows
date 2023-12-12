@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 03.12.2023.
 //
 
-import Workflows
+import Workflow
 
 extension TaskState {
 
@@ -17,7 +17,7 @@ extension TaskState {
         let name = "Начать задачу"
         
         func callAsFunction(_ stateMachine: StateMachine<TaskState>) async throws {
-            try await stateMachine.move(
+            try stateMachine.move(
                 to: .inProgress(TaskState.InProgress(id: todo.id, branch: todo.id))
             )
         }

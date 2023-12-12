@@ -16,7 +16,7 @@ extension PortfolioState {
         let taskId: String
         
         func callAsFunction(_ stateMachine: StateMachine<PortfolioState>) async throws {
-            try await stateMachine.move(to: .toDo(.init(taskId: taskId)))
+            try stateMachine.move(to: .toDo(.init(taskId: taskId)))
         }
     }
 }

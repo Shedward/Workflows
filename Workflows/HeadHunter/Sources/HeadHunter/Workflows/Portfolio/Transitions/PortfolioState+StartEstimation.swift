@@ -17,7 +17,7 @@ extension PortfolioState {
         
         func callAsFunction(_ stateMachine: StateMachine<PortfolioState>) async throws {
             let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
-            try await stateMachine.move(
+            try stateMachine.move(
                 to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
             )
         }

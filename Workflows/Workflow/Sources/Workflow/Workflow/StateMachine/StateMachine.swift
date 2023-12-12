@@ -10,28 +10,31 @@ import Prelude
 import LocalStorage
 import os
 
-public actor StateMachine<S: State> {
 
-    nonisolated public let id = UUID()
-    nonisolated public let dependencies: S.Dependencies
+public final class StateMachine<S: State> {
+
+    public let id = UUID()
+    public let dependencies: S.Dependencies
+    
+    @Published
     public private(set) var state: S
     
     private let storage: ThrowingAccessor<S>
     private let logger = Logger(scope: .workflows)
     
     public init(initialState: S, storage: ThrowingAccessor<S>, dependencies: S.Dependencies) {
-        self.state = initialState
+        self._state = Published(initialValue: initialState)
         self.storage = storage
         self.dependencies = dependencies
     }
     
-    public init(storage: ThrowingAccessor<S>, dependencies: S.Dependencies) async throws {
+    public init(storage: ThrowingAccessor<S>, dependencies: S.Dependencies) throws {
         self.state = try storage.get()
         self.storage = storage
         self.dependencies = dependencies
     }
     
-    public func move(to state: S) async throws {
+    public func move(to state: S) throws {
         let oldState = self.state
         self.state = state
         try storage.set(state)
