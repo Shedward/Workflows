@@ -28,7 +28,7 @@ public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
                     id: taskId, 
                     key: taskId,
                     name: "Реализовать компонент \(id)",
-                    iconName: "suitcase"
+                    type: WorkflowType(PortfolioState.self)
                 ),
                 initialState: initialState,
                 storage: storage

@@ -39,7 +39,6 @@ struct ActiveWorkflowsList: View {
             }
         }
         .contentInsets(bottom: 32)
-        .listStyle(.plain)
         .overlay(alignment: .bottom) {
             BottomToolbar {
                 Button {

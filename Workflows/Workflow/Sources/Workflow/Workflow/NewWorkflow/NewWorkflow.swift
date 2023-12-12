@@ -11,13 +11,13 @@ public struct NewWorkflowDescription: Identifiable {
     public let id: String
     public let key: String?
     public let name: String?
-    public let iconName: String
+    public let type: WorkflowType
     
-    public init(id: String, key: String?, name: String?, iconName: String) {
+    public init(id: String, key: String?, name: String?, type: WorkflowType) {
         self.id = id
         self.key = key
         self.name = name
-        self.iconName = iconName
+        self.type = type
     }
 }
 

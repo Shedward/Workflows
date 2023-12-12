@@ -12,7 +12,7 @@ import Combine
 @Observable
 public final class LoadingListViewModel<Item: Identifiable> {
     
-    public var shouldShowLoading: Bool = true
+    public var shouldShowLoading: Bool = false
     
     internal var items: Loading<[Item], Error> = .loading
     private let load: () async throws -> [Item]
@@ -73,7 +73,9 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
             
             switch viewModel?.items ?? .loading {
             case .loading:
-                LoadingView()
+                if viewModel?.shouldShowLoading ?? false {
+                    LoadingView()
+                }
             case .loaded(let items):
                 if items.isEmpty {
                     empty()
@@ -92,6 +94,7 @@ public struct LoadingList<Item: Identifiable, Cell: View, Empty: View>: View {
                     .frame(height: contentInsets.bottom)
             }
         }
+        .listStyle(.plain)
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.always)
         .task {

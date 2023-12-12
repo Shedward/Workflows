@@ -8,30 +8,32 @@
 import SwiftUI
 import UI
 import Workflow
+import HeadHunter
 
 struct NewWorkflowCell: View {
+
+    @Environment(\.dependencies)
+    private var dependencies: AllDependencies
     
     let description: NewWorkflowDescription
     
     var body: some View {
-        SpacedHStack(alignment: .center) {
-            Image(systemName: description.iconName)
-            SpacedVStack {
-                if let key = description.key {
-                    Text(key)
-                        .font(\.caption)
-                }
-                if let name = description.name {
-                    Text(name)
-                        .font(\.body)
-                        .lineLimit(2)
-                }
+        SpacedVStack(alignment: .leading) {
+            SpacedHStack {
+                let stateAppearance = dependencies.workflowTypeAppearance.appearance(for: description.type)
+                stateAppearance.icon
+                Text(description.key ?? stateAppearance.name)
+                Spacer()
+                Image(systemName: "chevron.compact.right")
             }
-            Spacer()
-            Image(systemName: "chevron.forward")
+            .font(\.caption)
+            .bold()
+            
+            Text(description.name ?? "")
+                .font(\.body)
         }
-        .contentShape(Rectangle())
-        .spacing()
+        .spacedFrame(\.background.tertiary, border: \.accessory.tertiary)
+        .spacing(.d2)
     }
 }
 
@@ -41,7 +43,7 @@ struct NewWorkflowCell: View {
             id: "id", 
             key: "WORK-001",
             name: "Name name name",
-            iconName: "suitcase"
+            type: WorkflowType(PortfolioState.self)
         )
     )
 }

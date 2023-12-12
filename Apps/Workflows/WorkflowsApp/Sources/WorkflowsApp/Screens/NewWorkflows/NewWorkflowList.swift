@@ -36,7 +36,6 @@ struct NewWorkflowList: View {
                 Label("No Possible Workflows", systemImage: "sparkles")
             }
         }
-        .listStyle(.inset)
         .navigationTitle("Create workflow")
     }
     
