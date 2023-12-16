@@ -8,15 +8,16 @@
 import Prelude
 import Executable
 import Foundation
+import FileSystem
 
 public struct Repository {
     private let git: Executable
     
-    public let path: String
+    public let directory: FileItem
 
-    init(git: Executable, path: String) {
+    init(git: Executable, directory: FileItem) {
         self.git = git
-        self.path = path
+        self.directory = directory
     }
 
     public func currentBranch() async throws -> Ref {
@@ -32,6 +33,14 @@ public struct Repository {
 
     public func push() async throws {
         try await git.run("push").finished()
+    }
+    
+    public func fetch() async throws {
+        try await git.run("fetch").finished()
+    }
+    
+    public func pull() async throws {
+        try await git.run("pull").finished()
     }
 }
 

@@ -14,12 +14,13 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../System/Executable"),
+        .package(path: "../System/FileSystem"),
         .package(path: "../Core/TestsPrelude")
     ],
     targets: [
         .target(
             name: "Git",
-            dependencies: ["Executable"]
+            dependencies: ["Executable", "FileSystem"]
         ),
         .testTarget(
             name: "GitTests",

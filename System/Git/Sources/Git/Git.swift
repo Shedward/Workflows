@@ -7,9 +7,10 @@
 
 import Foundation
 import Executable
+import FileSystem
 
 public struct Git {
-    private let git: Executable
+    internal let git: Executable
 
     public init() {
         git = ProcessExecutable(command: "git")
@@ -19,18 +20,46 @@ public struct Git {
         git = mock.executable
     }
 
-    public func repository(at path: String) async throws -> Repository {
+    public func repository(at directory: FileItem) async throws -> Repository {
         let repositoryExecutable = git
-            .workingDirectory(path)
+            .workingDirectory(directory.path.string)
             .errorOutput(to: nil)
 
         try await repositoryExecutable
             .run("rev-parse")
             .finished(.errorCodes([
-                128: GitError.noGitRepositoryAtPath(path)
+                128: GitError.noGitRepositoryAtPath(directory.path.string)
             ]))
 
-        return Repository(git: repositoryExecutable, path: path)
+        return Repository(git: repositoryExecutable, directory: directory)
+    }
+    
+    public func clone(_ repoUrl: String, to directory: FileItem) async throws -> Repository {
+        try await git
+            .run("clone", repoUrl, directory.path.string)
+            .finished()
+        
+        let repositoryExecutable = git
+            .workingDirectory(directory.path.string)
+
+        return Repository(git: repositoryExecutable, directory: directory)
+    }
+    
+    public func exists(in directory: FileItem) async throws -> Bool {
+        let repositoryExecutable = git
+            .workingDirectory(directory.path.string)
+            .errorOutput(to: nil)
+
+        let result = try await repositoryExecutable
+            .run("rev-parse")
+        
+        if result.isSuccessful {
+            return true
+        } else if result.status == 128 {
+            return false
+        } else {
+            throw GitError.unexpectedStatusCode(result.status)
+        }
     }
 }
 

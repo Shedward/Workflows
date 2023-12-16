@@ -17,6 +17,8 @@ public protocol FileSystem {
     
     func loadData(at path: Path) throws -> Data
     func save(data: Data, at path: Path) throws
+    
+    func copy(source: Path, destination: Path) throws
 }
 
 extension FileSystem {

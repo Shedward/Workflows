@@ -62,4 +62,8 @@ public final class FileManagerFileSystem: FileSystem {
     private func path(_ url: URL) -> Path {
         Path(url.path(percentEncoded: false))
     }
+    
+    public func copy(source: Path, destination: Path) throws {
+        try fileManager.copyItem(at: source.url, to: destination.url)
+    }
 }

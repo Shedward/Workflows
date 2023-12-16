@@ -68,7 +68,7 @@ public struct ProcessExecutable: Sendable, Executable {
         let process = Process()
         process.executableURL = executableURL
         process.currentDirectoryURL = workingDirectory
-        process.arguments = self.arguments + arguments
+        process.arguments = arguments
         process.standardInput = pipes.input
         process.standardOutput = pipes.output
         process.standardError = pipes.error

@@ -7,4 +7,5 @@
 
 enum GitError: Error {
     case noGitRepositoryAtPath(String)
+    case unexpectedStatusCode(Int32)
 }

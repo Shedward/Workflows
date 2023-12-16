@@ -10,7 +10,7 @@ import os
 
 public struct FileItem {
     private let fileSystem: FileSystem
-    let path: Path
+    public let path: Path
     
     init(fileSystem: FileSystem, path: Path) {
         self.fileSystem = fileSystem
@@ -53,6 +53,10 @@ public struct FileItem {
     
     public func createDirectory() throws {
         try fileSystem.createDirectory(at: path)
+    }
+    
+    public func copy(to another: FileItem) throws {
+        try fileSystem.copy(source: path, destination: another.path)
     }
 }
 

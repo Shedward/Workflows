@@ -102,6 +102,10 @@ public final class InMemoryFileSystem: FileSystem {
         items[path] = .file(data)
     }
     
+    public func copy(source: Path, destination: Path) throws {
+        items[destination] = items[source]
+    }
+    
     private func haveFile(at path: Path) -> Bool {
         if case .some(.file) = items[path] {
             true

@@ -92,7 +92,8 @@ public class WorkflowsStorage<Dependencies> {
 
             let workflow = try Failure.wrap("Creating workflow config at \(details)") {
                 let storage = WorkflowStorage(
-                    data: DirectoryCodableStorage(at: workflowItem),
+                    data: DirectoryCodableStorage(at: workflowItem), 
+                    rootItem: workflowItem,
                     deleteAllWorkflowData: {
                         try await self.endWorkflow(id)
                     }
@@ -118,10 +119,12 @@ public class WorkflowsStorage<Dependencies> {
     }
 
     private func loadWorkflow(id: WorkflowId) throws -> AnyWorkflow {
-        let dataStorage = DirectoryCodableStorage(at: workflowItem(id: id))
+        let workflowItem = self.workflowItem(id: id)
+        let dataStorage = DirectoryCodableStorage(at: workflowItem)
         let details = try dataStorage.load(WorkflowDetails.self, at: WorkflowKeys.workflow)
         let storage = WorkflowStorage(
-            data: dataStorage,
+            data: dataStorage, 
+            rootItem: workflowItem,
             deleteAllWorkflowData: {
                 try await self.endWorkflow(id)
             }

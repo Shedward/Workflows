@@ -40,15 +40,15 @@ final class WorkflowsStorageTests: XCTestCase {
         let reopenW2 = try await workflowsStorage.workflow(w2.details.id)
         XCTAssertEqual(w2.details, reopenW2.details)
         
-        try await workflowsStorage.stopWorkflow(w1.details.id)
+        try await workflowsStorage.endWorkflow(w1.details.id)
         let workflowsAfterStop = try await workflowsStorage.workflows()
         XCTAssertEqual(workflowsAfterStop.count, 2)
     }
     
     func testWorkflowStorage() async throws {
         let workflow = try await workflowsStorage.startWorkflow(initialState: TaskState.todo(TaskState.ToDo(id: "w1")), name: "directory tests workflow")
-        try workflow.storage.save("Hello workflow", at: "test")
-        let savedData: String = try workflow.storage.load(at: "test")
+        try workflow.storage.data.save("Hello workflow", at: "test")
+        let savedData: String = try workflow.storage.data.load(at: "test")
         XCTAssertEqual(savedData, "Hello workflow")
     }
 }
