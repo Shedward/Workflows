@@ -1,5 +1,5 @@
 //
-//  PortfolioState+Finish.swift
+//  PortfolioState+Delete.swift
 //  
 //
 //  Created by Vlad Maltsev on 12.12.2023.

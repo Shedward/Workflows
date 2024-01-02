@@ -1,5 +1,5 @@
 //
-//  PortfolioFinishEstimation.swift
+//  PortfolioState+StartWork.swift
 //
 //
 //  Created by Vlad Maltsev on 06.12.2023.
@@ -8,9 +8,9 @@
 import Workflow
 
 extension PortfolioState {
-    struct FinishEstimation: Transition {
+    struct StartWork: Transition {
         
-        let id = "Portfolio.FinishEstimation"
+        let id = "Portfolio.StartWork"
         let name = "Завершить декомпозицию"
         
         let estimation: PortfolioState.Estimation

@@ -51,21 +51,28 @@ struct WorkflowCell: View {
             Text(workflow.details.name ?? "")
                 .font(\.body)
             
-            if let state, isActive {
+            if let state, isActive, let mainTransition = state.transitions.first {
                 Divider()
+
+                let otherTransitions = state.transitions.dropFirst()
                 
                 SpacedHStack {
                     Spacer()
-                    Menu("Transitions") {
-                        ForEach(state.transitions) { transition in
+                    Menu(mainTransition.name) {
+                        ForEach(otherTransitions) { transition in
                             Button(transition.name) {
                                 _Concurrency.Task {
-                                    try await transition.callAsFunction()
+                                    try await transition()
                                 }
                             }
                         }
+                    } primaryAction: {
+                        _Concurrency.Task {
+                            try await mainTransition()
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
+                    .scaledToFit()
                 }
             }
         }

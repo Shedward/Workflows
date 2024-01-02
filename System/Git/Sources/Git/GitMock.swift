@@ -7,10 +7,10 @@
 
 import Executable
 
-struct GitMock {
+public struct GitMock {
     let executable: MockExecutable
     
-    init() {
+    public init() {
         self.executable = MockExecutable(label: "git")
     }
 }

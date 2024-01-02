@@ -16,7 +16,7 @@ public struct Git {
         git = ProcessExecutable(command: "git")
     }
     
-    init(mock: GitMock) {
+    public init(mock: GitMock) {
         git = mock.executable
     }
 

@@ -15,7 +15,7 @@ public enum PortfolioState: State {
     case inProgress(InProgress)
     case finished
     
-    public typealias Dependencies = ()
+    public typealias Dependencies = PortfolioDependencies
     
     public var description: StateDescription<PortfolioState> {
         switch self {
@@ -26,7 +26,7 @@ public enum PortfolioState: State {
             }
         case .estimation(let estimation):
             StateDescription(id: "Portfolio.Estimation", name: "Оценка") {
-                FinishEstimation(estimation: estimation)
+                StartWork(estimation: estimation)
                 BackToToDo(taskId: estimation.taskId)
                 Delete()
             }

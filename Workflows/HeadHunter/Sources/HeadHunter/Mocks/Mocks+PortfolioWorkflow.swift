@@ -12,14 +12,14 @@ extension Mocks {
     public static func portfolioWorkflow(name: String = "Mock portfolio") -> Workflow<PortfolioState> {
         try! Workflow.create(
             details: WorkflowDetails(
-                id: WorkflowId(rawValue: "mock.portfolioWorkflow"),
+                id: WorkflowId(rawValue: "mock"),
                 type: WorkflowType(PortfolioState.self),
                 key: "PORTFOLIO-11063",
                 name: name
             ),
             initialState: PortfolioState.toDo(.init(taskId: "PORTFOLIO-mock")),
             storage: .mock,
-            dependencies: ()
+            dependencies: MockPortfolioDependencies()
         )
     }
 }

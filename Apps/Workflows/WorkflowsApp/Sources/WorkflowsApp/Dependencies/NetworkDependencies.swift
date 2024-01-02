@@ -13,7 +13,7 @@ import SwiftUI
 
 struct NetworkDependencies: AllDependencies {
     
-    let workflowsStorage: WorkflowsStorage<Void>
+    let workflowsStorage: WorkflowsStorage<PortfolioDependencies>
     let newWorkflowsService: NewWorkflowService
     let workflowTypeAppearance: WorkflowAppearanceService
     let activeWorkflowService: ActiveWorkflowService
@@ -36,10 +36,11 @@ struct NetworkDependencies: AllDependencies {
         let filesystem = FileManagerFileSystem()
         let workflowsRoot = filesystem.homeDirectory().appending("workflows")
         
+        let dependencies: PortfolioDependencies = ActionPortfolioDependencies()
         let workflowsStorage = WorkflowsStorage(
             at: workflowsRoot,
             dynamicLoader: workflowsLoader,
-            dependencies: ()
+            dependencies: dependencies
         )
 
         let newWorkflowsService = NewWorkflowService {

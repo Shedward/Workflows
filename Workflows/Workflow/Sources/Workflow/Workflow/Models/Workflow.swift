@@ -74,6 +74,10 @@ public final class Workflow<S: State> {
         stateMachine.state
     }
     
+    public var dependencies: S.Dependencies {
+        stateMachine.dependencies
+    }
+    
     public var transitions: [AnyWorkflowTransition] {
         stateMachine.state.description.transitions.map {
             WorkflowTransition(workflow: self, transition: $0.toAny()).asAny()

@@ -6,9 +6,10 @@
 //
 
 import Workflow
+import HeadHunter
 
 protocol AllDependencies {
-    var workflowsStorage: WorkflowsStorage<Void> { get }
+    var workflowsStorage: WorkflowsStorage<PortfolioDependencies> { get }
     var newWorkflowsService: NewWorkflowService { get }
     var workflowTypeAppearance: WorkflowAppearanceService { get }
     var activeWorkflowService: ActiveWorkflowService { get }
