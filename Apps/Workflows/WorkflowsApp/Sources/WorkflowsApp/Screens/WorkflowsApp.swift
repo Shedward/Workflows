@@ -25,6 +25,9 @@ public struct WorkflowsApp: App {
                     .navigationDestination(for: Navigation.NewWorkflowsList.self) { _ in
                         NewWorkflowList(navigation: navigation)
                     }
+                    .navigationDestination(for: Navigation.TransitionStepsList.self) { model in
+                        TransitionStepsList(transition: model.transition, navigation: navigation)
+                    }
             }
             .frame(width: WorkflowsApp.size.width, height: WorkflowsApp.size.height)
             .spacing(.s1)

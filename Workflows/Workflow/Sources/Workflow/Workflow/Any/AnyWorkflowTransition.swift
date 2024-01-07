@@ -12,12 +12,14 @@ public struct AnyWorkflowTransition: Identifiable {
     
     private let getId: () -> String
     private let getName: () -> String
-    private let call: (ProgressGroup) async throws -> Void
+    private let getSteps: (ProgressGroup) -> AnyTransitionSteps
+    private let getWorkflow: () -> AnyWorkflow
     
     public init<S: State>(_ wrapped: WorkflowTransition<S>) {
         self.getId = { wrapped.id }
         self.getName = { wrapped.name }
-        self.call = { try await wrapped.callAsFunction(progress: $0) }
+        self.getSteps = { AnyTransitionSteps(wrapped.steps, progressGroup: $0, workflow: wrapped.workflow) }
+        self.getWorkflow = { wrapped.workflow.asAny() }
     }
     
     public var id: String {
@@ -28,8 +30,12 @@ public struct AnyWorkflowTransition: Identifiable {
         getName()
     }
     
-    public func callAsFunction(progress: ProgressGroup) async throws {
-        try await call(progress)
+    public var workflow: AnyWorkflow {
+        getWorkflow()
+    }
+    
+    public func steps(progress: ProgressGroup) -> AnyTransitionSteps {
+        getSteps(progress)
     }
 }
 

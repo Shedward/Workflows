@@ -48,4 +48,9 @@ public struct ProgressState: Equatable {
     public static func failed(_ message: String) -> Self {
         ProgressState(style: .failed, message: message)
     }
+    
+    public static func failed(_ error: Error) -> Self {
+        let errorDescription = (error as? DescriptiveError)?.userDescription ?? String(describing: error)
+        return failed(errorDescription)
+    }
 }

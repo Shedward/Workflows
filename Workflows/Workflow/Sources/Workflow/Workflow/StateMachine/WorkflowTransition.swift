@@ -9,7 +9,7 @@ import Prelude
 
 public struct WorkflowTransition<S: State>: Identifiable, CustomStringConvertible {
     
-    private let workflow: Workflow<S>
+    public let workflow: Workflow<S>
     private let transition: AnyTransition<S>
     
     public var id: String {
@@ -25,8 +25,8 @@ public struct WorkflowTransition<S: State>: Identifiable, CustomStringConvertibl
         self.transition = transition
     }
     
-    public func callAsFunction(progress: ProgressGroup?) async throws {
-        let steps = transition.steps
+    public var steps: TransitionSteps<S> {
+        transition.steps
     }
     
     public var description: String {

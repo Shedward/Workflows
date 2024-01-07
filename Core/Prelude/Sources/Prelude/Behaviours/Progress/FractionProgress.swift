@@ -5,6 +5,8 @@
 //  Created by Vlad Maltsev on 03.01.2024.
 //
 
+import Combine
+
 internal class FractionProgress: ProgressProtocol {
     
     var state: ProgressState {
@@ -14,6 +16,10 @@ internal class FractionProgress: ProgressProtocol {
             isIndefinite: progress.state.isIndefinite,
             message: progress.state.message
         )
+    }
+    
+    var publisher: AnyPublisher<ProgressState, Never> {
+        Empty().eraseToAnyPublisher()
     }
     
     var progress: ProgressProtocol!

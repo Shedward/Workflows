@@ -28,6 +28,10 @@ public class Progress: ProgressProtocol {
         self.parrent = parrent
     }
     
+    public init(state: ProgressState = .initial) {
+        self.state = state
+    }
+    
     public func didUpdateProgress() {
         subject.send(state)
         parrent?.didUpdateProgress()

@@ -14,6 +14,7 @@ import Prelude
 struct WorkflowCell: View {
     
     let workflow: AnyWorkflow
+    let onSelectTransition: (AnyWorkflowTransition) -> Void
     
     @SwiftUI.State
     private var state: AnyState?
@@ -64,15 +65,11 @@ struct WorkflowCell: View {
                     Menu(mainTransition.name) {
                         ForEach(otherTransitions) { transition in
                             Button(transition.name) {
-                                _Concurrency.Task {
-                                    try await transition(progress: progressGroup)
-                                }
+                                onSelectTransition(transition)
                             }
                         }
                     } primaryAction: {
-                        _Concurrency.Task {
-                            try await mainTransition(progress: progressGroup)
-                        }
+                        onSelectTransition(mainTransition)
                     }
                     .buttonStyle(.bordered)
                     .scaledToFit()
@@ -92,8 +89,9 @@ struct WorkflowCell: View {
         }
     }
     
-    init(workflow: AnyWorkflow) {
+    init(workflow: AnyWorkflow, onSelectTransition: @escaping (AnyWorkflowTransition) -> Void) {
         self.workflow = workflow
+        self.onSelectTransition = onSelectTransition
     }
 }
 
@@ -102,10 +100,12 @@ struct WorkflowCell: View {
         WorkflowCell(
             workflow: HeadHunter.Mocks.portfolioWorkflow(
                 name: "Long long description, to test how it's gonna looks when description is logn"
-            ).asAny()
+            ).asAny(),
+            onSelectTransition: { _ in }
         )
         WorkflowCell(
-            workflow: HeadHunter.Mocks.portfolioWorkflow().asAny()
+            workflow: HeadHunter.Mocks.portfolioWorkflow().asAny(),
+            onSelectTransition: { _ in }
         )
     }
     .spacing(.s1)

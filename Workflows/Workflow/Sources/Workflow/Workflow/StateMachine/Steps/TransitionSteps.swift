@@ -9,23 +9,19 @@ import Prelude
 import Foundation
 
 public struct TransitionSteps<S: State> {
-    private let steps: (Workflow<S>) -> [TransitionStep]
+    public let steps: (Workflow<S>) -> [TransitionStep]
     
     public init(@ArrayBuilder<TransitionStep> steps: @escaping (Workflow<S>) -> [TransitionStep]) {
         self.steps = steps
     }
     
-    public init(_ action: @escaping (_ workflow: Workflow<S>, _ progress: ProgressGroup) async throws -> Void) {
+    public init(_ action: @escaping (_ workflow: Workflow<S>, _ progres: Prelude.Progress) async throws -> Void) {
         self.steps = { workflow in
             [
-                TransitionStep(id: "1.Action", name: "") { progress in
-                    try await action(workflow, progress)
+                TransitionStep(id: "1.Action", name: nil) { progres in
+                    try await action(workflow, progres)
                 }
             ]
         }
-    }
-    
-    public func run(_ progress: ProgressGroup?) {
-        
     }
 }

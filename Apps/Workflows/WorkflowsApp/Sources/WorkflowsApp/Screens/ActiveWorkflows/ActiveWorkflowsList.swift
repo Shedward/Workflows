@@ -9,6 +9,7 @@ import SwiftUI
 import Prelude
 import Workflow
 import UI
+import Prelude
 
 struct ActiveWorkflowsList: View {
     
@@ -25,7 +26,9 @@ struct ActiveWorkflowsList: View {
             Button {
                 openWorkflow(item)
             } label: {
-                WorkflowCell(workflow: item)
+                WorkflowCell(workflow: item) { transition in
+                    openTransitionStepsList(transition: transition)
+                }
             }
             .buttonStyle(.plain)
             .listRowSeparator(.hidden)
@@ -78,6 +81,10 @@ struct ActiveWorkflowsList: View {
     private func openWorkflow(_ workflow: AnyWorkflow) {
         dependencies.activeWorkflowService.makeActive(workflow)
         listViewModel?.reload()
+    }
+    
+    private func openTransitionStepsList(transition: AnyWorkflowTransition) {
+        navigation.showTransitionStepsList(transition: transition)
     }
 }
 
