@@ -10,7 +10,7 @@ public struct AnyState {
     public let name: String
     public let transitions: [AnyWorkflowTransition]
     
-    init(id: String, name: String, transitions: [AnyWorkflowTransition]) {
+    public init(id: String, name: String, transitions: [AnyWorkflowTransition]) {
         self.id = id
         self.name = name
         self.transitions = transitions

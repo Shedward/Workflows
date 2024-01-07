@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 public class ProgressGroup: ProgressProtocol {
     public weak var parrent: ProgressProtocol?
@@ -21,6 +22,7 @@ public class ProgressGroup: ProgressProtocol {
     public var publisher: AnyPublisher<ProgressState, Never> {
         subject
             .compactMap { $0 }
+            .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
     

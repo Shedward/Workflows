@@ -22,6 +22,18 @@ public struct AnyWorkflowTransition: Identifiable {
         self.getWorkflow = { wrapped.workflow.asAny() }
     }
     
+    public init(
+        id: String,
+        name: String,
+        steps: AnyTransitionSteps = AnyTransitionSteps(totalProgress: Prelude.Progress(), steps: { }),
+        workflow: AnyWorkflow = AnyWorkflow()
+    ) {
+        self.getId = { id }
+        self.getName = { name }
+        self.getSteps = { _ in steps }
+        self.getWorkflow = { workflow }
+    }
+    
     public var id: String {
         getId()
     }

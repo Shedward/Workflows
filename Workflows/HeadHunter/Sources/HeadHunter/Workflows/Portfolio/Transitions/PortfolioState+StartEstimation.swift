@@ -17,11 +17,23 @@ extension PortfolioState {
         let todo: PortfolioState.ToDo
         
         var steps: TransitionSteps<PortfolioState> {
-            .init { workflow, _ in
-                let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
-                try workflow.move(
-                    to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
-                )
+            .init { workflow in
+                TransitionStep(id: "1.GenerateTable", name: "Сгенерировать таблицу") { _ in
+                    try await Task.sleep(for: .seconds(1))
+                }
+                
+                TransitionStep(id: "2.MakeDecompositionMeeting", name: "Создать встречу на декомпозицию") { progress in
+                    try await Task.sleep(for: .seconds(1))
+                    progress.state = .init(value: 0.2)
+                    try await Task.sleep(for: .seconds(1))
+                }
+                
+                TransitionStep(id: "3.GenerateTasks", name: "Сгенерировать задачи") { _ in
+                    let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
+                    try workflow.move(
+                        to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
+                    )
+                }
             }
         }
     }

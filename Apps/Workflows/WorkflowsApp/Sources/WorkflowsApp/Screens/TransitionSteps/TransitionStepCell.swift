@@ -35,6 +35,7 @@ struct TransitionStepCell: View {
         }
         .frame(maxWidth: .infinity)
         .spacedFrame(\.background.tertiary)
+        .spacing()
     }
     
     @ViewBuilder

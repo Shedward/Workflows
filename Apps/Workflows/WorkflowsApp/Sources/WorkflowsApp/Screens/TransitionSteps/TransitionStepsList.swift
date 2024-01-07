@@ -13,61 +13,79 @@ import Prelude
 struct TransitionStepsList: View {
     
     let title: String
+    let transition: AnyWorkflowTransition
     let transitionSteps: AnyTransitionSteps
     let progressGroup: ProgressProtocol
     let navigation: Navigation
     
+    @SwiftUI.State
+    private var inProgress: Bool = false
+    
     init(transition: AnyWorkflowTransition, navigation: Navigation) {
         let progressGroup = ProgressGroup()
+        self.transition = transition
         self.title = transition.name
         self.transitionSteps = transition.steps(progress: progressGroup)
         self.progressGroup = progressGroup
         self.navigation = navigation
     }
     
-    init(mockTransitionSteps: AnyTransitionSteps) {
-        self.title = "Mock"
-        self.transitionSteps = mockTransitionSteps
-        self.progressGroup = ProgressGroup()
-        self.navigation = Navigation()
+    var body: some View {
+        List {
+            TransitionStepsHeader(
+                workflow: transition.workflow,
+                transition: transition,
+                onTapRun: runTransition,
+                isLoading: inProgress
+            )
+            .disabled(inProgress)
+            
+            ForEach(transitionSteps.steps) { step in
+                TransitionStepCell(transitionStep: step)
+                    .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+        .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.always)
+        .navigationTitle(title)
     }
     
-    var body: some View {
-        SpacedVStack {
-            List {
-                ForEach(transitionSteps.steps) { step in
-                    TransitionStepCell(transitionStep: step)
-                        .listRowSeparator(.hidden)
-                }
-            }
-            .listStyle(.plain)
-            .scrollIndicators(.hidden)
-            .scrollBounceBehavior(.always)
+    private func runTransition() {
+        Task.detached {
+            self.inProgress = true
+            defer { self.inProgress = false }
+            try await transitionSteps()
+            navigation.popToRoot()
         }
-        .navigationTitle(title)
     }
 }
 
 #Preview {
     TransitionStepsList(
-        mockTransitionSteps: AnyTransitionSteps(
-            totalProgress: Prelude.Progress(state: .finished)
-        ) {
-            AnyTransitionStep(
-                id: "1.FirstStep",
-                name: "First Step",
-                progress: Prelude.Progress(state: .finished)
-            ) { }
-            AnyTransitionStep(
-                id: "2.SecondStep",
-                name: "Second Step",
-                progress: Prelude.Progress(state: .init(value: 0.2))
-            ) { }
-            AnyTransitionStep(
-                id: "3.ThirdStep",
-                name: "Third Step",
-                progress: Prelude.Progress(state: .initial)
-            ) { }
-        }
+        transition: AnyWorkflowTransition(
+            id: "mock",
+            name: "Mock",
+            steps: AnyTransitionSteps(
+                totalProgress: Prelude.Progress(state: .finished)
+            ) {
+                AnyTransitionStep(
+                    id: "1.FirstStep",
+                    name: "First Step",
+                    progress: Prelude.Progress(state: .finished)
+                ) { }
+                AnyTransitionStep(
+                    id: "2.SecondStep",
+                    name: "Second Step",
+                    progress: Prelude.Progress(state: .init(value: 0.2))
+                ) { }
+                AnyTransitionStep(
+                    id: "3.ThirdStep",
+                    name: "Third Step",
+                    progress: Prelude.Progress(state: .initial)
+                ) { }
+            }
+        ),
+        navigation: Navigation()
     )
 }

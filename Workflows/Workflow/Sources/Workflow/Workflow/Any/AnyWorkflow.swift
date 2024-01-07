@@ -8,6 +8,7 @@
 import LocalStorage
 import Combine
 import Foundation
+import FileSystem
 
 public struct AnyWorkflow: Identifiable {
 
@@ -31,6 +32,20 @@ public struct AnyWorkflow: Identifiable {
                 .map { AnyState(state: $0, workflow: workflow) }
                 .receive(on: RunLoop.main)
                 .eraseToAnyPublisher()
+    }
+    
+    public init(
+        mockDetails: WorkflowDetails = WorkflowDetails(id: WorkflowId(rawValue: "mock"), type: "Mock Workflow", name: "Mock Workflow Details"),
+        state: AnyState = AnyState(id: "mock", name: "Mock State", transitions: [])
+    ) {
+        self.details = mockDetails
+        self.getState = { state }
+        self.storage = WorkflowStorage(
+            data: InMemoryCodableStorage(),
+            rootItem: InMemoryFileSystem().rootItem,
+            deleteAllWorkflowData: { }
+        )
+        self.statePublisher = Empty().eraseToAnyPublisher()
     }
 
     public func state() -> AnyState {
