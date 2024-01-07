@@ -6,6 +6,7 @@
 //
 
 import Workflow
+import Prelude
 
 extension PortfolioState {
     struct StartEstimation: Transition {
@@ -15,11 +16,13 @@ extension PortfolioState {
         
         let todo: PortfolioState.ToDo
         
-        func callAsFunction(_ workflow: Workflow<PortfolioState>) async throws {
-            let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
-            try workflow.move(
-                to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
-            )
+        var steps: TransitionSteps<PortfolioState> {
+            .init { workflow, _ in
+                let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
+                try workflow.move(
+                    to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
+                )
+            }
         }
     }
 }

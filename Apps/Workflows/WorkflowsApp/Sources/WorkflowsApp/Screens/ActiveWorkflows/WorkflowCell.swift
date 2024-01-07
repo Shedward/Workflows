@@ -9,20 +9,23 @@ import SwiftUI
 import UI
 import Workflow
 import HeadHunter
+import Prelude
 
 struct WorkflowCell: View {
+    
+    let workflow: AnyWorkflow
+    
+    @SwiftUI.State
+    private var state: AnyState?
     
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
     
-    let workflow: AnyWorkflow
-    
-    init(workflow: AnyWorkflow) {
-        self.workflow = workflow
-    }
+    @SwiftUI.State
+    private var progressState: ProgressState = .initial
     
     @SwiftUI.State
-    private var state: AnyState?
+    private var progressGroup = ProgressGroup()
     
     private var isActive: Bool {
         dependencies.activeWorkflowService.isActive(workflow)
@@ -62,13 +65,13 @@ struct WorkflowCell: View {
                         ForEach(otherTransitions) { transition in
                             Button(transition.name) {
                                 _Concurrency.Task {
-                                    try await transition()
+                                    try await transition(progress: progressGroup)
                                 }
                             }
                         }
                     } primaryAction: {
                         _Concurrency.Task {
-                            try await mainTransition()
+                            try await mainTransition(progress: progressGroup)
                         }
                     }
                     .buttonStyle(.bordered)
@@ -84,6 +87,13 @@ struct WorkflowCell: View {
         .onReceive(workflow.statePublisher) { state in
             self.state = state
         }
+        .onReceive(progressGroup.publisher) { progress in
+            self.progressState = progress
+        }
+    }
+    
+    init(workflow: AnyWorkflow) {
+        self.workflow = workflow
     }
 }
 

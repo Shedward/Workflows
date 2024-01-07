@@ -16,10 +16,12 @@ extension TaskState {
         let id = "StartTask"
         let name = "Начать задачу"
         
-        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
-            try workflow.move(
-                to: .inProgress(TaskState.InProgress(id: todo.id, branch: todo.id))
-            )
+        var steps: TransitionSteps<TaskState> {
+            .init { workflow, _ in
+                try workflow.move(
+                    to: .inProgress(TaskState.InProgress(id: todo.id, branch: todo.id))
+                )
+            }
         }
     }
 }

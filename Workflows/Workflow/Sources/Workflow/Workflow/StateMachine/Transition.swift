@@ -5,13 +5,15 @@
 //  Created by Vlad Maltsev on 03.12.2023.
 //
 
+import Prelude
+
 public protocol Transition: Identifiable, CustomStringConvertible {
     associatedtype S: State
     
     var id: String { get }
     var name: String { get }
     
-    func callAsFunction(_ workflow: Workflow<S>) async throws
+    var steps: TransitionSteps<S> { get }
 }
 
 extension Transition {
@@ -24,7 +26,7 @@ public class AnyTransition<S: State>: Transition {
     
     private let getId: () -> String
     private let getName: () -> String
-    private let call: (Workflow<S>) async throws -> Void
+    private let getSteps: () -> TransitionSteps<S>
     
     public var id: String {
         getId()
@@ -37,11 +39,11 @@ public class AnyTransition<S: State>: Transition {
     public init<Wrapped: Transition>(_ wrapped: Wrapped) where Wrapped.S == S {
         self.getId = { wrapped.id }
         self.getName = { wrapped.name }
-        self.call = wrapped.callAsFunction
+        self.getSteps = { wrapped.steps }
     }
     
-    public func callAsFunction(_ stateMachine: Workflow<S>) async throws {
-        try await call(stateMachine)
+    public var steps: TransitionSteps<S> {
+        getSteps()
     }
 }
 

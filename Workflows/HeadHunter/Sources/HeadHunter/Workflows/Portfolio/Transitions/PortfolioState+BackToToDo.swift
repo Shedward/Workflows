@@ -6,17 +6,20 @@
 //
 
 import Workflow
+import Prelude
 
 extension PortfolioState {
     struct BackToToDo: Transition {
-        
+
         let id = "Portfolio.BackToToDo"
         let name = "Вернуть в Сделать"
         
         let taskId: String
         
-        func callAsFunction(_ workflow: Workflow<PortfolioState>) async throws {
-            try workflow.move(to: .toDo(.init(taskId: taskId)))
+        var steps: TransitionSteps<PortfolioState> {
+            .init { workflow, _ in
+                try workflow.move(to: .toDo(.init(taskId: taskId)))
+            }
         }
     }
 }

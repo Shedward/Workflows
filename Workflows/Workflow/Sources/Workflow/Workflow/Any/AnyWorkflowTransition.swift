@@ -5,16 +5,19 @@
 //  Created by Vlad Maltsev on 06.12.2023.
 //
 
+import Prelude
+import Foundation
+
 public struct AnyWorkflowTransition: Identifiable {
     
     private let getId: () -> String
     private let getName: () -> String
-    private let call: () async throws -> Void
+    private let call: (ProgressGroup) async throws -> Void
     
     public init<S: State>(_ wrapped: WorkflowTransition<S>) {
         self.getId = { wrapped.id }
         self.getName = { wrapped.name }
-        self.call = { try await wrapped.callAsFunction() }
+        self.call = { try await wrapped.callAsFunction(progress: $0) }
     }
     
     public var id: String {
@@ -25,8 +28,8 @@ public struct AnyWorkflowTransition: Identifiable {
         getName()
     }
     
-    public func callAsFunction() async throws {
-        try await call()
+    public func callAsFunction(progress: ProgressGroup) async throws {
+        try await call(progress)
     }
 }
 

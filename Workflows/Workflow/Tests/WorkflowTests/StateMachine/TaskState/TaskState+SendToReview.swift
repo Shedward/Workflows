@@ -16,16 +16,18 @@ extension TaskState {
         let id = "SendToReview"
         let name = "Отправить на ревью"
         
-        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
-            try workflow.move(
-                to: .review(
-                    TaskState.Review(
-                        id: inProgress.id,
-                        branch: inProgress.branch,
-                        reviewUrl: "https://github.com/\(inProgress.id)"
+        var steps: TransitionSteps<TaskState> {
+            .init { workflow, _ in
+                try workflow.move(
+                    to: .review(
+                        TaskState.Review(
+                            id: inProgress.id,
+                            branch: inProgress.branch,
+                            reviewUrl: "https://github.com/\(inProgress.id)"
+                        )
                     )
                 )
-            )
+            }
         }
     }
 }

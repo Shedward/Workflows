@@ -6,6 +6,7 @@
 //
 
 import Workflow
+import Prelude
 
 extension PortfolioState {
     struct StartWork: Transition {
@@ -15,8 +16,10 @@ extension PortfolioState {
         
         let estimation: PortfolioState.Estimation
         
-        func callAsFunction(_ workflow: Workflow<PortfolioState>) async throws {
-            try workflow.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
+        var steps: TransitionSteps<PortfolioState> {
+            .init { workflow, _ in
+                try workflow.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
+            }
         }
     }
 }

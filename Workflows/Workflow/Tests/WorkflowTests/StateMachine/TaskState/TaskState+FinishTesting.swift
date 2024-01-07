@@ -16,10 +16,12 @@ extension TaskState {
         let id = "StartTesting"
         let name = "Начать тестирование"
         
-        func callAsFunction(_ workflow: Workflow<TaskState>) async throws {
-            try workflow.move(
-                to: .done(TaskState.Done(id: testing.id))
-            )
+        var steps: TransitionSteps<TaskState> {
+            .init { workflow, _ in
+                try workflow.move(
+                    to: .done(TaskState.Done(id: testing.id))
+                )
+            }
         }
     }
 }

@@ -1,25 +1,35 @@
 //
-//  LoadingProgress.swift
+//  Progress.swift
 //
 //
-//  Created by Vlad Maltsev on 02.01.2024.
+//  Created by Vlad Maltsev on 03.01.2024.
 //
 
-public enum Progress {
-    public struct Value {
-        public let progress: Float?
-        public let message: String?
-        
-        public init(progress: Float? = nil, message: String? = nil) {
-            self.progress = progress
-            self.message = message
+import Combine
+
+public class Progress: ProgressProtocol {
+    
+    public var parrent: ProgressProtocol?
+    
+    public var state: ProgressState = .initial {
+        didSet {
+            didUpdateProgress()
         }
     }
     
-    case progress(Value)
-    case failed(String)
+    private var subject = CurrentValueSubject<ProgressState?, Never>(nil)
+    public var publisher: AnyPublisher<ProgressState, Never> {
+        subject
+            .compactMap { $0 }
+            .eraseToAnyPublisher()
+    }
     
-    public static func progress(progress: Float? = nil, message: String? = nil) -> Self {
-        .progress(Value(progress: progress, message:  message))
+    init(parrent: ProgressProtocol) {
+        self.parrent = parrent
+    }
+    
+    public func didUpdateProgress() {
+        subject.send(state)
+        parrent?.didUpdateProgress()
     }
 }

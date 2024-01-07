@@ -6,6 +6,7 @@
 //
 
 import Workflow
+import Prelude
 
 extension PortfolioState {
     struct Delete: Transition {
@@ -13,8 +14,10 @@ extension PortfolioState {
         let id = "Portfolio.Delete"
         let name = "Удалить"
         
-        func callAsFunction(_ workflow: Workflow<PortfolioState>) async throws {
-            try await workflow.delete()
+        var steps: TransitionSteps<PortfolioState> {
+            .init { workflow, _ in
+                try await workflow.delete()
+            }
         }
     }
 }

@@ -5,6 +5,8 @@
 //  Created by Vlad Maltsev on 04.12.2023.
 //
 
+import Prelude
+
 public struct WorkflowTransition<S: State>: Identifiable, CustomStringConvertible {
     
     private let workflow: Workflow<S>
@@ -23,8 +25,8 @@ public struct WorkflowTransition<S: State>: Identifiable, CustomStringConvertibl
         self.transition = transition
     }
     
-    public func callAsFunction() async throws {
-        try await transition(workflow)
+    public func callAsFunction(progress: ProgressGroup?) async throws {
+        let steps = transition.steps
     }
     
     public var description: String {
