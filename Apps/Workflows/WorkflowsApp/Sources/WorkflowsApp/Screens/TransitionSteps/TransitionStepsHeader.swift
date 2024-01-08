@@ -46,6 +46,7 @@ struct TransitionStepsHeader: View {
                 Button(action: onTapRun) {
                     Text(transition.name)
                 }
+                .buttonStyle(.borderedProminent)
                 .disabled(isLoading)
             }
         }

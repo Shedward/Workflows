@@ -46,23 +46,11 @@ public class ProgressGroup: ProgressProtocol {
         return progress
     }
     
-    public func addChildProgress(_ progress: Progress, fraction: Float = 1.0) {
-        let fractionProgress = FractionProgress(fraction: fraction, parrent: self)
-        fractionProgress.progress = progress
-        childs.append(fractionProgress)
-    }
-    
     public func group(fraction: Float = 1.0) -> ProgressGroup {
         let fractionProgress = FractionProgress(fraction: fraction, parrent: self)
         let group = ProgressGroup(parrent: fractionProgress)
         fractionProgress.progress = group
         childs.append(fractionProgress)
         return group
-    }
-    
-    public func addCGroupProgress(_ progress: ProgressGroup, fraction: Float = 1.0) {
-        let fractionProgress = FractionProgress(fraction: fraction, parrent: self)
-        fractionProgress.progress = progress
-        childs.append(fractionProgress)
     }
 }

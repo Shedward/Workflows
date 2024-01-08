@@ -10,7 +10,7 @@ import Foundation
 
 public class Progress: ProgressProtocol {
     
-    public var parrent: ProgressProtocol?
+    public weak var parrent: ProgressProtocol?
     
     public var state: ProgressState = .initial {
         didSet {

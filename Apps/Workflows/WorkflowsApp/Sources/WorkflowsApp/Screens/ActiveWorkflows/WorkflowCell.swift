@@ -22,12 +22,6 @@ struct WorkflowCell: View {
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
     
-    @SwiftUI.State
-    private var progressState: ProgressState = .initial
-    
-    @SwiftUI.State
-    private var progressGroup = ProgressGroup()
-    
     private var isActive: Bool {
         dependencies.activeWorkflowService.isActive(workflow)
     }
@@ -83,9 +77,6 @@ struct WorkflowCell: View {
         .spacing(.d2)
         .onReceive(workflow.statePublisher) { state in
             self.state = state
-        }
-        .onReceive(progressGroup.publisher) { progress in
-            self.progressState = progress
         }
     }
     
