@@ -13,16 +13,17 @@ struct SpacedPaddingModifier: ViewModifier {
     private var spacing: Spacing
 
     let edges: Edge.Set
+    let relative: RelativeSpacing
 
     func body(content: Content) -> some View {
         content
-            .padding(edges, spacing.value)
+            .padding(edges, spacing.relative(relative).value)
     }
 }
 
 public extension View {
-    func spacedPadding(_ edges: Edge.Set = .all) -> some View {
-        modifier(SpacedPaddingModifier(edges: edges))
+    func spacedPadding(_ edges: Edge.Set = .all, relative: RelativeSpacing = .same) -> some View {
+        modifier(SpacedPaddingModifier(edges: edges, relative: relative))
     }
 }
 

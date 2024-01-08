@@ -28,7 +28,12 @@ extension PortfolioState {
                     try await Task.sleep(for: .seconds(1))
                 }
                 
-                TransitionStep(id: "3.GenerateTasks", name: "Сгенерировать задачи") { _ in
+                TransitionStep(id: "3.FailingStep", name: "Шаг с ошибкой") { _ in
+                    try await Task.sleep(for: .milliseconds(500))
+                    throw Failure("Step failed")
+                }
+                
+                TransitionStep(id: "4.GenerateTasks", name: "Сгенерировать задачи") { _ in
                     let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
                     try workflow.move(
                         to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))

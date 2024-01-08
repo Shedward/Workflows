@@ -8,6 +8,7 @@
 import SwiftUI
 import Workflow
 import UI
+import Prelude
 
 struct TransitionStepsHeader: View {
     
@@ -15,7 +16,7 @@ struct TransitionStepsHeader: View {
     let transition: AnyWorkflowTransition
     let onTapRun: () -> Void
 
-    var isLoading: Bool
+    let progressState: ProgressState
     
     @Environment(\.dependencies)
     private var dependencies: AllDependencies
@@ -42,20 +43,35 @@ struct TransitionStepsHeader: View {
                 .font(\.body)
             
             SpacedHStack {
-                Spacer()
-                Button(action: onTapRun) {
-                    Text(transition.name)
+                switch progressState.state {
+                case .notStarted, .failed:
+                    if progressState.state == .failed {
+                        SpacedHStack(spacing: .d1) {
+                            Text(Localized.number(progressState.messages.count))
+                            Image(systemName: "exclamationmark.circle.fill")
+                        }
+                        .foregroundColor(\.negative)
+                        .font(\.body)
+                        .bold()
+                    }
+                    Spacer()
+                    Button(action: onTapRun) {
+                        Text(transition.name)
+                    }
+                    .buttonStyle(.borderedProminent)
+                case .inProgress, .finished:
+                    ProgressView(value: progressState.value)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(isLoading)
             }
         }
-        .spacedFrame(\.background.tertiary, border: \.accent)
+        .spacedFrame(\.background.tertiary, border: \.accessory.tertiary, borderWidth: 1.0)
         .spacing()
         .onReceive(workflow.statePublisher) { state in
             self.state = state
         }
     }
+    
+    
 }
 
 #Preview {
@@ -63,6 +79,6 @@ struct TransitionStepsHeader: View {
         workflow: AnyWorkflow(),
         transition: AnyWorkflowTransition(id: "mock", name: "Mock"),
         onTapRun: { },
-        isLoading: true
+        progressState: .finished
     )
 }

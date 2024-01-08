@@ -11,10 +11,10 @@ internal class FractionProgress: ProgressProtocol {
     
     var state: ProgressState {
         ProgressState(
-            style: progress.state.style,
+            state: progress.state.state,
             value: progress.state.value * fraction,
             isIndefinite: progress.state.isIndefinite,
-            message: progress.state.message
+            messages: progress.state.messages
         )
     }
     

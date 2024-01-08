@@ -26,7 +26,7 @@ struct SpacedFrameModifier: ViewModifier {
             .clipShape(shape)
             .overlay {
                 if let border {
-                    shape.stroke(theme.color(for: border))
+                    shape.stroke(theme.color(for: border), lineWidth: borderWidth)
                 } else {
                     Color.clear
                 }

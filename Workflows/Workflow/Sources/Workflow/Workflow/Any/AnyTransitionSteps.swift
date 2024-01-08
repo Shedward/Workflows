@@ -26,7 +26,7 @@ public final class AnyTransitionSteps {
                 name: step.name ?? workflow.details.name ?? step.id,
                 progress: stepProgress
             ) {
-                stepProgress.state = .initial
+                stepProgress.state = .started
                 do {
                     try await step(stepProgress)
                     stepProgress.state = .finished

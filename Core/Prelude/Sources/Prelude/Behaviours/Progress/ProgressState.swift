@@ -7,46 +7,61 @@
 
 public struct ProgressState: Equatable {
 
-    public enum Style {
-        case normal
+    public enum State: Equatable {
+        case notStarted
+        case inProgress
         case failed
+        case finished
         
-        public func merge(with another: Style) -> Style {
-            if self == .failed || another == .failed {
-                .failed
-            } else {
-                .normal
+        public func merge(with another: State) -> State {
+            if self == another {
+                return self
             }
+
+            if self == .failed || another == .failed {
+                return .failed
+            }
+            
+            return .inProgress
         }
     }
     
-    public let style: Style
+    public let state: State
     public let value: Float
     public let isIndefinite: Bool
-    public let message: String?
+    public let messages: [String]
     
-    public init(style: Style = .normal, value: Float = 0, isIndefinite: Bool = false, message: String? = nil) {
-        self.style = style
+    public var message: String? {
+        if messages.isEmpty {
+            return nil
+        }
+        return messages.joined(separator: "\n")
+    }
+    
+    public init(state: State = .inProgress, value: Float = 0, isIndefinite: Bool = false, messages: [String] = []) {
+        self.state = state
         self.value = value
         self.isIndefinite = isIndefinite
-        self.message = message
+        self.messages = messages
     }
     
     public func merge(with another: ProgressState) -> ProgressState {
         ProgressState(
-            style: style.merge(with: another.style),
+            state: state.merge(with: another.state),
             value: value + another.value,
             isIndefinite: isIndefinite || another.isIndefinite,
-            message: message.joined(with: another.message) { [$0, $1].joined(separator: "\n") }
+            messages: messages + another.messages
         )
     }
     
-    public static let initial = ProgressState(value: 0.0)
+    public static let initial = ProgressState(state: .notStarted)
     
-    public static let finished = ProgressState(value: 1.0)
+    public static let started = ProgressState(state: .inProgress)
+    
+    public static let finished = ProgressState(state: .finished, value: 1.0)
 
     public static func failed(_ message: String) -> Self {
-        ProgressState(style: .failed, message: message)
+        ProgressState(state: .failed, messages: [message])
     }
     
     public static func failed(_ error: Error) -> Self {

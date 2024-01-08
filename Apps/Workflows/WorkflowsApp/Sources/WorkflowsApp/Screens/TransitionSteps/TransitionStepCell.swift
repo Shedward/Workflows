@@ -22,36 +22,47 @@ struct TransitionStepCell: View {
     }
     
     var body: some View {
-        SpacedHStack {
-            progressIcon
-            Text(transitionStep.name)
-            Spacer()
+        SpacedVStack(alignment: .leading) {
+            SpacedHStack {
+                progressIcon
+                    .frame(width: 24, height: 24)
+                Text(transitionStep.name)
+                    .font(\.body)
+                Spacer()
+            }
+            .font(\.body)
+            .bold()
+            
+            if let message = progressState.message {
+                Divider()
+                Text(message)
+                    .font(\.caption)
+                    .foregroundColor(progressState.state == .failed ? \.negative : \.content.primary)
+            }
         }
-        .font(\.body)
-        .bold()
         .id(transitionStep.id)
         .onReceive(transitionStep.progress.publisher) { progressState in
             self.progressState = progressState
         }
         .frame(maxWidth: .infinity)
-        .spacedFrame(\.background.tertiary)
+        .spacedFrame(\.background.tertiary, border: progressState.state == .failed ? \.negative : nil)
         .spacing()
     }
-    
+
     @ViewBuilder
     private var progressIcon: some View {
-        switch progressState {
-        case.initial:
+        switch progressState.state {
+        case .notStarted:
             Image(systemName: "circle")
+        case .inProgress:
+            ProgressView()
+                .scaleEffect(0.5)
         case .finished:
             Image(systemName: "checkmark.circle.fill")
-        default:
-            switch progressState.style {
-            case .normal:
-                Image(systemName: "bolt.circle")
-            case .failed:
-                Image(systemName: "exclamationmark.circle.fill")
-            }
+                .foregroundColor(\.positive)
+        case .failed:
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundColor(\.negative)
         }
     }
 }
