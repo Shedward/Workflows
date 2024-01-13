@@ -17,8 +17,8 @@ extension PortfolioState {
         let taskId: String
         
         var steps: TransitionSteps<PortfolioState> {
-            .init { workflow, _ in
-                try workflow.move(to: .toDo(.init(taskId: taskId)))
+            .init { ctx, _ in
+                try ctx.workflow.move(to: .toDo(.init(taskId: taskId)))
             }
         }
     }

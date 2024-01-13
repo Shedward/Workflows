@@ -9,26 +9,35 @@ import UI
 import SwiftUI
 import Workflow
 import Prelude
+import Combine
 
 struct TransitionStepsList: View {
     
     let title: String
     let transition: AnyWorkflowTransition
-    let transitionSteps: AnyTransitionSteps
-    let progressGroup: ProgressProtocol
+    let runner: AnyTransitionRunner
     let navigation: Navigation
+    
+    @SwiftUI.State
+    private var progressGroup: ProgressGroup = ProgressGroup()
     
     @SwiftUI.State
     private var progressState: ProgressState = .initial
     
+    @SwiftUI.State
+    private var run: AnyTransitionRun
+    
     
     init(transition: AnyWorkflowTransition, navigation: Navigation) {
-        let progressGroup = ProgressGroup()
         self.transition = transition
         self.title = transition.name
-        self.transitionSteps = transition.steps(progress: progressGroup)
-        self.progressGroup = progressGroup
+        self.runner = transition.runner()
         self.navigation = navigation
+        
+        let progressGroup = ProgressGroup()
+        let run = transition.runner().run(totalProgress: progressGroup)
+        self._run = .init(initialValue: run)
+        self._progressGroup = .init(initialValue: progressGroup)
     }
     
     var body: some View {
@@ -41,7 +50,7 @@ struct TransitionStepsList: View {
             )
             .spacedPadding([.top, .bottom], relative: .d2)
             
-            ForEach(transitionSteps.steps) { step in
+            ForEach(run.steps) { step in
                 TransitionStepCell(transitionStep: step)
                     .listRowSeparator(.hidden)
             }
@@ -50,14 +59,18 @@ struct TransitionStepsList: View {
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.always)
         .navigationTitle(title)
-        .onReceive(transitionSteps.totalProgress.publisher) { progressState in
+        .onReceive(run.totalProgress.publisher) { progressState in
             self.progressState = progressState
         }
     }
     
     private func runTransition() {
+        let progressGroup = ProgressGroup()
+        self.progressGroup = progressGroup
+        self.run = transition.runner().run(totalProgress: progressGroup)
+        
         Task.detached {
-            try await transitionSteps()
+            try await run()
             navigation.popToRoot()
         }
     }
@@ -68,25 +81,26 @@ struct TransitionStepsList: View {
         transition: AnyWorkflowTransition(
             id: "mock",
             name: "Mock",
-            steps: AnyTransitionSteps(
-                totalProgress: Prelude.Progress(state: .finished)
-            ) {
-                AnyTransitionStep(
-                    id: "1.FirstStep",
-                    name: "First Step",
-                    progress: Prelude.Progress(state: .finished)
-                ) { }
-                AnyTransitionStep(
-                    id: "2.SecondStep",
-                    name: "Second Step",
-                    progress: Prelude.Progress(state: .init(value: 0.2))
-                ) { }
-                AnyTransitionStep(
-                    id: "3.ThirdStep",
-                    name: "Third Step",
-                    progress: Prelude.Progress(state: .initial)
-                ) { }
-            }
+            run: AnyTransitionRun(
+                totalProgress: ProgressGroup(),
+                steps: {
+                    AnyTransitionStep(
+                        id: "1.FirstStep",
+                        name: "First Step",
+                        progress: Prelude.Progress(state: .finished)
+                    ) { }
+                    AnyTransitionStep(
+                        id: "2.SecondStep",
+                        name: "Second Step",
+                        progress: Prelude.Progress(state: .init(value: 0.2))
+                    ) { }
+                    AnyTransitionStep(
+                        id: "3.ThirdStep",
+                        name: "Third Step",
+                        progress: Prelude.Progress(state: .initial)
+                    ) { }
+                }
+            )
         ),
         navigation: Navigation()
     )

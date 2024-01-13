@@ -12,18 +12,20 @@ public protocol AnyTransitionStepPromise {
     var key: String { get }
 }
 
-public actor TransitionStepPromise<Value>: AnyTransitionStepPromise {
+public actor TransitionStepPromise<Value: Codable>: AnyTransitionStepPromise {
     public let key: String
     
     private var value: Value?
-    private let storage: CodableStorage
     
-    init(key: String, storage: CodableStorage) {
+    init(key: String) {
         self.key = key
-        self.storage = storage
     }
     
-    public func fullfill(_ value: Value) {
+    public var isFullfilled: Bool {
+        value != nil
+    }
+    
+    public func fulfill(_ value: Value) {
         self.value = value
     }
     

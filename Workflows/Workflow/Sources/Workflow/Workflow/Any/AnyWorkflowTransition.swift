@@ -12,25 +12,28 @@ public struct AnyWorkflowTransition: Identifiable {
     
     private let getId: () -> String
     private let getName: () -> String
-    private let getSteps: (ProgressGroup) -> AnyTransitionSteps
+    private let getRunner: () -> AnyTransitionRunner
     private let getWorkflow: () -> AnyWorkflow
     
     public init<S: State>(_ wrapped: WorkflowTransition<S>) {
         self.getId = { wrapped.id }
         self.getName = { wrapped.name }
-        self.getSteps = { AnyTransitionSteps(wrapped.steps, progressGroup: $0, workflow: wrapped.workflow) }
+        self.getRunner = { TransitionRunner(steps: wrapped.steps, workflow: wrapped.workflow) }
         self.getWorkflow = { wrapped.workflow.asAny() }
     }
     
     public init(
         id: String,
         name: String,
-        steps: AnyTransitionSteps = AnyTransitionSteps(totalProgress: Prelude.Progress(), steps: { }),
+        run: AnyTransitionRun = AnyTransitionRun(
+            totalProgress: ProgressGroup(),
+            steps: { }
+        ),
         workflow: AnyWorkflow = AnyWorkflow()
     ) {
         self.getId = { id }
         self.getName = { name }
-        self.getSteps = { _ in steps }
+        self.getRunner = { MockTransitionRunner(run: run) }
         self.getWorkflow = { workflow }
     }
     
@@ -46,8 +49,8 @@ public struct AnyWorkflowTransition: Identifiable {
         getWorkflow()
     }
     
-    public func steps(progress: ProgressGroup) -> AnyTransitionSteps {
-        getSteps(progress)
+    public func runner() -> AnyTransitionRunner {
+        getRunner()
     }
 }
 

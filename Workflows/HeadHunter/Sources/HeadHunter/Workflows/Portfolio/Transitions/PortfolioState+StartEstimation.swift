@@ -17,14 +17,17 @@ extension PortfolioState {
         let todo: PortfolioState.ToDo
         
         var steps: TransitionSteps<PortfolioState> {
-            .init { workflow in
+            .init { ctx in
+                let tableUrlPromise = ctx.promises.promise(id: "TableUrl", for: String.self)
                 TransitionStep(id: "1.GenerateTable", name: "Сгенерировать таблицу") { _ in
                     try await Task.sleep(for: .seconds(1))
+                    await tableUrlPromise.fulfill("https://sheet.google.com/table/url")
                 }
                 
                 TransitionStep(id: "2.MakeDecompositionMeeting", name: "Создать встречу на декомпозицию") { progress in
                     try await Task.sleep(for: .seconds(1))
-                    progress.state = .init(value: 0.2)
+                    let tableUrl = try await tableUrlPromise.get()
+                    progress.state = .init(value: 0.2, messages: [tableUrl])
                     try await Task.sleep(for: .seconds(1))
                 }
                 
@@ -35,7 +38,7 @@ extension PortfolioState {
                 
                 TransitionStep(id: "4.GenerateTasks", name: "Сгенерировать задачи") { _ in
                     let decompositionUrl = "https://sheet.google.com/\(todo.taskId)"
-                    try workflow.move(
+                    try ctx.workflow.move(
                         to: .estimation(.init(taskId: todo.taskId, decompositionUrl: decompositionUrl))
                     )
                 }

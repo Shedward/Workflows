@@ -15,8 +15,8 @@ extension PortfolioState {
         let name = "Удалить"
         
         var steps: TransitionSteps<PortfolioState> {
-            .init { workflow, _ in
-                try await workflow.delete()
+            .init { ctx, _ in
+                try await ctx.workflow.delete()
             }
         }
     }

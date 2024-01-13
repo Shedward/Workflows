@@ -26,8 +26,10 @@ struct TransitionStepCell: View {
             SpacedHStack {
                 progressIcon
                     .frame(width: 24, height: 24)
-                Text(transitionStep.name)
-                    .font(\.body)
+                if let name = transitionStep.name {
+                    Text(name)
+                        .font(\.body)
+                }
                 Spacer()
             }
             .font(\.body)

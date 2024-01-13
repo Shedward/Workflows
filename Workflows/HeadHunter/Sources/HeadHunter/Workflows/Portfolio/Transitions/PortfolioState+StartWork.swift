@@ -17,8 +17,8 @@ extension PortfolioState {
         let estimation: PortfolioState.Estimation
         
         var steps: TransitionSteps<PortfolioState> {
-            .init { workflow, _ in
-                try workflow.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
+            .init { ctx, _ in
+                try ctx.workflow.move(to: .inProgress(.init(taskId: estimation.taskId, branchName: estimation.taskId)))
             }
         }
     }
