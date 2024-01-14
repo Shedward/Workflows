@@ -25,7 +25,7 @@ struct TransitionStepsList: View {
     private var progressState: ProgressState = .initial
     
     @SwiftUI.State
-    private var run: AnyTransitionRun
+    private var run: AnyTransitionRun?
     
     
     init(transition: AnyWorkflowTransition, navigation: Navigation) {
@@ -50,27 +50,36 @@ struct TransitionStepsList: View {
             )
             .spacedPadding([.top, .bottom], relative: .d2)
             
-            ForEach(run.steps) { step in
-                TransitionStepCell(transitionStep: step)
-                    .listRowSeparator(.hidden)
+            if let run {
+                ForEach(run.steps) { step in
+                    TransitionStepCell(transitionStep: step)
+                        .listRowSeparator(.hidden)
+                }
+                .onReceive(run.totalProgress.publisher) { progressState in
+                    self.progressState = progressState
+                }
+                .id(run.id)
             }
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)
         .scrollBounceBehavior(.always)
         .navigationTitle(title)
-        .onReceive(run.totalProgress.publisher) { progressState in
-            self.progressState = progressState
+        .onAppear {
+            reloadRun()
         }
     }
     
-    private func runTransition() {
+    private func reloadRun() {
         let progressGroup = ProgressGroup()
         self.progressGroup = progressGroup
         self.run = transition.runner().run(totalProgress: progressGroup)
-        
+    }
+    
+    private func runTransition() {
+        reloadRun()
         Task.detached {
-            try await run()
+            try await run?()
             navigation.popToRoot()
         }
     }

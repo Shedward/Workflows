@@ -47,6 +47,7 @@ public final class TransitionRunner<S: State>: AnyTransitionRunner {
         }
         
         return AnyTransitionRun(
+            id: UUID().uuidString,
             totalProgress: totalProgress,
             steps: anySteps
         ) {
