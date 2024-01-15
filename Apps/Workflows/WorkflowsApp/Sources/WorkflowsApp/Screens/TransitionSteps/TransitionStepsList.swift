@@ -73,7 +73,7 @@ struct TransitionStepsList: View {
     private func reloadRun() {
         let progressGroup = ProgressGroup()
         self.progressGroup = progressGroup
-        self.run = transition.runner().run(totalProgress: progressGroup)
+        self.run = runner.run(totalProgress: progressGroup)
     }
     
     private func runTransition() {

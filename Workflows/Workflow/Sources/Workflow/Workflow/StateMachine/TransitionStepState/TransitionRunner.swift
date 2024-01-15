@@ -17,6 +17,7 @@ public final class TransitionRunner<S: State>: AnyTransitionRunner {
     private let steps: TransitionSteps<S>
     private let workflow: Workflow<S>
     private let promises = TransitionPromises()
+    private var runState = TransitionRunState()
     
     public init(steps: TransitionSteps<S>, workflow: Workflow<S>) {
         self.steps = steps
@@ -30,17 +31,27 @@ public final class TransitionRunner<S: State>: AnyTransitionRunner {
         
         let anySteps = transitionSteps.map { step in
             let stepProgress = totalProgress.progress(fraction: stepFraction)
+            
+            runState.registerStep(step)
+            
             return AnyTransitionStep(
                 id: step.id,
                 name: step.name,
                 progress: stepProgress
-            ) {
+            ) { [runState] in
+                guard runState.shouldRun(step) else {
+                    stepProgress.state = .finished
+                    return
+                }
+                
                 stepProgress.state = .started
                 do {
                     try await step(stepProgress)
                     stepProgress.state = .finished
+                    runState.finished(step)
                 } catch {
                     stepProgress.state = .failed(error)
+                    runState.failed(step)
                     throw error
                 }
             }
