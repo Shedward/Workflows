@@ -14,6 +14,12 @@ extension NoFields: IssueFields {
     public static let fieldKeys: [IssueFieldKey] = []
 }
 
+public struct SummaryFields: IssueFields, Codable {
+    public let summary: String
+    
+    public static let fieldKeys: [IssueFieldKey] = [.summary]
+}
+
 public protocol IssueFields: Decodable, Sendable {
     static var fieldKeys: [IssueFieldKey] { get }
 }

@@ -25,7 +25,6 @@ public final class TransitionRunState: Codable {
     }
     
     public func shouldRun(_ step: TransitionStep) -> Bool {
-        debugPrint(stateByStep)
         return stateByStep[step.id] != .finished
     }
     

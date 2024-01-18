@@ -7,10 +7,10 @@
 
 import RestClient
 
-struct JiraMock {
+public struct JiraMock {
     let restClient: MockRestClient
     
-    init() {
+    public init() {
         self.restClient = MockRestClient("Jira")
     }
 }

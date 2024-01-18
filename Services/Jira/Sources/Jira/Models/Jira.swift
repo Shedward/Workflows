@@ -19,7 +19,7 @@ public struct Jira {
         client = JiraClient.jiraServerClient(host: serverHost, authorizer: authorizer)
     }
     
-    init(mock: JiraMock) {
+    public init(mock: JiraMock) {
         client = JiraClient.mock(mock)
     }
 

@@ -22,7 +22,8 @@ struct NewWorkflowList: View {
     
     var body: some View {
         let listViewModel = LoadingListViewModel {
-            try await dependencies.newWorkflowsService.workflows().flatMap { try $0.workflows.get() }
+            try await dependencies.newWorkflowsService.workflows()
+                .flatMap { try $0.workflows.get() }
         }
         LoadingList(viewModel: listViewModel) { (item: AnyNewWorkflow) in
             Button {

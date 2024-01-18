@@ -7,32 +7,38 @@
 
 import Foundation
 import Workflow
+import Jira
 
 public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
 
     public let id = "NewPortfolio"
     public let name = "Портфолио"
     
-    let storage: WorkflowsStorage<PortfolioState.Dependencies>
+    private let storage: WorkflowsStorage<PortfolioState.Dependencies>
+    private let dependencies: PortfolioState.Dependencies
     
-    public init(storage: WorkflowsStorage<PortfolioState.Dependencies>) {
+    public init(storage: WorkflowsStorage<PortfolioState.Dependencies>, dependencies: PortfolioState.Dependencies) {
         self.storage = storage
+        self.dependencies = dependencies
     }
     
     public func workflows() async throws -> [AnyNewWorkflow] {
-        return (1...10).map { id in
-            let taskId = "PORTFOLIO-\(id)"
-            let initialState = PortfolioState.toDo(.init(taskId: taskId))
-            return NewWorkflow(
+        
+        let query = JQLQuery(rawValue: dependencies.configs.jira.filters.currentUserPortfolio)
+        let issues = try await dependencies.jira.searchIssues(jql: query, fields: SummaryFields.self).allItems()
+        
+        return issues.map { issue in
+            NewWorkflow(
                 description: .init(
-                    id: taskId, 
-                    key: taskId,
-                    name: "Реализовать компонент \(id)",
+                    id: issue.id,
+                    key: issue.key,
+                    name: issue.fileds.summary,
                     type: WorkflowType(PortfolioState.self)
                 ),
-                initialState: initialState,
+                initialState: PortfolioState.toDo(.init(taskId: issue.key)),
                 storage: storage
-            ).asAny()
+            )
+            .asAny()
         }
     }
 }

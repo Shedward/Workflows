@@ -36,7 +36,7 @@ struct NetworkDependencies: AllDependencies {
         let filesystem = FileManagerFileSystem()
         let workflowsRoot = filesystem.homeDirectory().appending("workflows")
         
-        let dependencies: PortfolioDependencies = ActionPortfolioDependencies()
+        let dependencies: PortfolioDependencies = try! ActionPortfolioDependencies()
         let workflowsStorage = WorkflowsStorage(
             at: workflowsRoot,
             dynamicLoader: workflowsLoader,
@@ -44,7 +44,7 @@ struct NetworkDependencies: AllDependencies {
         )
 
         let newWorkflowsService = NewWorkflowService {
-            NewPortfolioWorkflowProvider(storage: workflowsStorage)
+            NewPortfolioWorkflowProvider(storage: workflowsStorage, dependencies: dependencies)
         }
         
         self.workflowsStorage = workflowsStorage

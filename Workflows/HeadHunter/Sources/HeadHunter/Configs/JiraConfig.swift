@@ -8,5 +8,10 @@
 import Foundation
 
 public struct JiraConfig: Decodable {
+    public struct Filters: Decodable {
+        public let currentUserPortfolio: String
+    }
+    
     public let host: URL
+    public let filters: Filters
 }
