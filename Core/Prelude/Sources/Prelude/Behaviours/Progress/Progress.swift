@@ -38,4 +38,10 @@ public class Progress: ProgressProtocol {
         subject.send(state)
         parrent?.didUpdateProgress()
     }
+    
+    public var subscriber: AnySubscriber<ProgressState, Never> {
+        AnySubscriber(
+            Subscribers.Assign(object: self, keyPath: \.state)
+        )
+    }
 }

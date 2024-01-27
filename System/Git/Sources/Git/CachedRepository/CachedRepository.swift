@@ -7,6 +7,7 @@
 
 import Prelude
 import FileSystem
+import Executable
 
 public enum CachedRepositoryError: Error {
     case folderAlreadyExists(String)
@@ -23,7 +24,7 @@ public struct CachedRepository {
         self.cacheDirectory = cacheDirectory
     }
     
-    public func clone(to destination: FileItem) async throws -> Repository {
+    public func clone(to destination: FileItem, logs: ExecutableLogs? = nil) async throws -> Repository {
         if destination.isExists {
             throw Failure("Can't clone repository to \(destination). Directory already exists.")
         }

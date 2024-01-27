@@ -65,4 +65,25 @@ extension ExecutableTermination {
     public func finished(_ rule: TerminationRule = .successfull) throws {
         try rule.checkTermination(self)
     }
+    
+    public func mapStatusCode<Output>(_ transform: (Int32) throws -> Output) throws -> Output {
+        guard
+            reason == .exit
+        else {
+            throw ExecutableError.unsuccessfullTermination(self)
+        }
+        
+        return try transform(self.status)
+    }
+    
+    public func mapStatusCode<Output>(_ outputByCode: [Int32: Output]) throws -> Output {
+        guard 
+            reason == .exit,
+            let output = outputByCode[status]
+        else {
+            throw ExecutableError.unsuccessfullTermination(self)
+        }
+        
+        return output
+    }
 }

@@ -13,4 +13,8 @@ public struct TransitionRunContext<S: State> {
         self.workflow = workflow
         self.promises = promises
     }
+    
+    public var dependencies: S.Dependencies {
+        workflow.dependencies
+    }
 }

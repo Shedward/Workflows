@@ -38,6 +38,10 @@ public struct ProgressState: Equatable {
         return messages.joined(separator: "\n")
     }
     
+    public var isFinished: Bool {
+        self.state == .finished
+    }
+    
     public init(state: State = .inProgress, value: Float = 0, isIndefinite: Bool = false, messages: [String] = []) {
         self.state = state
         self.value = value
@@ -59,6 +63,10 @@ public struct ProgressState: Equatable {
     public static let started = ProgressState(state: .inProgress)
     
     public static let finished = ProgressState(state: .finished, value: 1.0)
+    
+    public static func finished(_ message: String) -> Self {
+        ProgressState(state: .finished, messages: [message])
+    }
 
     public static func failed(_ message: String) -> Self {
         ProgressState(state: .failed, messages: [message])

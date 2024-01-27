@@ -16,19 +16,20 @@ public struct ActionPortfolioDependencies: PortfolioDependencies {
     public let git: Git
     public let jira: Jira
     public let configs: Configs
+    public let fileSystem: FileSystem
     
     public init() throws {
         let secureStorage = SecItemStorage<Accounts>(service: "me.shedward.workflows")
         let fileSystem = FileManagerFileSystem()
         let configStorage = DirectoryCodableStorage(at: fileSystem.homeDirectory().appending(".workflows/hh"))
         
-        let jiraConfig = try configStorage.load(JiraConfig.self, at: "jira")
-        guard let jiraCreds = try secureStorage.readSecretCodable(JiraServerCredentials.self, for: .jira) else {
-            throw Failure("Credentials for jira not found")
-        }
-        
+        let configs = Configs(configStorage: configStorage)
+        let jiraConfig = try configs.jira()
+        let authorizer = JiraAuthorizer(credentialsStorage: secureStorage.accessor(for: .jira))
+
         self.git = Git()
-        self.jira = try Jira(serverHost: jiraConfig.host, credentials: jiraCreds)
-        self.configs = Configs(jira: jiraConfig)
+        self.jira = Jira(serverHost: jiraConfig.host, authorizer: authorizer)
+        self.configs = configs
+        self.fileSystem = FileManagerFileSystem()
     }
 }

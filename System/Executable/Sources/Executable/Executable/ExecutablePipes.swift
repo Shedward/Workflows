@@ -7,10 +7,20 @@
 
 import Foundation
 
-public protocol ExecutablePipe: Sendable { }
+public protocol ExecutablePipe: Sendable {
+    var lines: AsyncLineSequence<FileHandle.AsyncBytes> { get }
+}
 
-extension Pipe: ExecutablePipe { }
-extension FileHandle: ExecutablePipe { }
+extension Pipe: ExecutablePipe {
+    public var lines: AsyncLineSequence<FileHandle.AsyncBytes> {
+        fileHandleForReading.bytes.lines
+    }
+}
+extension FileHandle: ExecutablePipe {
+    public var lines: AsyncLineSequence<AsyncBytes> {
+        bytes.lines
+    }
+}
 
 public struct ExecutablePipes: Sendable {
     public var input: ExecutablePipe?

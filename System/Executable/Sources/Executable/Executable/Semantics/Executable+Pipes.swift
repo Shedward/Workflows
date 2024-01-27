@@ -20,7 +20,7 @@ extension Executable {
     
     public func errorOutput(to pipe: ExecutablePipe?) -> Self {
         var executable = self
-        executable.pipes.output = pipe
+        executable.pipes.error = pipe
         return executable
     }
 }

@@ -14,6 +14,7 @@ import Combine
 public class WorkflowsStorage<Dependencies> {
 
     private let rootItem: FileItem
+    private let sharedItem: FileItem
     private let dynamicLoader: DynamicWorkflowLoader
     private let dependencies: Dependencies
     private let formatter: ISO8601DateFormatter = {
@@ -39,6 +40,7 @@ public class WorkflowsStorage<Dependencies> {
     
     public init(at rootItem: FileItem, dynamicLoader: DynamicWorkflowLoader, dependencies: Dependencies) {
         self.rootItem = rootItem
+        self.sharedItem = rootItem.appending("shared")
         self.dynamicLoader = dynamicLoader
         self.dependencies = dependencies
     }
@@ -93,7 +95,8 @@ public class WorkflowsStorage<Dependencies> {
             let workflow = try Failure.wrap("Creating workflow config at \(details)") {
                 let storage = WorkflowStorage(
                     data: DirectoryCodableStorage(at: workflowItem), 
-                    rootItem: workflowItem,
+                    rootItem: workflowItem, 
+                    sharedItem: sharedItem,
                     deleteAllWorkflowData: {
                         try await self.endWorkflow(id)
                     }
@@ -125,6 +128,7 @@ public class WorkflowsStorage<Dependencies> {
         let storage = WorkflowStorage(
             data: dataStorage, 
             rootItem: workflowItem,
+            sharedItem: sharedItem,
             deleteAllWorkflowData: {
                 try await self.endWorkflow(id)
             }

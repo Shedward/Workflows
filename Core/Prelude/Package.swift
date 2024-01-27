@@ -12,9 +12,16 @@ let package = Package(
             targets: ["Prelude"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
+    ],
     targets: [
         .target(
-            name: "Prelude"),
+            name: "Prelude",
+            dependencies: [
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+            ]
+        ),
         .testTarget(
             name: "PreludeTests",
             dependencies: ["Prelude"]

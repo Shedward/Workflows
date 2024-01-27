@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Path: Hashable {
+public struct Path: Hashable, Codable {
     let url: URL
     
     init(url: URL) {

@@ -11,6 +11,10 @@ import FileSystem
 
 public struct Git {
     internal let git: Executable
+    
+    private init(executable: Executable) {
+        self.git = executable
+    }
 
     public init() {
         git = ProcessExecutable(command: "git")
@@ -18,6 +22,10 @@ public struct Git {
     
     public init(mock: GitMock) {
         git = mock.executable
+    }
+    
+    public func logs(to logs: ExecutableLogs?) -> Self {
+        Git(executable: git.logs(to: logs))
     }
 
     public func repository(at directory: FileItem) async throws -> Repository {
@@ -48,7 +56,6 @@ public struct Git {
     public func exists(in directory: FileItem) async throws -> Bool {
         let repositoryExecutable = git
             .workingDirectory(directory.path.string)
-            .errorOutput(to: nil)
 
         let result = try await repositoryExecutable
             .run("rev-parse")

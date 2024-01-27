@@ -26,6 +26,11 @@ public struct ProcessExecutable: Sendable, Executable {
         self.executableURL = URL(filePath: path)
         self.arguments = arguments
     }
+    
+    public init(path: String) {
+        self.executableURL = URL(filePath: path)
+        self.arguments = []
+    }
 
     public init(command: String, _ arguments: String...) {
         self.executableURL = URL(filePath: "/usr/bin/env")

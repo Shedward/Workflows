@@ -47,7 +47,9 @@ public final class TransitionRunner<S: State>: AnyTransitionRunner {
                 stepProgress.state = .started
                 do {
                     try await step(stepProgress)
-                    stepProgress.state = .finished
+                    if !stepProgress.state.isFinished {
+                        stepProgress.state = .finished
+                    }
                     runState.finished(step)
                 } catch {
                     stepProgress.state = .failed(error)

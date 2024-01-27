@@ -7,10 +7,13 @@
 
 import Git
 import Jira
+import FileSystem
 
 public protocol PortfolioDependencies {
     var git: Git { get }
     var jira: Jira { get }
     
     var configs: Configs { get }
+    
+    var fileSystem: FileSystem { get }
 }

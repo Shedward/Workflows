@@ -8,6 +8,7 @@
 import Foundation
 import Workflow
 import Jira
+import Prelude
 
 public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
 
@@ -23,9 +24,14 @@ public final class NewPortfolioWorkflowProvider: NewWorkflowProvider {
     }
     
     public func workflows() async throws -> [AnyNewWorkflow] {
+        let query = try Failure.wrap("Loading filters from config") {
+            let jiraConfig = try dependencies.configs.jira()
+            return JQLQuery(rawValue: jiraConfig.filters.currentUserPortfolio)
+        }
         
-        let query = JQLQuery(rawValue: dependencies.configs.jira.filters.currentUserPortfolio)
-        let issues = try await dependencies.jira.searchIssues(jql: query, fields: SummaryFields.self).allItems()
+        let issues = try await Failure.wrap("Loading issues") {
+            try await dependencies.jira.searchIssues(jql: query, fields: SummaryFields.self).allItems()
+        }
         
         return issues.map { issue in
             NewWorkflow(

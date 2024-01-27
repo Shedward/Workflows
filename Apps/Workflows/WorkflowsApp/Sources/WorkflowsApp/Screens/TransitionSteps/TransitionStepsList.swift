@@ -78,7 +78,7 @@ struct TransitionStepsList: View {
     
     private func runTransition() {
         reloadRun()
-        Task.detached {
+        Task {
             try await run?()
             navigation.popToRoot()
         }

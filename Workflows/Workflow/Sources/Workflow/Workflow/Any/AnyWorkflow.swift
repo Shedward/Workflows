@@ -43,6 +43,7 @@ public struct AnyWorkflow: Identifiable {
         self.storage = WorkflowStorage(
             data: InMemoryCodableStorage(),
             rootItem: InMemoryFileSystem().rootItem,
+            sharedItem: InMemoryFileSystem().rootItem,
             deleteAllWorkflowData: { }
         )
         self.statePublisher = Empty().eraseToAnyPublisher()
