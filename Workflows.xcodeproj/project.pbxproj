@@ -16,6 +16,7 @@
 
 /* Begin PBXFileReference section */
 		630A76872A6B1BFA0038E21A /* Prelude */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Prelude; sourceTree = "<group>"; };
+		63263A242DCA4E3900111C52 /* GoogleCloud */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = GoogleCloud; sourceTree = "<group>"; };
 		63322F1A2A7512CF002CBC8C /* Git */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Git; sourceTree = "<group>"; };
 		637C31762AE7011A0091EAC3 /* FileSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FileSystem; sourceTree = "<group>"; };
 		639C5FA32A6B228F00896922 /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTests.xctestplan; sourceTree = "<group>"; };
@@ -31,7 +32,6 @@
 		E133EC9D2AA4BFF4003059F5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E133ECA22AA4BFF4003059F5 /* Workflows.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Workflows.entitlements; sourceTree = "<group>"; };
 		E133ECA72AA4C5CF003059F5 /* WorkflowsApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WorkflowsApp; sourceTree = "<group>"; };
-		E18E81AD2A90032A00D4055D /* GoogleCloud */ = {isa = PBXFileReference; lastKnownFileType = text; path = GoogleCloud; sourceTree = SOURCE_ROOT; };
 		E18EAAEA2A8A65E6009C6AE5 /* DebugApp */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DebugApp; sourceTree = "<group>"; };
 		E1A0DA8F2AB5D1B500AFA750 /* UI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = UI; sourceTree = "<group>"; };
 		E1B9C7822A8AB67300CA22DF /* OAuthHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OAuthHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,7 +115,7 @@
 		63A9719F2A6C121C00A4EF8B /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				E18E81AD2A90032A00D4055D /* GoogleCloud */,
+				63263A242DCA4E3900111C52 /* GoogleCloud */,
 				63A3111B2A877DE500A9642E /* Figma */,
 				63C497F72A7187AA0081CA41 /* Jira */,
 				63A971A12A6C202200A4EF8B /* GitHub */,

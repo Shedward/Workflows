@@ -9,24 +9,20 @@ import SecureStorage
 import LocalStorage
 import GoogleCloud
 import Foundation
+import FileSystem
 
 final class Dependencies {
     static var shared = Dependencies()
 
+    let googleAuthorizer: GoogleAuthorizer
+
     init() {
-    }
+        let filesystem = FileManagerFileSystem()
+        let secureStorage = SecItemStorage<Accounts>(service: "me.workflows.Workflows")
+        let configStorage = DirectoryCodableStorage(at: filesystem.homeDirectory().appending(".workflows"))
 
-    lazy var secureStorage: SecItemStorage = {
-        SecItemStorage<Accounts>(service: "me.workflows.Workflows")
-    }()
-
-    lazy var configStorage: CodableStorage = {
-        DirectoryCodableStorage()
-    }()
-
-    lazy var googleAuthorizer: GoogleAuthorizer = {
         let request = try! configStorage.load(GoogleCloud.AuthorizerRequest.self, at: "google")
         let tokenStorage = secureStorage.accessor(for: .google)
-        return GoogleAuthorizer(request: request, tokensStorage: tokenStorage)
-    }()
+        self.googleAuthorizer = GoogleAuthorizer(request: request, tokensStorage: tokenStorage)
+    }
 }
