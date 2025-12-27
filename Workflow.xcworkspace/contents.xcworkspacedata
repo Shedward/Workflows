@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileSystemSynchronizedGroup
+      location = "group:Core"
+      name = "Core">
+   </FileSystemSynchronizedGroup>
+   <Group
+      location = "group:Services"
+      name = "Services">
+      <FileRef
+         location = "group:Github">
+      </FileRef>
+   </Group>
+   <FileSystemSynchronizedGroup
+      location = "group:Domain"
+      name = "Domain">
+   </FileSystemSynchronizedGroup>
+   <FileSystemSynchronizedGroup
+      location = "group:Apps"
+      name = "Apps">
+   </FileSystemSynchronizedGroup>
+</Workspace>
