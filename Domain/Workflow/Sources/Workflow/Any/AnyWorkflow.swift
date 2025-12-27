@@ -5,8 +5,9 @@
 //  Created by Vlad Maltsev on 26.12.2025.
 //
 
-public protocol AnyWorkflow {
+public protocol AnyWorkflow: Sendable {
     var id: WorkflowID { get }
+    var initialState: StateID { get }
     var anyTransitions: [AnyTransition] { get }
 }
 

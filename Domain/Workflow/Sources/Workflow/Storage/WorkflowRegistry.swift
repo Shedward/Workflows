@@ -6,11 +6,12 @@
 //
 
 import Core
+import Foundation
 
-public final class WorkflowRegistry {
+public actor WorkflowRegistry: Sendable {
     private var workflows: [WorkflowID: AnyWorkflow] = [:]
 
-    public init(_ workflows: [AnyWorkflow]) throws {
+    public init(_ workflows: [AnyWorkflow]) async throws {
         workflows.forEach(register)
 
         if workflows.count != self.workflows.count {
@@ -25,6 +26,14 @@ public final class WorkflowRegistry {
     }
 
     public func workflow(instance: WorkflowInstance) -> AnyWorkflow? {
-        self.workflows[instance.workflowId]
+        workflow(id: instance.id)
+    }
+
+    public func workflow(id: WorkflowID) -> AnyWorkflow? {
+        workflows[id]
+    }
+
+    public func allWorkflows() -> [AnyWorkflow] {
+        Array(workflows.values.sorted(using: SortDescriptor(\.id, comparator: .lexical)))
     }
 }

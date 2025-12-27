@@ -14,13 +14,19 @@ public protocol Workflow: AnyWorkflow {
     var version: WorkflowVersion { get }
 
     @ArrayBuilder<Transition<State>>
-    var transitions: [Transition<State>] { get }
+    var transitions: Transitions { get }
 }
 
 extension Workflow {
 
+    public typealias Transitions = [Transition<State>]
+
     public var id: WorkflowID {
         WorkflowID(describing: type(of: self))
+    }
+
+    public var initialState: StateID {
+        State.initial.id
     }
 
     public var version: WorkflowVersion {

@@ -7,4 +7,8 @@
 
 public protocol AnyTransition {
     var id: TransitionID { get }
+    var process: TransitionProcess { get }
+
+    var fromStateId: StateID { get }
+    var toStateId: StateID { get }
 }

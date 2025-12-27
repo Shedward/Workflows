@@ -6,11 +6,11 @@
 //
 
 public actor Workflows {
-    private let registry: WorkflowRegistry
-    private let storage: WorkflowStorage
+    let registry: WorkflowRegistry
+    let storage: WorkflowStorage
 
-    public init(_ workflows: any Workflow...) throws {
-        self.registry = try WorkflowRegistry(workflows)
+    public init(_ workflows: any Workflow...) async throws {
+        self.registry = try await WorkflowRegistry(workflows)
         self.storage = InMemoryWorkflowStorage()
     }
 }

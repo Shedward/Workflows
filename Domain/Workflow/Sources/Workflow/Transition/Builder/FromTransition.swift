@@ -9,6 +9,6 @@ import Core
 
 extension Workflow {
     public func from(_ state: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        build().map { Transition(from: state, to: $0.to, process: $0.process) }
+        build().map { Transition(from: state, to: $0.to, process: $0.process, workflow: self) }
     }
 }

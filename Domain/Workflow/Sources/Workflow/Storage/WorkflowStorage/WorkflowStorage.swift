@@ -5,10 +5,11 @@
 //  Created by Vlad Maltsev on 26.12.2025.
 //
 
-public protocol WorkflowStorage {
-    func create<W: Workflow>(_ workflow: W) async throws -> WorkflowInstance
+public protocol WorkflowStorage: Sendable {
+    func create(_ workflow: AnyWorkflow) async throws -> WorkflowInstance
     func update(_ instance: WorkflowInstance) async throws
     func finish(_ instance: WorkflowInstance) async throws
 
     func all() async throws -> [WorkflowInstance]
+    func instance(id: WorkflowInstanceID) async throws -> WorkflowInstance?
 }

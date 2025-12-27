@@ -7,18 +7,18 @@
 
 import Foundation
 
-public final class InMemoryWorkflowStorage: WorkflowStorage {
+public actor InMemoryWorkflowStorage: WorkflowStorage {
     private var instances: [WorkflowInstance] = []
 
-    public func create<W>(_ workflow: W) async throws -> WorkflowInstance where W : Workflow {
+    public func create(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
         let newId = UUID().uuidString
-        let instance = WorkflowInstance(id: newId, workflowId: workflow.id)
+        let instance = WorkflowInstance(id: newId, workflowId: workflow.id, state: workflow.initialState)
         instances.append(instance)
         return instance
     }
 
     public func update(_ instance: WorkflowInstance) async throws {
-        instances = instances.filter { $0.id == instance.id } + [instance]
+        instances = instances.filter { $0.id != instance.id } + [instance]
     }
     
     public func finish(_ instance: WorkflowInstance) async throws {
@@ -27,5 +27,9 @@ public final class InMemoryWorkflowStorage: WorkflowStorage {
     
     public func all() async throws -> [WorkflowInstance] {
         instances
+    }
+
+    public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
+        instances.first { $0.id == id }
     }
 }
