@@ -10,6 +10,7 @@ public struct Transition<State: WorkflowState>: AnyTransition {
     public let from: State
     public let to: State
     public let process: TransitionProcess
+    public let trigger: TransitionTrigger
 
     public var fromStateId: StateID {
         from.id
@@ -23,12 +24,14 @@ public struct Transition<State: WorkflowState>: AnyTransition {
         from: State,
         to: State,
         process: TransitionProcess,
-        workflow: AnyWorkflow
+        workflow: AnyWorkflow,
+        trigger: TransitionTrigger
     ) {
         self.id = TransitionID(from: from.id, to: to.id, processId: process.id, workflow: workflow.id)
         self.from = from
         self.to = to
         self.process = process
+        self.trigger = trigger
     }
 }
 

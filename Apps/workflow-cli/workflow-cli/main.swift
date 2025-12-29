@@ -8,52 +8,56 @@
 import Core
 import Workflow
 
-struct Напечатать_сообщение: Action {
-    func run() async throws {
-        print("Print action")
-    }
-}
+struct Создать_таблицу_для_декомпозиции: Pass { }
+struct Открыть_таблицу: Pass { }
+struct Поставить_встречу_для_декомпозиции: Pass { }
+struct Текстовая_декомпозиция: Pass { }
+struct Автоматическая_декомпозиция: Pass { }
+struct Завершить: Pass { }
 
-struct Сделать_что_то_еще: Action {
-    func run() async throws {
-        print("Print action")
-    }
-}
-
-struct Проверочный_флоу: Workflow {
+struct Декомпозиция_портфеля: Workflow {
     enum State: String, WorkflowState {
-        static let initial = State.создан
+        static let initial = State.готов_к_декомпозиции
+        static let final = State.декомпозиция_завершена
 
-        case создан
-        case в_процессе
-        case завершен
+        case готов_к_декомпозиции
+        case на_оценке
+        case ждем_встречу
+        case ждем_ответа_в_треде
+        case декомпозиция_завершена
     }
 
     var transitions: Transitions {
-        from(.создан) {
-            Напечатать_сообщение().to(.в_процессе)
-            Сделать_что_то_еще().to(.завершен)
+        after(.готов_к_декомпозиции) {
+            Создать_таблицу_для_декомпозиции.to(.на_оценке)
         }
 
-        from(.в_процессе) {
-            Напечатать_сообщение().to(.завершен)
+        on(.на_оценке) {
+            Поставить_встречу_для_декомпозиции.to(.ждем_встречу)
+            Текстовая_декомпозиция.to(.ждем_ответа_в_треде)
+        }
+
+        on(.ждем_встречу, .ждем_ответа_в_треде) {
+            Автоматическая_декомпозиция.toFinish()
+        }
+
+        always {
+            Завершить.toFinish()
         }
     }
 }
 
+struct Разработка_портфеля: Workflow {
+    
+    enum State: String, WorkflowState {
+        static let initial = State.готов_к_разработке
+        static let final = State.завершено
 
-let workflows = try await Workflows(
-    Проверочный_флоу()
-)
+        case готов_к_разработке
+        case завершено
+    }
 
-let workflow = try await workflows.start("Проверочный_флоу")
-print(workflow)
-let instance = try await workflows.instance(id: workflow.id)
-print(instance)
-let currentTransitions = try await workflows.transitions(for: instance.id)
-print(currentTransitions.map(\.id))
-try await workflows.startTransition(currentTransitions.first!.id, instance: instance.id)
-let updatedInstance = try await workflows.instance(id: workflow.id)
-print(updatedInstance)
+    var transitions: Transitions {
 
-
+    }
+}
