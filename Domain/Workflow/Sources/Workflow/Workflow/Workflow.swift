@@ -7,7 +7,7 @@
 
 import Core
 
-public protocol Workflow: AnyWorkflow {
+public protocol Workflow: AnyWorkflow, TransitionProcess {
     associatedtype State: WorkflowState
 
     var id: WorkflowID { get }

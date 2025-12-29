@@ -11,6 +11,7 @@ public struct WorkflowInstance: Sendable {
     public let id: WorkflowInstanceID
     public let workflowId: WorkflowID
     public let state: StateID
+    public let transitionInProgress: TransitionInProgress
 
     init(id: WorkflowInstanceID, workflowId: WorkflowID, state: StateID) {
         self.id = id
@@ -26,3 +27,4 @@ extension WorkflowInstance {
 }
 
 public typealias WorkflowInstanceID = String
+
