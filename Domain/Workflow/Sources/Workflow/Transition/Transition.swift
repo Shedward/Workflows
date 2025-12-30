@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 24.12.2025.
 //
 
-public struct Transition<State: WorkflowState>: AnyTransition {
+public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendable {
     public let id: TransitionID
     public let from: State
     public let to: State

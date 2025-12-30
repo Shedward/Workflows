@@ -1,5 +1,5 @@
 //
-//  WorkflowState.swift
+//  State.swift
 //  Workflow
 //
 //  Created by Vlad Maltsev on 24.12.2025.

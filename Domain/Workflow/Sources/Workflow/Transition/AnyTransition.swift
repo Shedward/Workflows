@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 26.12.2025.
 //
 
-public protocol AnyTransition {
+public protocol AnyTransition: Sendable {
     var id: TransitionID { get }
     var process: TransitionProcess { get }
 

@@ -7,8 +7,7 @@
 
 public extension Workflows {
     func start(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
-        let instance = try await storage.create(workflow)
-        return instance
+        try await runner.start(workflow)
     }
 
     func start(_ workflowId: WorkflowID) async throws -> WorkflowInstance {

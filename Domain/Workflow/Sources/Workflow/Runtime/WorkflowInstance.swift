@@ -8,21 +8,35 @@
 import Core
 
 public struct WorkflowInstance: Sendable {
-    public let id: WorkflowInstanceID
-    public let workflowId: WorkflowID
-    public let state: StateID
-    public let transitionInProgress: TransitionInProgress
+    public var id: WorkflowInstanceID
+    public var workflowId: WorkflowID
+    public var state: StateID
+    public var waitingTransition: TransitionWaiting?
 
-    init(id: WorkflowInstanceID, workflowId: WorkflowID, state: StateID) {
+    init(
+        id: WorkflowInstanceID,
+        workflowId: WorkflowID,
+        state: StateID,
+        waitingTransition: TransitionWaiting?
+    ) {
         self.id = id
         self.workflowId = workflowId
         self.state = state
+        self.waitingTransition = waitingTransition
     }
 }
 
-extension WorkflowInstance {
-    public func withState(_ newState: StateID) -> Self {
-        WorkflowInstance(id: id, workflowId: workflowId, state: newState)
+extension WorkflowInstance: Modifiers {
+    public func moveToState(_ state: StateID) -> Self {
+        with { $0.state = state }
+    }
+
+    public func waiting(_ waiting: Waiting, of transition: AnyTransition) -> Self {
+        with { $0.waitingTransition = TransitionWaiting(transitionId: transition.id, waiting: waiting) }
+    }
+
+    public func endWaiting() -> Self {
+        with { $0.waitingTransition = nil }
     }
 }
 

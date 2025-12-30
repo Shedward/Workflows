@@ -5,12 +5,14 @@
 //  Created by Vlad Maltsev on 27.12.2025.
 //
 
-public protocol Action: TransitionProcess {
+import Core
+
+public protocol Action: TransitionProcess, Defaultable {
     func run() async throws
 }
 
 public extension Action where Self: TransitionProcess {
-    func start() async throws -> TransitionResult {
+    func start(context: WorkflowContext) async throws -> TransitionState {
         try await run()
         return .completed
     }

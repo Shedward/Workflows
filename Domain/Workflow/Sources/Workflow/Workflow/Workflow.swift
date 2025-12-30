@@ -7,7 +7,7 @@
 
 import Core
 
-public protocol Workflow: AnyWorkflow, TransitionProcess {
+public protocol Workflow: AnyWorkflow, TransitionProcess, Defaultable {
     associatedtype State: WorkflowState
 
     var id: WorkflowID { get }
@@ -27,6 +27,10 @@ extension Workflow {
 
     public var initialState: StateID {
         State.initial.id
+    }
+
+    public var finalState: StateID {
+        State.final.id
     }
 
     public var version: WorkflowVersion {

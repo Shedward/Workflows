@@ -10,7 +10,7 @@ import Core
 public protocol Pass: TransitionProcess, Defaultable { }
 
 public extension Pass where Self: TransitionProcess {
-    func start() async throws -> TransitionResult {
+    func start(context: WorkflowContext) async throws -> TransitionState {
         return .completed
     }
 }
