@@ -10,9 +10,14 @@ import os
 public extension Logger {
     static let defaultSubsystemPrefix: String = "me.shedward.workflows"
 
-    init?(subsystem: String = defaultSubsystemPrefix, scope: LoggerScope) {
+    init?(subsystem: String = defaultSubsystemPrefix, scope: LoggerScope, prefix: String? = #fileID) {
         if LoggerScopeStorage.shared.isEnabled(scope) {
-            self.init(subsystem: "\(Logger.defaultSubsystemPrefix).\(subsystem)", category: scope.name)
+            var category = scope.name
+            if let prefix {
+                category += "." + prefix
+            }
+
+            self.init(subsystem: "\(Logger.defaultSubsystemPrefix).\(subsystem)", category: category)
         } else {
             return nil
         }

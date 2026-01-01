@@ -26,7 +26,7 @@ public actor WorkflowRegistry: Sendable {
     }
 
     public func workflow(instance: WorkflowInstance) -> AnyWorkflow? {
-        workflow(id: instance.id)
+        workflow(id: instance.workflowId)
     }
 
     public func workflow(id: WorkflowID) -> AnyWorkflow? {

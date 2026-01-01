@@ -7,6 +7,9 @@
 
 import Core
 import Workflow
+import os
+
+Logger.enable(.workflow)
 
 struct Создать_таблицу_для_декомпозиции: Pass { }
 struct Открыть_таблицу: Pass { }
@@ -23,8 +26,8 @@ struct Напечатать_сообщение: Action {
 
 struct Ждать_проведения_встречи: Wait {
     func resume() async throws -> Waiting.Time? {
-        print("???")
-        return .after(minutes: 10)
+        print("Wait for 1 second")
+        return .after(seconds: 1)
     }
 }
 
@@ -94,3 +97,13 @@ struct Разработка_портфеля: Workflow {
         }
     }
 }
+
+let workflows = try await Workflows(
+    Декомпозиция_портфеля(),
+    Разработка_портфеля()
+)
+
+let instance = try await workflows.start("Декомпозиция_портфеля")
+print(instance)
+let transitions = try await workflows.transitions(for: instance.id)
+print(transitions.map(\.id))

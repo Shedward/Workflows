@@ -6,14 +6,14 @@
 //
 
 extension Workflows {
-    func transitions(for instanceId: WorkflowInstanceID) async throws -> [AnyTransition] {
+    public func transitions(for instanceId: WorkflowInstanceID) async throws -> [AnyTransition] {
         let instance = try await instance(id: instanceId)
         let workflow = try await workflow(id: instance.workflowId)
 
         return workflow.anyTransitions.filter { $0.fromStateId == instance.state }
     }
 
-    func transition(id: TransitionID) async throws -> AnyTransition {
+    public func transition(id: TransitionID) async throws -> AnyTransition {
         let workflow = try await workflow(id: id.workflow)
 
         guard let transition = workflow.anyTransitions.first(where: { $0.id == id }) else {
@@ -23,7 +23,7 @@ extension Workflows {
         return transition
     }
 
-    func takeTransition(id transitionId: TransitionID, on instance: WorkflowInstanceID) async throws {
+    public func takeTransition(id transitionId: TransitionID, on instance: WorkflowInstanceID) async throws {
         let transition = try await self.transition(id: transitionId)
         let instance = try await self.instance(id: instance)
         let workflow = try await self.workflow(id: transitionId.workflow)

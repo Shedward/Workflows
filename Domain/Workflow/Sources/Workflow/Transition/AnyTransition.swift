@@ -11,4 +11,6 @@ public protocol AnyTransition: Sendable {
 
     var fromStateId: StateID { get }
     var toStateId: StateID { get }
+
+    var trigger: TransitionTrigger { get }
 }
