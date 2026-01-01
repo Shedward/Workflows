@@ -6,7 +6,7 @@
 //
 
 extension Workflow where Self: TransitionProcess {
-    public func start(context: WorkflowContext) async throws -> TransitionState {
+    public func start(context: WorkflowContext) async throws -> TransitionResult {
         let subflowInstance = try await context.start(self)
         return .waiting(.workflowFinished(.init(id: subflowInstance.id)))
     }

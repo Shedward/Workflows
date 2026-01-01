@@ -7,49 +7,48 @@
 
 import Core
 import Foundation
+import os
 
 actor WorkflowRunner: WorkflowContext {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
+    private var scheduler: WaitScheduler?
 
-    private var lastDeadline: DispatchTime = .now()
-    private let timer = DispatchSource.makeTimerSource()
+    private let logger = Logger(scope: .workflow)
 
     init(storage: WorkflowStorage, registry: WorkflowRegistry) {
         self.storage = storage
         self.registry = registry
+
+        Task { [weak self] in
+            await self?.initializeScheduler()
+        }
     }
 
     func resume() async throws {
-        timer.setEventHandler { [weak self] in
-            guard let self else { return }
-            Task {
-                try await self.resumeWaitingForTime()
-            }
-        }
-
-        self.scheduleNextCheck()
+        let instances = try await storage.all()
+        await scheduler?.rebuild(from: instances)
     }
 
     func start(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
-        let instance = try await storage.create(workflow)
-        return instance
+        try await storage.create(workflow)
     }
 
     func takeTransition(_ transition: AnyTransition, on instance: WorkflowInstance, of workflow: AnyWorkflow) async throws {
         let result = try await transition.process.start(context: self)
 
-        let nextInstance: WorkflowInstance
+        var nextInstance = instance
+        await scheduler?.cancel(for: instance.id)
 
         switch result {
         case .completed:
-            nextInstance = instance
-                .endWaiting()
+            nextInstance = nextInstance
+                .transitionEnded()
                 .moveToState(transition.toStateId)
         case .waiting(let waiting):
-            nextInstance = instance
-                .waiting(waiting, of: transition)
-            scheduleNextCheck(waiting)
+            nextInstance = nextInstance
+                .transitionWaiting(waiting, of: transition)
+            await scheduler?.schedule(for: nextInstance.id, waiting: waiting)
         }
 
         if nextInstance.state == workflow.finalState {
@@ -61,53 +60,44 @@ actor WorkflowRunner: WorkflowContext {
 
     func finish(_ instance: WorkflowInstance) async throws {
         try await storage.finish(instance)
-        try await resumeWaitingForFinishing(of: instance)
+        await scheduler?.notifyFinished(instance.id)
     }
 
-    func scheduleNextCheck(_ waiting: Waiting? = nil) {
-        let deadline: DispatchTime
-        if case .time(let time) = waiting {
-            let nanoseconds = max(0, Int(time.date.timeIntervalSinceNow * 1_000_000_000))
-            deadline = .now() + .nanoseconds(nanoseconds)
-        } else {
-            deadline = .now()
-        }
+    // MARK: - Initialization helpers
 
-        timer.schedule(deadline: deadline)
-        timer.resume()
+    private func initializeScheduler() async {
+        self.scheduler = WaitScheduler(resume: self.resumeWaiting)
     }
 
-    private func resumeWaitingForTime() async throws {
-        let allInstances = try await storage.all()
-        for waitingInstance in allInstances {
-            if case .time = waitingInstance.waitingTransition?.waiting{
-                try await resumeWaiting(waitingInstance)
-            }
-        }
-    }
+    // MARK: - Resuming helpers
 
-    private func resumeWaitingForFinishing(of finishingInstance: WorkflowInstance) async throws {
-        let allInstances = try await storage.all()
-        for waitingInstance in allInstances {
-            if case .workflowFinished(let finished) = waitingInstance.waitingTransition?.waiting, finished.instanceId == finishingInstance.id {
-                try await resumeWaiting(waitingInstance)
-            }
-        }
-    }
-
-    private func resumeWaiting(_ instance: WorkflowInstance) async throws {
-        guard let waitingTransition = instance.waitingTransition else {
+    private func resumeWaiting(instanceId: WorkflowInstanceID) async {
+        guard let instance = try? await storage.instance(id: instanceId) else {
             return
         }
 
-        guard let workflow = await registry.workflow(instance: instance) else {
-            throw Failure("Workflow not found for id: \(instance.id)")
-        }
+        do {
+            guard let transitionState = instance.transitionState else {
+                return
+            }
 
-        guard let transition = workflow.anyTransitions.first(where: { $0.id == waitingTransition.transitionId }) else {
-            throw Failure("Transition not found for id: \(waitingTransition)")
-        }
+            guard let workflow = await registry.workflow(id: instance.workflowId) else {
+                throw Failure("Workflow not found for id: \(instance.workflowId)")
+            }
 
-        try await takeTransition(transition, on: instance, of: workflow)
+            guard let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId }) else {
+                throw Failure("Transition not found for id: \(transitionState.transitionId)")
+            }
+
+            do {
+                try await takeTransition(transition, on: instance, of: workflow)
+            } catch {
+                try await storage.update(
+                    instance.transitionFailed(error, at: transition)
+                )
+            }
+        } catch {
+            logger?.error("Failed to resume \(instanceId) with error \(error)")
+        }
     }
 }

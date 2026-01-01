@@ -12,7 +12,7 @@ public protocol Wait: TransitionProcess {
 }
 
 extension Wait where Self: TransitionProcess {
-    public func start(context: WorkflowContext) async throws -> TransitionState {
+    public func start(context: WorkflowContext) async throws -> TransitionResult {
         let nextTime = try await resume()
         if let nextTime {
             return .waiting(.time(nextTime))

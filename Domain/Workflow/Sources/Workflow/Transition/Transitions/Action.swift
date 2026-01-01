@@ -12,7 +12,7 @@ public protocol Action: TransitionProcess, Defaultable {
 }
 
 public extension Action where Self: TransitionProcess {
-    func start(context: WorkflowContext) async throws -> TransitionState {
+    func start(context: WorkflowContext) async throws -> TransitionResult {
         try await run()
         return .completed
     }
