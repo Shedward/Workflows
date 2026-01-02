@@ -34,4 +34,24 @@ extension Workflows {
 
         try await runner.takeTransition(transition, on: instance, of: workflow)
     }
+
+    public func takeTransition(processId: TransitionProcessID, on instance: WorkflowInstanceID) async throws {
+        let instance = try await self.instance(id: instance)
+        let workflow = try await self.workflow(id: instance.workflowId)
+
+        let possibleTransitions = workflow.anyTransitions.filter { transition in
+            instance.state == transition.fromStateId && transition.id.processId == processId
+        }
+
+        guard possibleTransitions.count == 1 else {
+            throw WorkflowsError.TransitionProcessNotFoundForInstance(
+                instance: instance.id,
+                workflow: workflow.id,
+                transitionId: processId
+            )
+        }
+        let transition = possibleTransitions[0]
+
+        try await runner.takeTransition(transition, on: instance, of: workflow)
+    }
 }

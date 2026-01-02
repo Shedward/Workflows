@@ -22,4 +22,10 @@ public enum WorkflowsError {
     public struct TransitionNotFound: Swift.Error {
         let transitionId: TransitionID
     }
+
+    public struct TransitionProcessNotFoundForInstance: Swift.Error {
+        let instance: WorkflowInstanceID
+        let workflow: WorkflowID
+        let transitionId: TransitionProcessID
+    }
 }

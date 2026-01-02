@@ -103,7 +103,7 @@ let workflows = try await Workflows(
     Разработка_портфеля()
 )
 
-let instance = try await workflows.start("Декомпозиция_портфеля")
+var instance = try await workflows.start("Декомпозиция_портфеля")
 print(instance)
 let transitions = try await workflows.transitions(for: instance.id)
 print(transitions.map(\.id))
