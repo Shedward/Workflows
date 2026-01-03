@@ -39,6 +39,8 @@ struct Ждать_ответов_в_треде: Wait {
 }
 
 struct Декомпозиция_портфеля: Workflow {
+    @Input var portfolioId: String
+
     enum State: String, WorkflowState {
         static let initial = State.готов_к_декомпозиции
         static let final = State.декомпозиция_завершена
