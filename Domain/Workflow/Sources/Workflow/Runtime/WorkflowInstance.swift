@@ -12,17 +12,20 @@ public struct WorkflowInstance: Sendable {
     public var workflowId: WorkflowID
     public var state: StateID
     public var transitionState: TransitionState?
+    public var data: WorkflowData
 
     init(
         id: WorkflowInstanceID,
         workflowId: WorkflowID,
         state: StateID,
-        transitionState: TransitionState?
+        transitionState: TransitionState?,
+        data: WorkflowData
     ) {
         self.id = id
         self.workflowId = workflowId
         self.state = state
         self.transitionState = transitionState
+        self.data = data
     }
 }
 

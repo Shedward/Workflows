@@ -12,7 +12,13 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
 
     public func create(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
         let newId = UUID().uuidString
-        let instance = WorkflowInstance(id: newId, workflowId: workflow.id, state: workflow.initialState, transitionState: nil)
+        let instance = WorkflowInstance(
+            id: newId,
+            workflowId: workflow.id,
+            state: workflow.initialState,
+            transitionState: nil,
+            data: .init()
+        )
         instances.append(instance)
         return instance
     }

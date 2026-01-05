@@ -7,7 +7,7 @@
 
 import Core
 
-public protocol Action: TransitionProcess, Defaultable {
+public protocol Action: TransitionProcess, DataBindable, Defaultable {
     func run() async throws
 }
 

@@ -11,6 +11,6 @@ import SwiftSyntaxMacros
 @main
 struct WorkflowMacrosPlugin: CompilerPlugin {
     let providingMacros: [any Macro.Type] = [
-        InputMacro.self
+        DataBindableMacro.self
     ]
 }
