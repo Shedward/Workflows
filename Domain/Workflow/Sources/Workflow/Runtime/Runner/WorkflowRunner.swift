@@ -12,155 +12,116 @@ import os
 actor WorkflowRunner {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
-    private var scheduler: WaitScheduler?
-
+    private lazy var scheduler: WaitScheduler = WaitScheduler { [weak self] instanceId in
+        await self?.resumeWaiting(instanceId: instanceId)
+    }
     private let logger = Logger(scope: .workflow)
 
     init(storage: WorkflowStorage, registry: WorkflowRegistry) {
         self.storage = storage
         self.registry = registry
-
-        Task { [weak self] in
-            await self?.initializeScheduler()
-        }
     }
 
     func resume() async throws {
-        logger?.trace("Running resumed")
         let instances = try await storage.all()
-        await scheduler?.rebuild(from: instances)
-
+        logger?.trace("Resume runner (\(instances.count) instances)")
+        await scheduler.rebuild(from: instances)
         for instance in instances {
-            await takeAllAutomaticTransitionsIfNeeded(of: instance)
+            await takeAutomaticTransitionsLoop(from: instance)
         }
     }
 
     func start(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
-        logger?.trace("Started \(workflow.id, privacy: .public)")
+        logger?.trace("Start \(workflow.id, privacy: .public)")
         let instance = try await storage.create(workflow, initialData: initialData)
-        return await takeAutomaticTransitionsIfNeeded(of: instance)
+        return await takeAutomaticTransitionsLoop(from: instance)
     }
 
     @discardableResult
     func takeTransition(_ transition: AnyTransition, on instance: WorkflowInstance, of workflow: AnyWorkflow) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
-        var context = WorkflowContext(
-            data: instance.data,
-            start: self.start
-        )
+        var context = WorkflowContext(data: instance.data, start: self.start)
         let result = try await transition.process.start(context: &context)
 
-        var nextInstance = instance
-            .data(context.data)
-
+        var next = instance.data(context.data)
         switch result {
         case .completed:
-            nextInstance = nextInstance
-                .transitionEnded()
-                .moveToState(transition.toStateId)
+            next = next.transitionEnded().moveToState(transition.toStateId)
         case .waiting(let waiting):
-            nextInstance = nextInstance
-                .transitionWaiting(waiting, of: transition)
-            await scheduler?.schedule(for: nextInstance.id, waiting: waiting)
+            next = next.transitionWaiting(waiting, of: transition)
+            await scheduler.schedule(for: next.id, waiting: waiting)
         }
 
-        if nextInstance.state == workflow.finalState {
-            try await finish(nextInstance)
+        if next.state == workflow.finalState {
+            try await finish(next)
         } else {
-            try await storage.update(nextInstance)
+            try await storage.update(next)
         }
 
-        return await takeAllAutomaticTransitionsIfNeeded(of: nextInstance)
+        return await takeAutomaticTransitionsLoop(from: next)
     }
 
     func finish(_ instance: WorkflowInstance) async throws {
-        logger?.trace("Finished \(instance.id, privacy: .public)")
+        logger?.trace("Finish \(instance.id, privacy: .public)")
         try await storage.finish(instance)
-        await scheduler?.notifyFinished(instance.id)
+        await scheduler.notifyFinished(instance.id)
     }
 
+    // MARK: - Automatic transitions
+
     @discardableResult
-    private func takeAllAutomaticTransitionsIfNeeded(of instance: WorkflowInstance) async -> WorkflowInstance {
-        let nextInstance = await takeAutomaticTransitionsIfNeeded(of: instance)
-        if nextInstance.state != instance.state {
-            return await takeAllAutomaticTransitionsIfNeeded(of: nextInstance)
-        } else {
-            return nextInstance
+    private func takeAutomaticTransitionsLoop(from start: WorkflowInstance) async -> WorkflowInstance {
+        var current = start
+        while let next = await nextAutomaticTransitionInstance(from: current) {
+            current = next
         }
+        return current
     }
 
-    @discardableResult
-    private func takeAutomaticTransitionsIfNeeded(of instance: WorkflowInstance) async -> WorkflowInstance {
-        logger?.trace("Taking automatic transition from \(instance.state, privacy: .public)")
+    private func nextAutomaticTransitionInstance(from instance: WorkflowInstance) async -> WorkflowInstance? {
         guard let workflow = await registry.workflow(instance: instance) else {
             logger?.error("Workflow for instance \(instance.id) of type \(instance.workflowId) not found")
-            return instance
+            return nil
         }
 
-        let automaticTransitions = workflow.anyTransitions
-            .filter { transition in
-                transition.fromStateId == instance.state && transition.trigger == .automatic
-            }
-
-        if automaticTransitions.isEmpty {
-            logger?.trace("No automatic transitions, skip")
-            return instance
+        let automatic = workflow.anyTransitions.filter { $0.fromStateId == instance.state && $0.trigger == .automatic }
+        guard let transition = automatic.first, automatic.count == 1 else {
+            if automatic.isEmpty { logger?.trace("No automatic transitions from \(instance.state, privacy: .public)") }
+            else { logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)") }
+            return nil
         }
 
-        guard automaticTransitions.count == 1 else {
-            logger?.error("There are several automatic transitions from state \(instance.state, privacy: .public): \(automaticTransitions.map(\.id), privacy: .public)")
-            return instance
-        }
-        
-        let transition = automaticTransitions[0]
-
-        logger?.trace("Found automatic transition \(transition.id.processId, privacy: .public)")
-
+        logger?.trace("Auto transition \(transition.id.processId, privacy: .public)")
         do {
             return try await takeTransition(transition, on: instance, of: workflow)
         } catch {
-            let newInstance = instance.transitionFailed(error, at: transition)
+            let failed = instance.transitionFailed(error, at: transition)
             logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
-            try? await storage.update(newInstance)
-            return newInstance
+            try? await storage.update(failed)
+            return failed
         }
     }
 
-    private func initializeScheduler() async {
-        logger?.trace("Scheduler is initialized")
-        self.scheduler = WaitScheduler(resume: self.resumeWaiting)
-    }
+    // MARK: - Waiting
 
     private func resumeWaiting(instanceId: WorkflowInstanceID) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
-        guard let instance = try? await storage.instance(id: instanceId) else {
+        guard let instance = try? await storage.instance(id: instanceId),
+              let transitionState = instance.transitionState,
+              let workflow = await registry.workflow(id: instance.workflowId),
+              let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId }) else {
+            logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
             return
         }
 
         do {
-            guard let transitionState = instance.transitionState else {
-                return
-            }
-
-            guard let workflow = await registry.workflow(id: instance.workflowId) else {
-                throw Failure("Workflow not found for id: \(instance.workflowId)")
-            }
-
-            guard let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId }) else {
-                throw Failure("Transition not found for id: \(transitionState.transitionId)")
-            }
-
-            do {
-                try await takeTransition(transition, on: instance, of: workflow)
-            } catch {
-                try await storage.update(
-                    instance.transitionFailed(error, at: transition)
-                )
-            }
+            try await takeTransition(transition, on: instance, of: workflow)
         } catch {
+            try? await storage.update(instance.transitionFailed(error, at: transition))
             logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
         }
     }
 }
+
