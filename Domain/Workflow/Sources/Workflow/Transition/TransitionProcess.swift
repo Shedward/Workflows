@@ -8,7 +8,7 @@
 public protocol TransitionProcess {
     var id: TransitionProcessID { get }
 
-    func start(context: WorkflowContext) async throws -> TransitionResult
+    func start(context: inout WorkflowContext) async throws -> TransitionResult
 }
 
 public extension TransitionProcess {

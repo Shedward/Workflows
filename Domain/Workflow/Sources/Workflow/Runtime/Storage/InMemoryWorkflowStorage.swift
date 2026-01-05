@@ -10,14 +10,14 @@ import Foundation
 public actor InMemoryWorkflowStorage: WorkflowStorage {
     private var instances: [WorkflowInstance] = []
 
-    public func create(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
+    public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         let newId = UUID().uuidString
         let instance = WorkflowInstance(
             id: newId,
             workflowId: workflow.id,
             state: workflow.initialState,
             transitionState: nil,
-            data: .init()
+            data: initialData
         )
         instances.append(instance)
         return instance

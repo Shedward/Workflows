@@ -9,7 +9,7 @@ import Core
 import Foundation
 import os
 
-actor WorkflowRunner: WorkflowContext {
+actor WorkflowRunner {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
     private var scheduler: WaitScheduler?
@@ -31,23 +31,28 @@ actor WorkflowRunner: WorkflowContext {
         await scheduler?.rebuild(from: instances)
 
         for instance in instances {
-            await takeAutomaticTransitionsIfNeeded(of: instance)
+            await takeAllAutomaticTransitionsIfNeeded(of: instance)
         }
     }
 
-    func start(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
+    func start(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         logger?.trace("Started \(workflow.id, privacy: .public)")
-        let instance = try await storage.create(workflow)
+        let instance = try await storage.create(workflow, initialData: initialData)
         return await takeAutomaticTransitionsIfNeeded(of: instance)
     }
 
     @discardableResult
     func takeTransition(_ transition: AnyTransition, on instance: WorkflowInstance, of workflow: AnyWorkflow) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
-        let result = try await transition.process.start(context: self)
+
+        var context = WorkflowContext(
+            data: instance.data,
+            start: self.start
+        )
+        let result = try await transition.process.start(context: &context)
 
         var nextInstance = instance
-        await scheduler?.cancel(for: instance.id)
+            .data(context.data)
 
         switch result {
         case .completed:
@@ -66,7 +71,7 @@ actor WorkflowRunner: WorkflowContext {
             try await storage.update(nextInstance)
         }
 
-        return await takeAutomaticTransitionsIfNeeded(of: nextInstance)
+        return await takeAllAutomaticTransitionsIfNeeded(of: nextInstance)
     }
 
     func finish(_ instance: WorkflowInstance) async throws {
@@ -76,7 +81,18 @@ actor WorkflowRunner: WorkflowContext {
     }
 
     @discardableResult
+    private func takeAllAutomaticTransitionsIfNeeded(of instance: WorkflowInstance) async -> WorkflowInstance {
+        let nextInstance = await takeAutomaticTransitionsIfNeeded(of: instance)
+        if nextInstance.state != instance.state {
+            return await takeAllAutomaticTransitionsIfNeeded(of: nextInstance)
+        } else {
+            return nextInstance
+        }
+    }
+
+    @discardableResult
     private func takeAutomaticTransitionsIfNeeded(of instance: WorkflowInstance) async -> WorkflowInstance {
+        logger?.trace("Taking automatic transition from \(instance.state, privacy: .public)")
         guard let workflow = await registry.workflow(instance: instance) else {
             logger?.error("Workflow for instance \(instance.id) of type \(instance.workflowId) not found")
             return instance
@@ -88,6 +104,7 @@ actor WorkflowRunner: WorkflowContext {
             }
 
         if automaticTransitions.isEmpty {
+            logger?.trace("No automatic transitions, skip")
             return instance
         }
 
@@ -98,10 +115,13 @@ actor WorkflowRunner: WorkflowContext {
         
         let transition = automaticTransitions[0]
 
+        logger?.trace("Found automatic transition \(transition.id.processId, privacy: .public)")
+
         do {
             return try await takeTransition(transition, on: instance, of: workflow)
         } catch {
             let newInstance = instance.transitionFailed(error, at: transition)
+            logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
             try? await storage.update(newInstance)
             return newInstance
         }

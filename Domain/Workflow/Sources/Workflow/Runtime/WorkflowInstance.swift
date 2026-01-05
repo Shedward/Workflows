@@ -45,6 +45,10 @@ extension WorkflowInstance: Modifiers {
     public func transitionEnded() -> Self {
         with { $0.transitionState = nil }
     }
+
+    public func data(_ data: WorkflowData) -> Self {
+        with { $0.data = data }
+    }
 }
 
 public typealias WorkflowInstanceID = String

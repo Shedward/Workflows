@@ -103,12 +103,56 @@ struct Разработка_портфеля: Workflow {
     }
 }
 
+@DataBindable
+struct A2B: Action {
+    @Input var testText: String
+    @Output var output1: String
+
+    func run() async throws {
+        print("A2B " + testText)
+
+        output1 = "another test"
+    }
+}
+
+@DataBindable
+struct B2C: Action {
+    @Input var output1: String
+    @Output var anotherOutput: String
+
+    func run() async throws {
+        print("B2C: " + output1)
+        anotherOutput = "Finished"
+    }
+}
+
+struct Проверка_потока_данных: Workflow {
+
+    enum State: String, WorkflowState {
+        static let initial = State.a
+        static let final = State.c
+
+        case a
+        case b
+        case c
+    }
+
+    var transitions: Transitions {
+        after {
+            A2B.to(.b)
+            B2C.to(.c)
+        }
+    }
+}
+
 let workflows = try await Workflows(
     Декомпозиция_портфеля(),
-    Разработка_портфеля()
+    Разработка_портфеля(),
+    Проверка_потока_данных()
 )
 
-var instance = try await workflows.start("Декомпозиция_портфеля")
+let data = WorkflowData(storage: [ DataKey<String>(name: "testText").eraseToAny(): "Hello workflow" ])
+var instance = try await workflows.start("Проверка_потока_данных", initialData: data)
 print(instance)
 let transitions = try await workflows.transitions(for: instance.id)
 print(transitions.map(\.id))

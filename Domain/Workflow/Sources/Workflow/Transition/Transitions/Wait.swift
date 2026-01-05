@@ -11,9 +11,19 @@ public protocol Wait: TransitionProcess, DataBindable {
     func resume() async throws -> Waiting.Time?
 }
 
-extension Wait where Self: TransitionProcess {
-    public func start(context: WorkflowContext) async throws -> TransitionResult {
-        let nextTime = try await resume()
+public extension Wait where Self: TransitionProcess {
+    func start(context: inout WorkflowContext) async throws -> TransitionResult {
+        var wait = self
+
+        try wait.bind(BindInputs(data: context.data))
+        try wait.bind(CreateOutputStorage())
+
+        let nextTime = try await wait.resume()
+
+        var readOutputs = ReadOutputs(data: context.data)
+        try wait.bind(&readOutputs)
+        context.data = readOutputs.data
+
         if let nextTime {
             return .waiting(.time(nextTime))
         } else {

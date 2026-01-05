@@ -13,6 +13,10 @@ public struct AnyDataKey: Hashable, Sendable {
 public struct DataKey<Value>: Hashable, Sendable {
     public let name: String
 
+    public init(name: String) {
+        self.name = name
+    }
+
     public func eraseToAny() -> AnyDataKey {
         .init(name: name, type: ObjectIdentifier(Value.self))
     }

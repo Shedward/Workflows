@@ -8,14 +8,14 @@
 import os.lock
 
 final class ValueStorage: @unchecked Sendable {
-    private var _value: Any?
+    private var _value: Sendable?
     private var lock = os_unfair_lock_s()
 
-    init(_ value: Any? = nil) {
+    init(_ value: Sendable? = nil) {
         _value = value
     }
 
-    var value: Any? {
+    var value: Sendable? {
         get {
             os_unfair_lock_lock(&lock)
             let v = _value

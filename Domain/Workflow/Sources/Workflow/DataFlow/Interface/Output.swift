@@ -14,17 +14,13 @@ public struct Output<Value: Sendable>: Sendable {
         get {
             fatalError("Tried to read Output value")
         }
-        set {
+        nonmutating set {
             guard let storage else {
                 fatalError("Tried to use Output before setting storage")
             }
 
             storage.value = newValue
         }
-    }
-
-    public var projectedValue: Self {
-        self
     }
 
     public init(key: StaticString? = nil) {

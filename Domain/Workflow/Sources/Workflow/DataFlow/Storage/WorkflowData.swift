@@ -12,12 +12,12 @@ public struct WorkflowData: Sendable {
         self.storage = storage
     }
 
-    public func get<Value>(_ key: DataKey<Value>) -> Value? {
-        storage[key.eraseToAny()] as? Value
+    public func get<Value>(_ key: String) -> Value? {
+        storage[DataKey<Value>(name: key).eraseToAny()] as? Value
     }
 
 
-    public mutating func set<Value: Sendable>(_ key: DataKey<Value>, _ value: Value) {
-        storage[key.eraseToAny()] = value
+    public mutating func set<Value: Sendable>(_ key: String, _ value: Value) {
+        storage[DataKey<Value>(name: key).eraseToAny()] = value
     }
 }

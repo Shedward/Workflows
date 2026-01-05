@@ -6,7 +6,7 @@
 //
 
 public protocol WorkflowStorage: Sendable {
-    func create(_ workflow: AnyWorkflow) async throws -> WorkflowInstance
+    func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance
     func update(_ instance: WorkflowInstance) async throws
     func finish(_ instance: WorkflowInstance) async throws
 

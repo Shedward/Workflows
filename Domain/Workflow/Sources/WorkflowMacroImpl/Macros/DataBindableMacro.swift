@@ -59,7 +59,7 @@ public struct DataBindableMacro: MemberMacro {
 
         let method: DeclSyntax =
         """
-        mutating func bind(_ bind: inout any DataBinding) throws {
+        mutating func bind<Binding: DataBinding>(_ bind: inout Binding) throws {
             \(body)
         }
         """

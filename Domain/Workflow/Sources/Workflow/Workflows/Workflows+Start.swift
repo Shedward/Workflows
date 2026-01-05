@@ -6,12 +6,12 @@
 //
 
 public extension Workflows {
-    func start(_ workflow: AnyWorkflow) async throws -> WorkflowInstance {
-        try await runner.start(workflow)
+    func start(_ workflow: AnyWorkflow, initialData: WorkflowData = .init()) async throws -> WorkflowInstance {
+        try await runner.start(workflow, initialData: initialData)
     }
 
-    func start(_ workflowId: WorkflowID) async throws -> WorkflowInstance {
+    func start(_ workflowId: WorkflowID, initialData: WorkflowData = .init()) async throws -> WorkflowInstance {
         let workflow = try await workflow(id: workflowId)
-        return try await start(workflow)
+        return try await start(workflow, initialData: initialData)
     }
 }

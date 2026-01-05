@@ -25,10 +25,6 @@ public struct Input<Value: Sendable>: Sendable {
         return value
     }
 
-    public var projectedValue: Self {
-        self
-    }
-
     public init(key: StaticString? = nil) {
     }
 }

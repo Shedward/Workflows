@@ -6,5 +6,6 @@
 //
 
 public struct WorkflowContext: Sendable {
-    let start: @Sendable (_ workflow: AnyWorkflow) async throws -> WorkflowInstance
+    var data: WorkflowData
+    let start: @Sendable (_ workflow: AnyWorkflow, _ initialData: WorkflowData) async throws -> WorkflowInstance
 }
