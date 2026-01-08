@@ -13,7 +13,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core"),
+        .package(path: "../Core/Core"),
+        .package(path: "../Domain/API"),
         .package(url: "https://github.com/apple/swift-syntax", from: "602.0.0")
     ],
     targets: [
@@ -21,6 +22,7 @@ let package = Package(
             name: "Workflow",
             dependencies: [
                 .product(name: "Core", package: "Core"),
+                .product(name: "API", package: "API"),
                 "WorkflowMacro"
             ]
         ),

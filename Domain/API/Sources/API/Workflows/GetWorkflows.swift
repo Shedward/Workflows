@@ -1,0 +1,15 @@
+//
+//  GetWorkflows.swift
+//  API
+//
+//  Created by Vlad Maltsev on 08.01.2026.
+//
+
+import RestClient
+
+public struct GetWorkflows: WorkflowApi {
+    public typealias ResponseBody = ListBody<WorkflowInstance>
+
+    static public let method = Method.get
+    static public let path = "/workflows"
+}

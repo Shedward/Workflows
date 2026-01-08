@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "WorkflowServer",
     platforms: [
-        .macOS(.v15)
+        .macOS(.v26)
     ],
     products: [
         .library(
@@ -15,14 +15,18 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
-        .package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0", traits: ["CommandLineArguments"])
+        .package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0", traits: ["CommandLineArguments"]),
+        .package(path: "../Domain/API"),
+        .package(path: "../Domain/Workflow")
     ],
     targets: [
         .target(
             name: "WorkflowServer",
             dependencies: [
                 .product(name: "Hummingbird", package: "hummingbird"),
-                .product(name: "Configuration", package: "swift-configuration")
+                .product(name: "Configuration", package: "swift-configuration"),
+                .product(name: "Workflow", package: "Workflow"),
+                .product(name: "API", package: "API")
             ]
         )
     ]

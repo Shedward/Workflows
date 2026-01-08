@@ -10,7 +10,8 @@ import WorkflowServer
 @main
 struct App {
     static func main() async throws {
-        try await WorkflowServer.App.main()
+        let app = WorkflowServer.App()
+        try await app.main()
     }
 }
 

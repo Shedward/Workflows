@@ -7,6 +7,7 @@
 
 import Core
 
+// TODO: Resolve collision with module name
 public protocol Workflow: AnyWorkflow, TransitionProcess, Defaultable {
     associatedtype State: WorkflowState
 

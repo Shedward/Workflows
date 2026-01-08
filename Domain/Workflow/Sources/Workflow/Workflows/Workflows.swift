@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 26.12.2025.
 //
 
-public final class Workflows {
+public actor Workflows {
     let registry: WorkflowRegistry
     let storage: WorkflowStorage
     let runner: WorkflowRunner
