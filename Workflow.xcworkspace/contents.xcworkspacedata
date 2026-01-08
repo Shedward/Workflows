@@ -5,19 +5,20 @@
       location = "group:Core"
       name = "Core">
    </FileSystemSynchronizedGroup>
-   <Group
-      location = "group:Services"
-      name = "Services">
-      <FileRef
-         location = "group:Github">
-      </FileRef>
-   </Group>
    <FileSystemSynchronizedGroup
       location = "group:Domain"
       name = "Domain">
    </FileSystemSynchronizedGroup>
    <FileSystemSynchronizedGroup
+      location = "group:Services"
+      name = "Services">
+   </FileSystemSynchronizedGroup>
+   <FileSystemSynchronizedGroup
       location = "group:Apps"
       name = "Apps">
+   </FileSystemSynchronizedGroup>
+   <FileSystemSynchronizedGroup
+      location = "group:Projects"
+      name = "Projects">
    </FileSystemSynchronizedGroup>
 </Workspace>
