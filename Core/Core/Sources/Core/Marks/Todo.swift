@@ -1,15 +1,11 @@
 //
-//  Todo.swift
+//  Implement.swift
 //  Core
 //
-//  Created by Vlad Maltsev on 22.12.2025.
+//  Created by Vlad Maltsev on 09.01.2026.
 //
 
 @available(*, deprecated, message: "Need to implement")
 public func implement(
-    _ msg: StaticString = "",
-    file: StaticString = #file,
-    line: UInt = #line
-) -> Never {
-    fatalError("Need to implement: \(msg)", file: file, line: line)
-}
+    _ msg: StaticString = ""
+) { }
