@@ -6,9 +6,9 @@
 //
 
 import API
-import RestClient
+import Rest
 import Hummingbird
-import Workflow
+import WorkflowEngine
 
 struct WorkflowsController: Sendable {
     typealias Context = AppRequestContext

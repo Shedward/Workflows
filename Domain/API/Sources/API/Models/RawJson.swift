@@ -7,7 +7,7 @@
 
 import Core
 import Foundation
-import RestClient
+import Rest
 
 public struct RawJson: JSONBody {
     public let json: String

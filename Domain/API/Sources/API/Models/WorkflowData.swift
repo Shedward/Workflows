@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
-import RestClient
+import Rest
 
 public struct WorkflowData: JSONBody {
     public let data: [String: RawJson]

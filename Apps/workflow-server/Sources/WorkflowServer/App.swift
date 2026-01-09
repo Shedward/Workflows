@@ -1,13 +1,13 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
-// 
+//
 // Swift Argument Parser
 // https://swiftpackageindex.com/apple/swift-argument-parser/documentation
 
 import Configuration
 import Hummingbird
 import Logging
-import Workflow
+import WorkflowEngine
 
 typealias AppRequestContext = BasicRequestContext
 
@@ -37,7 +37,7 @@ public struct App {
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
             return logger
         }()
-    
+
         let router = try buildRouter(workflows: workflows)
 
         let app = Application(

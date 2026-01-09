@@ -3,25 +3,23 @@
 import PackageDescription
 
 let package = Package(
-    name: "Github",
+    name: "Rest",
     platforms: [.macOS(.v26)],
     products: [
         .library(
-            name: "Github",
-            targets: ["Github"]
+            name: "Rest",
+            targets: ["Rest"]
         ),
     ],
     dependencies: [
-        .package(path: "../Core/Rest")
+        .package(path: "../Core")
     ],
     targets: [
         .target(
-            name: "Github",
+            name: "Rest",
             dependencies: [
-                .product(name: "Rest", package: "Rest")
+                .product(name: "Core", package: "Core")
             ]
         ),
-
     ]
 )
-

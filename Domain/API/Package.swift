@@ -14,14 +14,14 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core/Core"),
-        .package(path: "../Core/RestClient")
+        .package(path: "../Core/Rest")
     ],
     targets: [
         .target(
             name: "API",
             dependencies: [
                 .product(name: "Core", package: "Core"),
-                .product(name: "RestClient", package: "RestClient")
+                .product(name: "Rest", package: "Rest")
             ]
         ),
 

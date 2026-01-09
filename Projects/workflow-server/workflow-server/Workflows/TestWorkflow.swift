@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 09.01.2026.
 //
 
-import Workflow
+import WorkflowEngine
 
 struct StartA: Pass { }
 struct StartB: Pass { }

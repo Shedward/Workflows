@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
-import Workflow
+import WorkflowEngine
 import WorkflowServer
 
 @main
@@ -18,4 +18,3 @@ struct App {
         try await app.main()
     }
 }
-

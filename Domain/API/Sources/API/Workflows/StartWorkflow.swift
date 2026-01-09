@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 09.01.2026.
 //
 
-import RestClient
+import Rest
 
 public struct StartWorkflow: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance

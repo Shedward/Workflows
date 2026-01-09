@@ -6,7 +6,7 @@
 //
 
 import API
-import RestClient
+import Rest
 import Hummingbird
 import Foundation
 

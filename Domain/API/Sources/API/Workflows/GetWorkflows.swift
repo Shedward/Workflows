@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
-import RestClient
+import Rest
 
 public struct GetWorkflows: WorkflowApi {
     public typealias ResponseBody = ListBody<WorkflowInstance>

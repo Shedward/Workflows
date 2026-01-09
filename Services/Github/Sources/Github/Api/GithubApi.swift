@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 23.12.2025.
 //
 
-import RestClient
+import Rest
 
 public protocol GithubApi: Api {
 }

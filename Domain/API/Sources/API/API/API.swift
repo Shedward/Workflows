@@ -6,7 +6,7 @@
 //
 
 import Core
-import RestClient
+import Rest
 
 public protocol WorkflowApi: Api, Sendable {
     static var method: Method { get }

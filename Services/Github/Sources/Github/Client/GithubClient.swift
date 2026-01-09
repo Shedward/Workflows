@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RestClient
+import Rest
 
 public final class GithubClient {
     private let rest: RestClient
