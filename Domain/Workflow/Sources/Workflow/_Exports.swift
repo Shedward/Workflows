@@ -6,3 +6,4 @@
 //
 
 @_exported import WorkflowMacro
+@_exported import Core

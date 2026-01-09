@@ -12,7 +12,11 @@ import Workflow
 typealias AppRequestContext = BasicRequestContext
 
 public struct App {
-    public init() {
+
+    public let workflows: Workflows
+
+    public init(workflows: Workflows) {
+        self.workflows = workflows
     }
 
     public func main() async throws {
@@ -33,8 +37,7 @@ public struct App {
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
             return logger
         }()
-
-        let workflows = try await buildWorkflows()
+    
         let router = try buildRouter(workflows: workflows)
 
         let app = Application(
@@ -58,11 +61,5 @@ public struct App {
         router.addRoutes(WorkflowsController(workflows: workflows).endpoints)
 
         return router
-    }
-
-    func buildWorkflows() async throws -> Workflows {
-        try await Workflows(
-            TestWorkflow()
-        )
     }
 }
