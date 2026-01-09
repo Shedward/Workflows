@@ -23,7 +23,8 @@ extension Workflows {
         return transition
     }
 
-    public func takeTransition(id transitionId: TransitionID, on instance: WorkflowInstanceID) async throws {
+    @discardableResult
+    public func takeTransition(id transitionId: TransitionID, on instance: WorkflowInstanceID) async throws -> WorkflowInstance {
         let transition = try await self.transition(id: transitionId)
         let instance = try await self.instance(id: instance)
         let workflow = try await self.workflow(id: transitionId.workflow)
@@ -32,10 +33,11 @@ extension Workflows {
             throw WorkflowsError.WorkflowInstanceMismatch(instance: transition.id.workflow, found: instance.workflowId)
         }
 
-        try await runner.takeTransition(transition, on: instance, of: workflow)
+        return try await runner.takeTransition(transition, on: instance, of: workflow)
     }
 
-    public func takeTransition(processId: TransitionProcessID, on instance: WorkflowInstanceID) async throws {
+    @discardableResult
+    public func takeTransition(processId: TransitionProcessID, on instance: WorkflowInstanceID) async throws -> WorkflowInstance {
         let instance = try await self.instance(id: instance)
         let workflow = try await self.workflow(id: instance.workflowId)
 
@@ -52,6 +54,6 @@ extension Workflows {
         }
         let transition = possibleTransitions[0]
 
-        try await runner.takeTransition(transition, on: instance, of: workflow)
+        return try await runner.takeTransition(transition, on: instance, of: workflow)
     }
 }

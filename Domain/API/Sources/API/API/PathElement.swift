@@ -30,3 +30,5 @@ extension PathElements: Defaultable {
         self.values = [:]
     }
 }
+
+extension PathElements: Modifiers {}

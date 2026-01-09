@@ -44,7 +44,7 @@ struct TestWorkflow: Workflow {
     }
 
     var transitions: Transitions {
-        after(.begin) {
+        on(.begin) {
             StartA.to(.a)
         }
 

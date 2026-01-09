@@ -13,7 +13,7 @@ public protocol TransitionProcess {
 
 public extension TransitionProcess {
     var id: TransitionProcessID {
-        String(describing: self)
+        String(describing: type(of: self))
     }
 }
 
