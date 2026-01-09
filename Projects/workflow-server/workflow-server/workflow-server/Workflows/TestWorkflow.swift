@@ -7,9 +7,29 @@
 
 import WorkflowEngine
 
-struct StartA: Pass { }
-struct StartB: Pass { }
+@DataBindable
+struct StartA: Action {
+    @Output var valueA: String
+
+    func run() async throws {
+        valueA = "Returned"
+    }
+}
+
+@DataBindable
+struct StartB: Action {
+    @Input var valueA: String
+    @Output var valueB: String
+
+    func run() async throws {
+        valueB = valueA + "_suffix"
+    }
+}
+
+
 struct Finalize: Pass { }
+
+
 
 struct TestWorkflow: Workflow {
 
@@ -24,7 +44,7 @@ struct TestWorkflow: Workflow {
     }
 
     var transitions: Transitions {
-        on(.begin) {
+        after(.begin) {
             StartA.to(.a)
         }
 
