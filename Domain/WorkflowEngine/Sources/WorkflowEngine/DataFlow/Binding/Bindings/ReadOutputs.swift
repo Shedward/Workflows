@@ -19,6 +19,6 @@ struct ReadOutputs: DataBinding {
             throw Failure("Expected \(Value.self) found \(type(of: value))")
         }
         
-        data.set(key, value)
+        try data.set(key, value)
     }
 }

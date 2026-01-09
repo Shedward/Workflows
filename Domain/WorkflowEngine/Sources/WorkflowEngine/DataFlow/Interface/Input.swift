@@ -6,7 +6,7 @@
 //
 
 @propertyWrapper
-public struct Input<Value: Sendable>: Sendable {
+public struct Input<Value: WorkflowValue>: Sendable {
     var storage: ValueStorage?
 
     public var wrappedValue: Value {

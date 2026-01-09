@@ -8,9 +8,9 @@
 import Rest
 
 public struct WorkflowData: JSONBody {
-    public let data: [String: RawJson]
+    public let data: [String: String]
 
-    public init(data: [String : RawJson]) {
+    public init(data: [String : String]) {
         self.data = data
     }
 }

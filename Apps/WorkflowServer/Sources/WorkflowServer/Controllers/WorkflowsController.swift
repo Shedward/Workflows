@@ -23,16 +23,13 @@ struct WorkflowsController: Sendable {
 
     private func getWorkflows(request: Request, body: EmptyBody, context: AppRequestContext) async throws -> ListBody<API.WorkflowInstance> {
         let allWorkflows = try await workflows.instances()
-        // TODO: Simplify mapping
-        let instances = allWorkflows.map { instance in
-            API.WorkflowInstance(id: instance.id, workflowId: instance.workflowId, state: instance.state, data: [:]) // TODO: Fix data
-        }
+        let instances = try allWorkflows.map { try API.WorkflowInstance(model: $0) }
         return ListBody(items: instances)
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: AppRequestContext) async throws -> API.WorkflowInstance {
         let workflowInstance = try await workflows.start(body.workflowID)
-        let instance = API.WorkflowInstance(id: workflowInstance.id, workflowId: workflowInstance.workflowId, state: workflowInstance.state, data: [:]) // TODO: Fix data
+        let instance = try API.WorkflowInstance(model: workflowInstance)
         return instance
     }
 }
