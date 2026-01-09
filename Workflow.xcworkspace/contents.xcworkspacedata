@@ -17,8 +17,11 @@
       location = "group:Apps"
       name = "Apps">
    </FileSystemSynchronizedGroup>
-   <FileSystemSynchronizedGroup
+   <Group
       location = "group:Projects"
       name = "Projects">
-   </FileSystemSynchronizedGroup>
+      <FileRef
+         location = "group:workflow-server/workflow-server.xcodeproj">
+      </FileRef>
+   </Group>
 </Workspace>
