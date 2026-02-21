@@ -12,7 +12,7 @@ public struct TakeTransition: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance
 
     static public let method = Method.post
-    static public let path = "/workflows/:id/takeTransition"
+    static public let path = "/workflowInstances/:id/takeTransition"
 
     public let instanceId: String
     public let transitionProcessId: String

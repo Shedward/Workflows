@@ -25,6 +25,10 @@ extension Workflow {
         WorkflowID(describing: type(of: self))
     }
 
+    public var states: [StateID] {
+        State.allCases.map(\.id)
+    }
+
     public var initialState: StateID {
         State.initial.id
     }

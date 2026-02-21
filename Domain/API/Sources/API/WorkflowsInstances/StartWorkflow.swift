@@ -11,23 +11,23 @@ public struct StartWorkflow: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance
 
     static public let method = Method.post
-    static public let path = "/workflows"
+    static public let path = "/workflowInstances"
 
     let workflowId: String
     let initialData: String
 
     public var request: RouteRequest {
-        request(body: RequestBody(workflowID: workflowId, initialData: initialData))
+        request(body: RequestBody(workflowId: workflowId, initialData: initialData))
     }
 }
 
 extension StartWorkflow {
     public struct RequestBody: JSONBody {
-        public let workflowID: String
-        public let initialData: String
+        public let workflowId: String
+        public let initialData: String?
 
-        init(workflowID: String, initialData: String) {
-            self.workflowID = workflowID
+        init(workflowId: String, initialData: String?) {
+            self.workflowId = workflowId
             self.initialData = initialData
         }
     }

@@ -58,6 +58,7 @@ public struct App {
             HTTPResponse.Status.ok
         }
 
+        router.addRoutes(WorkflowInstancesController(workflows: workflows).endpoints)
         router.addRoutes(WorkflowsController(workflows: workflows).endpoints)
 
         return router

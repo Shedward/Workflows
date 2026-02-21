@@ -36,10 +36,10 @@ public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendab
 }
 
 public struct TransitionID: Hashable, Sendable {
-    let from: StateID
-    let to: StateID
-    let processId: TransitionProcessID
-    let workflow: WorkflowID
+    public let from: StateID
+    public let to: StateID
+    public let processId: TransitionProcessID
+    public let workflow: WorkflowID
 }
 
 extension TransitionID: CustomDebugStringConvertible {

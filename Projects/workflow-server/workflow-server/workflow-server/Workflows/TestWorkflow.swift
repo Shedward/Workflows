@@ -52,11 +52,7 @@ struct TestWorkflow: Workflow {
             StartB.to(.b)
         }
 
-        after(.b) {
-            Finalize.to(.end)
-        }
-
-        always {
+        on(.b) {
             Finalize.to(.end)
         }
     }
