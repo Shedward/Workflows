@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly BASE="http://127.0.0.1:8080"
+
+request() {
+  local method="$1"
+  local path="$2"
+  local data="${3:-}"
+
+  echo "$@" >&2
+
+  if [[ -n "$data" ]]; then
+    curl -fsS -X "$method" "$BASE$path" \
+      -H "Content-Type: application/json" \
+      -d "$data"
+  else
+    curl -fsS -X "$method" "$BASE$path"
+  fi
+}
+
+assert_length() {
+  local json="$1"
+  local expected="$2"
+  local message="${3:-}"
+  local actual
+  actual="$(jq 'length' <<<"$json")"
+
+  if [[ "$actual" -ne "$expected" ]]; then
+    echo "$message; Expected $expected, got $actual" >&2
+    exit 1
+  fi
+}
+
+main() {
+  request GET "/workflows" >/dev/null
+
+  local instances
+  instances="$(request GET "/workflowInstances")"
+  assert_length "$instances" 0 "No workflow instances expected"
+
+  local response
+  response="$(request POST "/workflowInstances" \
+    '{"workflowId":"TestWorkflow"}')"
+
+  local id
+  id="$(jq -r '.id' <<<"$response")"
+
+  if [[ -z "$id" || "$id" == "null" ]]; then
+    echo "Failed to extract workflow instance id" >&2
+    exit 1
+  fi
+
+  instances="$(request GET "/workflowInstances")"
+  assert_length "$instances" 1 "Created workflow instance expected"
+
+  local transition
+  for transition in StartA StartB Finalize; do
+    request POST "/workflowInstances/$id/takeTransition" \
+      "{\"transitionProcessId\":\"$transition\"}" >/dev/null
+  done
+
+  instances="$(request GET "/workflowInstances")"
+  assert_length "$instances" 0 "Workflow instance expected to be completed"
+}
+
+main "$@"
