@@ -5,6 +5,8 @@
 //  Created by Vlad Maltsev on 09.01.2026.
 //
 
+import Git
+import System
 import WorkflowEngine
 
 @DataBindable
@@ -21,9 +23,9 @@ struct StartB: Action {
     @Input var valueA: String
     @Output var valueB: String
 
-    @Dependency var unexpectedDependency: Void
-
     func run() async throws {
+        let repo = Git.Repository(path: "/Users/shed/Projects/Workflow")
+        try await repo.assertExists()
         valueB = valueA + "_suffix"
     }
 }
