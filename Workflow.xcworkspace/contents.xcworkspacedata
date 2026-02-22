@@ -18,6 +18,10 @@
       name = "Services">
    </FileSystemSynchronizedGroup>
    <FileSystemSynchronizedGroup
+      location = "group:Workflows"
+      name = "Workflows">
+   </FileSystemSynchronizedGroup>
+   <FileSystemSynchronizedGroup
       location = "group:Apps"
       name = "Apps">
    </FileSystemSynchronizedGroup>

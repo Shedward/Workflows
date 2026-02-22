@@ -7,16 +7,16 @@
 
 import WorkflowEngine
 import WorkflowServer
+import TestingWorkflows
 
 @main
 struct App {
     static func main() async throws {
         let dependencies = DependenciesContainer()
 
-        let workflows = try await Workflows(
-            dependencies: dependencies,
-            TestWorkflow()
-        )
+        let workflows = try await Workflows(dependencies: dependencies) {
+            TestingWorkflows.workflows
+        }
         let app = WorkflowServer.App(workflows: workflows)
         try await app.main()
     }
