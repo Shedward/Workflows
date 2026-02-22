@@ -11,8 +11,8 @@ import Foundation
 public actor WorkflowRegistry: Sendable {
     private var workflows: [WorkflowID: AnyWorkflow] = [:]
 
-    public init(_ workflows: [AnyWorkflow]) async throws {
-        workflows.forEach(register)
+    public init(_ workflows: [AnyWorkflow]) throws {
+        self.workflows = .init(uniqueKeysWithValues: workflows.map { ($0.id, $0) })
 
         if workflows.count != self.workflows.count {
             let ids = workflows.map(\.id)

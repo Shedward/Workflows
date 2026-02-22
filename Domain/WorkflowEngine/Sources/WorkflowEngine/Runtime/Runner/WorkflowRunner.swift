@@ -12,14 +12,17 @@ import os
 actor WorkflowRunner {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
+    private let dependencies: DependenciesContainer
+
     private lazy var scheduler: WaitScheduler = WaitScheduler { [weak self] instanceId in
         await self?.resumeWaiting(instanceId: instanceId)
     }
     private let logger = Logger(scope: .workflow)
 
-    init(storage: WorkflowStorage, registry: WorkflowRegistry) {
+    init(storage: WorkflowStorage, registry: WorkflowRegistry, dependencies: DependenciesContainer) {
         self.storage = storage
         self.registry = registry
+        self.dependencies = dependencies
     }
 
     func resume() async throws {
@@ -41,7 +44,7 @@ actor WorkflowRunner {
     func takeTransition(_ transition: AnyTransition, on instance: WorkflowInstance, of workflow: AnyWorkflow) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
-        var context = WorkflowContext(data: instance.data, start: self.start)
+        var context = WorkflowContext(data: instance.data, dependancyContainer: dependencies, start: self.start)
         let result = try await transition.process.start(context: &context)
 
         var next = instance.data(context.data)

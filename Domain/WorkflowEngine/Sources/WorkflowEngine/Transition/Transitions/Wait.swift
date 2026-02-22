@@ -17,6 +17,7 @@ public extension Wait where Self: TransitionProcess {
 
         try wait.bind(BindInputs(data: context.data))
         try wait.bind(CreateOutputStorage())
+        try wait.bind(SetDependencies(container: context.dependancyContainer))
 
         let nextTime = try await wait.resume()
 

@@ -10,13 +10,22 @@ request() {
 
   echo "$@" >&2
 
-  if [[ -n "$data" ]]; then
-    curl -fsS -X "$method" "$BASE$path" \
-      -H "Content-Type: application/json" \
-      -d "$data"
-  else
-    curl -fsS -X "$method" "$BASE$path"
+  local response
+  local http_code
+
+  response=$(curl -sS -X "$method" "$BASE$path" \
+    ${data:+-H "Content-Type: application/json" -d "$data"} \
+    -w "\n%{http_code}")
+
+  http_code="${response##*$'\n'}"
+  body="${response%$'\n'*}"
+
+  if [[ "$http_code" -ge 400 ]]; then
+    echo "$body" >&2
+    return 1
   fi
+
+  echo "$body"
 }
 
 assert_length() {

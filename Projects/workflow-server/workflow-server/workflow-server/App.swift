@@ -11,7 +11,11 @@ import WorkflowServer
 @main
 struct App {
     static func main() async throws {
+        let dependencies = DependenciesContainer()
+        dependencies.set((), forKey: "unexpectedDependency")
+
         let workflows = try await Workflows(
+            dependencies: dependencies,
             TestWorkflow()
         )
         let app = WorkflowServer.App(workflows: workflows)

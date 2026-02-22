@@ -10,11 +10,17 @@ public actor Workflows {
     let storage: WorkflowStorage
     let runner: WorkflowRunner
 
-    public init(_ workflows: any Workflow...) async throws {
-        self.registry = try await WorkflowRegistry(workflows)
+    public init(dependencies: DependenciesContainer, _ workflows: any Workflow...) async throws {
+        self.registry = try WorkflowRegistry(workflows)
         self.storage = InMemoryWorkflowStorage()
-        self.runner = WorkflowRunner(storage: storage, registry: registry)
+        self.runner = WorkflowRunner(
+            storage: storage,
+            registry: registry,
+            dependencies: dependencies
+        )
+    }
 
+    public func run() async throws {
         try await runner.resume()
     }
 }

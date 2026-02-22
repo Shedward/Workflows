@@ -7,5 +7,6 @@
 
 public struct WorkflowContext: Sendable {
     var data: WorkflowData
+    let dependancyContainer: DependenciesContainer
     let start: @Sendable (_ workflow: AnyWorkflow, _ initialData: WorkflowData) async throws -> WorkflowInstance
 }

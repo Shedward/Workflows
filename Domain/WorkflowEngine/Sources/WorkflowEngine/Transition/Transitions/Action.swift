@@ -17,6 +17,8 @@ public extension Action where Self: TransitionProcess {
 
         try action.bind(BindInputs(data: context.data))
         try action.bind(CreateOutputStorage())
+        try action.bind(SetDependencies(container: context.dependancyContainer))
+
         try await action.run()
 
         var readOutputs = ReadOutputs(data: context.data)

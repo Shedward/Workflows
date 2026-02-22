@@ -21,6 +21,8 @@ struct StartB: Action {
     @Input var valueA: String
     @Output var valueB: String
 
+    @Dependency var unexpectedDependency: Void
+
     func run() async throws {
         valueB = valueA + "_suffix"
     }
