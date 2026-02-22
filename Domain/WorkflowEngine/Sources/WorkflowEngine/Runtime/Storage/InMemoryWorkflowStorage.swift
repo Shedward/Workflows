@@ -28,7 +28,7 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
     }
     
     public func finish(_ instance: WorkflowInstance) async throws {
-        instances = instances.filter { $0.id == instance.id }
+        instances = instances.filter { $0.id != instance.id }
     }
     
     public func all() async throws -> [WorkflowInstance] {
