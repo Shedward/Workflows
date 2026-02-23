@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/tests_lib.sh"
+
+main() {
+  request GET "/workflows" >/dev/null
+
+  local response
+  response="$(request POST "/workflowInstances" '{"workflowId": "AutomaticSimpleGitWorkflow"}')"
+
+  local id
+  id="$(jq -r '.id' <<<"$response")"
+
+  instances="$(request GET "/workflowInstances")"
+  assert_length "$instances" 0 "Workflow instance expected to be completed"
+
+  echo
+  echo "Finished Successfully"
+}
+
+main "$@"

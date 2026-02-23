@@ -9,5 +9,6 @@ import WorkflowEngine
 
 public let workflows: [any Workflow] = [
     TestWorkflow(),
-    SimpleGitWorkflow()
+    SimpleGitWorkflow(),
+    AutomaticSimpleGitWorkflow()
 ]
