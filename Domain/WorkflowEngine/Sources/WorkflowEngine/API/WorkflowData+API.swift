@@ -9,13 +9,13 @@ import API
 import Foundation
 
 extension API.WorkflowData {
-    public init(model: WorkflowData) throws {
+    public init(model: WorkflowData) {
         self.init(data: model.data)
     }
 }
 
 extension WorkflowData {
-    public init(api: API.WorkflowData) throws {
+    public init(api: API.WorkflowData) {
         self.init(data: api.data)
     }
 }

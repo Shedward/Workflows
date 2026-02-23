@@ -7,7 +7,7 @@
 
 import Rest
 
-public struct GetWorkflowsInstance: WorkflowApi {
+public struct GetWorkflowInstance: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance
 
     static public let method = Method.get

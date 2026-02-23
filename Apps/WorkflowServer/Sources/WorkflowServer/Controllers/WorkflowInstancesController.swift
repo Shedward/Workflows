@@ -17,27 +17,27 @@ struct WorkflowInstancesController: Controller {
         RouteCollection()
             .on(GetWorkflowsInstances.self, use: getWorkflows)
             .on(StartWorkflow.self, use: startWorkflow)
-            .on(GetWorkflowsInstance.self, use: getWorkflow)
+            .on(GetWorkflowInstance.self, use: getWorkflow)
             .on(TakeTransition.self, use: startWorkflow)
             .on(AvailableTransitions.self, use: availableTransitions)
     }
 
     private func getWorkflows(request: Request, body: GetWorkflows.RequestBody, context: Context) async throws -> ListBody<API.WorkflowInstance> {
         let allWorkflows = try await workflows.instances()
-        let instances = try allWorkflows.map { try API.WorkflowInstance(model: $0) }
+        let instances = allWorkflows.map { API.WorkflowInstance(model: $0) }
         return ListBody(items: instances)
     }
 
     private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowInstance {
         let workflowId = try context.parameters.require("id")
         let workflow = try await workflows.instance(id: workflowId)
-        let instance = try API.WorkflowInstance(model: workflow)
+        let instance = API.WorkflowInstance(model: workflow)
         return instance
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let workflowInstance = try await workflows.start(body.workflowId)
-        let instance = try API.WorkflowInstance(model: workflowInstance)
+        let instance = API.WorkflowInstance(model: workflowInstance)
         return instance
     }
 
@@ -47,7 +47,7 @@ struct WorkflowInstancesController: Controller {
 
         let nextInstance = try await workflows.takeTransition(processId: transitionProcessId, on: workflowId)
 
-        return try API.WorkflowInstance(model: nextInstance)
+        return API.WorkflowInstance(model: nextInstance)
     }
 
     private func availableTransitions(request: Request, body: AvailableTransitions.RequestBody, context: Context) async throws -> ListBody<API.Transition> {

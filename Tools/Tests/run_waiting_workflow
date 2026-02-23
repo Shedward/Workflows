@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+
+main() {
+  local response
+  response="$(request POST "/workflowInstances" \
+    '{"workflowId":"WaitingWorkflow"}')"
+
+  local id
+  id="$(jq -r '.id' <<<"$response")"
+  readonly id
+
+  if [[ -z "$id" || "$id" == "null" ]]; then
+    echo "Failed to extract workflow instance id" >&2
+    exit 1
+  fi
+
+  request POST "/workflowInstances/$id/takeTransition" \
+    "{\"transitionProcessId\":\"CreateMessageTemplateFile\"}" >/dev/null
+
+  assert_state() {
+    local expected="${1:?expected required}"
+
+    response="$(request GET "/workflowInstances/$id")"
+    local state
+    state="$(jq -r '.state' <<<"$response")"
+
+    if ! [[ "$state" == "$expected" ]]
+    then
+        echo "Expected $expected got $state"
+        exit 1
+    fi
+  }
+
+  assert_state "templateCreated"
+  sleep 2
+  assert_state "templateCreated"
+
+  echo "Content" > "/tmp/MessageTemplate.md"
+  sleep 2
+
+  assert_state "messageReady"
+
+  request POST "/workflowInstances/$id/takeTransition" \
+    "{\"transitionProcessId\":\"SendMessage\"}" >/dev/null
+
+  echo
+  echo "Finished Successfully"
+}
+
+main "$@"

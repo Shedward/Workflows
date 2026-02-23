@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Wait: TransitionProcess, DataBindable, Sendable {
+public protocol Wait: TransitionProcess, DataBindable, Sendable, Defaultable {
     func resume() async throws -> Waiting.Time?
 }
 

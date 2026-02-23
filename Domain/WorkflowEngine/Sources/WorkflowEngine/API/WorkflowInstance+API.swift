@@ -8,12 +8,12 @@
 import API
 
 extension API.WorkflowInstance {
-    public init(model: WorkflowInstance) throws {
+    public init(model: WorkflowInstance) {
         self.init(
             id: model.id,
             workflowId: model.workflowId,
             state: model.state,
-            data: try API.WorkflowData(model: model.data)
+            data: API.WorkflowData(model: model.data)
         )
     }
 }

@@ -1,5 +1,5 @@
 //
-//  TestWorkflow.swift
+//  SimpleWorkflow.swift
 //  TestingWorkflows
 //
 //  Created by Vlad Maltsev on 22.02.2026.
@@ -9,7 +9,7 @@ import WorkflowEngine
 
 struct Finalize: Pass { }
 
-struct TestWorkflow: Workflow {
+struct SimpleWorkflow: Workflow {
     enum State: String, WorkflowState {
         static let initial = State.begin
         static let final = State.end

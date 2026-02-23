@@ -83,6 +83,10 @@ actor WorkflowRunner {
     }
 
     private func nextAutomaticTransitionInstance(from instance: WorkflowInstance) async -> WorkflowInstance? {
+        guard instance.transitionState == nil else {
+            return nil
+        }
+
         guard let workflow = await registry.workflow(instance: instance) else {
             logger?.error("Workflow for instance \(instance.id) of type \(instance.workflowId) not found")
             return nil

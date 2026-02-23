@@ -8,7 +8,7 @@ main() {
 
   local response
   response="$(request POST "/workflowInstances" \
-    '{"workflowId":"TestWorkflow"}')"
+    '{"workflowId":"SimpleWorkflow"}')"
 
   local id
   id="$(jq -r '.id' <<<"$response")"

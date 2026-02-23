@@ -4,9 +4,10 @@ set -uo pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 readonly TEST_SCRIPTS=(
-  run_test_workflow
+  run_simple_workflow
   run_simple_git_workflow
   run_automatic_simple_git_workflow
+  run_waiting_workflow
 )
 
 readonly GREEN='\033[0;32m'

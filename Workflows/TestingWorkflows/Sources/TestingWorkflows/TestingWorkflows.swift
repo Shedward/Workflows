@@ -8,7 +8,8 @@
 import WorkflowEngine
 
 public let workflows: [any Workflow] = [
-    TestWorkflow(),
+    SimpleWorkflow(),
     SimpleGitWorkflow(),
-    AutomaticSimpleGitWorkflow()
+    AutomaticSimpleGitWorkflow(),
+    WaitingWorkflow()
 ]
