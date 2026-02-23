@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-. "$(dirname "$0")/tests_lib.sh"
+. "$(dirname "$0")/../Lib/request.sh"
 
 main() {
-  request GET "/workflows" >/dev/null
+  echo "Running TestWorkflow"
+  echo
 
-  local instances
-  instances="$(request GET "/workflowInstances")"
-  assert_length "$instances" 0 "No workflow instances expected"
+  request GET "/workflows" >/dev/null
 
   local response
   response="$(request POST "/workflowInstances" \
@@ -22,8 +21,12 @@ main() {
     exit 1
   fi
 
-  instances="$(request GET "/workflowInstances")"
-  assert_length "$instances" 1 "Created workflow instance expected"
+  if ! request GET "/workflowInstances" \
+    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
+  then
+    echo "Instance not found"
+    exit 1
+  fi
 
   local transition
   for transition in StartA StartB Finalize; do
@@ -31,11 +34,16 @@ main() {
       "{\"transitionProcessId\":\"$transition\"}" >/dev/null
   done
 
-  instances="$(request GET "/workflowInstances")"
-  assert_length "$instances" 0 "Workflow instance expected to be completed"
+  if request GET "/workflowInstances" \
+    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
+  then
+    echo "Instance still exists"
+    exit 1
+  fi
 
   echo
   echo "Finished Successfully"
+  echo "---"
 }
 
 main "$@"

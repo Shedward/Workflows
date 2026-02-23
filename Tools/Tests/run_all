@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+readonly TEST_SCRIPTS=(
+  run_test_workflow
+  run_simple_git_workflow
+  run_automatic_simple_git_workflow
+)
+
+for script in "${TEST_SCRIPTS[@]}"; do
+  "${SCRIPT_DIR}/${script}"
+done

@@ -25,16 +25,3 @@ request() {
 
   echo "$body"
 }
-
-assert_length() {
-  local json="$1"
-  local expected="$2"
-  local message="${3:-}"
-  local actual
-  actual="$(jq 'length' <<<"$json")"
-
-  if [[ "$actual" -ne "$expected" ]]; then
-    echo "$message; Expected $expected, got $actual" >&2
-    exit 1
-  fi
-}

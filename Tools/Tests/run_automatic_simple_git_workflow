@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-. "$(dirname "$0")/tests_lib.sh"
+. "$(dirname "$0")/../Lib/request.sh"
 
 main() {
+  echo "Running AutomaticSimpleGitWorkflow"
+  echo
+
   request GET "/workflows" >/dev/null
 
   local response
@@ -12,11 +15,16 @@ main() {
   local id
   id="$(jq -r '.id' <<<"$response")"
 
-  instances="$(request GET "/workflowInstances")"
-  assert_length "$instances" 0 "Workflow instance expected to be completed"
+  if request GET "/workflowInstances" \
+    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
+  then
+    echo "Instance still exists"
+    exit 1
+  fi
 
   echo
   echo "Finished Successfully"
+  echo "---"
 }
 
 main "$@"
