@@ -4,9 +4,6 @@ set -euo pipefail
 . "$(dirname "$0")/../Lib/request.sh"
 
 main() {
-  echo "Running TestWorkflow"
-  echo
-
   request GET "/workflows" >/dev/null
 
   local response
@@ -41,9 +38,7 @@ main() {
     exit 1
   fi
 
-  echo
   echo "Finished Successfully"
-  echo "---"
 }
 
 main "$@"

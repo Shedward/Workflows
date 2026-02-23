@@ -4,9 +4,6 @@ set -euo pipefail
 . "$(dirname "$0")/../Lib/request.sh"
 
 main() {
-  echo "Running AutomaticSimpleGitWorkflow"
-  echo
-
   request GET "/workflows" >/dev/null
 
   local response
@@ -22,9 +19,7 @@ main() {
     exit 1
   fi
 
-  echo
   echo "Finished Successfully"
-  echo "---"
 }
 
 main "$@"
