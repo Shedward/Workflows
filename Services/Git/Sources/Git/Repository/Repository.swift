@@ -18,6 +18,18 @@ public struct Repository {
         self.client = GitClient(workingPath: path)
     }
 
+    public func initialise() async throws {
+        _ = try await client.run("init")
+    }
+
+    public func add(path: String = ".") async throws {
+        _ = try await client.run("add", arguments: path)
+    }
+
+    public func commit(message: String) async throws {
+        _ = try await client.run("commit", arguments: "-m", message)
+    }
+
     public func assertExists() async throws {
         guard try await exists() else {
             throw Failure("Repository \(path) does not exists")

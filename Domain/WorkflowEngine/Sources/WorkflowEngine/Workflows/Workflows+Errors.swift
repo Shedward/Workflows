@@ -7,25 +7,28 @@
 
 public enum WorkflowsError {
     public struct WorkflowNotFound: Swift.Error {
-        let workflowId: WorkflowID
+        public let workflowId: WorkflowID
     }
 
     public struct WorkflowInstanceNotFound: Swift.Error {
-        let instanceId: WorkflowInstanceID
+        public let instanceId: WorkflowInstanceID
     }
 
     public struct WorkflowInstanceMismatch: Swift.Error {
-        let instance: WorkflowInstanceID
-        let found: WorkflowID
+        public let instance: WorkflowInstanceID
+        public let expectedWorkflow: WorkflowID
+        public let foundWorkflow: WorkflowID
     }
 
     public struct TransitionNotFound: Swift.Error {
-        let transitionId: TransitionID
+        public let transitionId: TransitionID
+        public let availableTransitions: [TransitionID]
     }
 
     public struct TransitionProcessNotFoundForInstance: Swift.Error {
-        let instance: WorkflowInstanceID
-        let workflow: WorkflowID
-        let transitionId: TransitionProcessID
+        public let instance: WorkflowInstanceID
+        public let workflow: WorkflowID
+        public let transitionId: TransitionProcessID
+        public let availableTransitions: [TransitionID]
     }
 }

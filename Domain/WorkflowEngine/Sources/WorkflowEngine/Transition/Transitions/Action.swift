@@ -15,14 +15,24 @@ public extension Action where Self: TransitionProcess {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
         var action = self
 
-        try action.bind(BindInputs(data: context.data))
-        try action.bind(CreateOutputStorage())
-        try action.bind(SetDependencies(container: context.dependancyContainer))
+        try Failure.wrap("Failed to prepare to run action \(type(of: self))") {
+            try action.bind(BindInputs(data: context.data))
+            try action.bind(CreateOutputStorage())
+            try action.bind(SetDependencies(container: context.dependancyContainer))
+        }
 
-        try await action.run()
+        let runningAction = action
+        try await Failure.wrap("Failed to run action \(type(of: self))") {
+            try await runningAction.run()
+        }
+        action = runningAction
 
         var readOutputs = ReadOutputs(data: context.data)
-        try action.bind(&readOutputs)
+
+        try Failure.wrap("Failed to finish action \(type(of: self))") {
+            try action.bind(&readOutputs)
+        }
+
         context.data = readOutputs.data
 
         return .completed

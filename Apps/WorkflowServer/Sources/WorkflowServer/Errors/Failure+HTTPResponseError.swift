@@ -10,8 +10,11 @@ import Hummingbird
 
 extension Failure: @retroactive ResponseGenerator {
     public func response(from request: Request, context: some RequestContext) throws -> Response {
-        let response = debugDescription.response(from: request, context: context)
-        return Response(status: status, body: response.body)
+        try ErrorResponse(
+            status: status,
+            userDescription: userDescription,
+            debugDescription: debugDescription
+        ).response(from: request, context: context)
     }
 }
 

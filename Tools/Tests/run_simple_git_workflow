@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/tests_lib.sh"
+
+main() {
+  request GET "/workflows" >/dev/null
+
+  local response
+  response="$(request POST "/workflowInstances" '{"workflowId": "SimpleGitWorkflow"}')"
+
+  local id
+  id="$(jq -r '.id' <<<"$response")"
+  readonly id
+
+  take_transition() {
+    local transition="${1:?transition required}"
+
+    request POST "/workflowInstances/$id/takeTransition" \
+      "{\"transitionProcessId\":\"$transition\"}" >/dev/null
+  }
+
+  take_transition "CreateTempWorkingDirectory"
+  take_transition "InitialiseRepository"
+  take_transition "WriteReadmeFile"
+  take_transition "CommitChanges"
+  take_transition "CleanWorkingFolder"
+
+  echo
+  echo "Finished Successfully"
+}
+
+main "$@"

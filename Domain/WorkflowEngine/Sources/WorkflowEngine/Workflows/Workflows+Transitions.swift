@@ -17,7 +17,10 @@ extension Workflows {
         let workflow = try await workflow(id: id.workflow)
 
         guard let transition = workflow.anyTransitions.first(where: { $0.id == id }) else {
-            throw WorkflowsError.TransitionNotFound(transitionId: id)
+            throw WorkflowsError.TransitionNotFound(
+                transitionId: id,
+                availableTransitions: workflow.anyTransitions.map(\.id)
+            )
         }
 
         return transition
@@ -30,7 +33,11 @@ extension Workflows {
         let workflow = try await self.workflow(id: transitionId.workflow)
 
         guard instance.workflowId == transitionId.workflow else {
-            throw WorkflowsError.WorkflowInstanceMismatch(instance: transition.id.workflow, found: instance.workflowId)
+            throw WorkflowsError.WorkflowInstanceMismatch(
+                instance: transition.id.workflow,
+                expectedWorkflow: transitionId.workflow,
+                foundWorkflow: instance.workflowId
+            )
         }
 
         return try await runner.takeTransition(transition, on: instance, of: workflow)
@@ -49,7 +56,8 @@ extension Workflows {
             throw WorkflowsError.TransitionProcessNotFoundForInstance(
                 instance: instance.id,
                 workflow: workflow.id,
-                transitionId: processId
+                transitionId: processId,
+                availableTransitions: workflow.anyTransitions.map(\.id)
             )
         }
         let transition = possibleTransitions[0]

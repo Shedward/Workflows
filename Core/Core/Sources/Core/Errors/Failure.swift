@@ -55,7 +55,7 @@ extension Failure {
         _ message: String,
         file: StaticString = #fileID,
         line: UInt = #line,
-        actions: @Sendable () throws -> Result
+        actions: () throws -> Result
     ) throws -> Result {
         do {
             return try actions()
