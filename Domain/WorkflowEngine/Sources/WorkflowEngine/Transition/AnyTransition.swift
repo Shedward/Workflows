@@ -9,8 +9,8 @@ public protocol AnyTransition: Sendable {
     var id: TransitionID { get }
     var process: TransitionProcess { get }
 
-    var fromStateId: StateID { get }
-    var toStateId: StateID { get }
+    var from: StateID { get }
+    var to: StateID { get }
 
     var trigger: TransitionTrigger { get }
 }

@@ -50,13 +50,13 @@ actor WorkflowRunner {
         var next = instance.data(context.data)
         switch result {
         case .completed:
-            next = next.transitionEnded().moveToState(transition.toStateId)
+            next = next.transitionEnded().moveToState(transition.to)
         case .waiting(let waiting):
             next = next.transitionWaiting(waiting, of: transition)
             await scheduler.schedule(for: next.id, waiting: waiting)
         }
 
-        if next.state == workflow.finalState {
+        if next.state == workflow.finishId {
             try await finish(next)
         } else {
             try await storage.update(next)
@@ -92,7 +92,7 @@ actor WorkflowRunner {
             return nil
         }
 
-        let automatic = workflow.anyTransitions.filter { $0.fromStateId == instance.state && $0.trigger == .automatic }
+        let automatic = workflow.anyTransitions.filter { $0.from == instance.state && $0.trigger == .automatic }
         guard let transition = automatic.first, automatic.count == 1 else {
             if automatic.isEmpty { logger?.trace("No automatic transitions from \(instance.state, privacy: .public)") }
             else { logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)") }

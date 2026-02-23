@@ -9,9 +9,9 @@ import Core
 
 public struct ToTransition<State: WorkflowState> {
     public let process: TransitionProcess
-    public let to: State
+    public let to: StateID
 
-    public init(process: TransitionProcess, to: State) {
+    public init(process: TransitionProcess, to: StateID) {
         self.process = process
         self.to = to
     }
@@ -19,28 +19,28 @@ public struct ToTransition<State: WorkflowState> {
 
 public extension TransitionProcess {
     func to<State: WorkflowState>(_ nextState: State) -> ToTransition<State> {
-        ToTransition(process: self, to: nextState)
+        ToTransition(process: self, to: nextState.id)
     }
 
-    func toInitial<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: self, to: .initial)
+    func toStart<State: WorkflowState>() -> ToTransition<State> {
+        ToTransition(process: self, to: State.start)
     }
 
     func toFinish<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: self, to: .final)
+        ToTransition(process: self, to: State.finish)
     }
 }
 
 public extension TransitionProcess where Self: Defaultable {
     static func to<State: WorkflowState>(_ nextState: State) -> ToTransition<State> {
-        ToTransition(process: Self(), to: nextState)
+        ToTransition(process: Self(), to: nextState.id)
     }
 
-    static func toInitial<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: Self(), to: .initial)
+    static func toStart<State: WorkflowState>() -> ToTransition<State> {
+        ToTransition(process: Self(), to: State.start)
     }
 
     static func toFinish<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: Self(), to: .final)
+        ToTransition(process: Self(), to: State.finish)
     }
 }

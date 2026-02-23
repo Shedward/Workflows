@@ -7,27 +7,19 @@
 
 public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendable {
     public let id: TransitionID
-    public let from: State
-    public let to: State
+    public let from: StateID
+    public let to: StateID
     public let process: TransitionProcess
     public let trigger: TransitionTrigger
 
-    public var fromStateId: StateID {
-        from.id
-    }
-
-    public var toStateId: StateID {
-        to.id
-    }
-
     public init(
-        from: State,
-        to: State,
+        from: StateID,
+        to: StateID,
         process: TransitionProcess,
         workflow: AnyWorkflow,
         trigger: TransitionTrigger
     ) {
-        self.id = TransitionID(from: from.id, to: to.id, processId: process.id, workflow: workflow.id)
+        self.id = TransitionID(from: from, to: to, processId: process.id, workflow: workflow.id)
         self.from = from
         self.to = to
         self.process = process

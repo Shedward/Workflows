@@ -57,7 +57,8 @@ struct WorkflowInstancesController: Controller {
             API.Transition(
                 processId: transition.process.id,
                 fromState: transition.id.from,
-                toState: transition.id.to
+                toState: transition.id.to,
+                trigger: transition.trigger.rawValue
             )
         }
         return ListBody(items: apiTransitions)

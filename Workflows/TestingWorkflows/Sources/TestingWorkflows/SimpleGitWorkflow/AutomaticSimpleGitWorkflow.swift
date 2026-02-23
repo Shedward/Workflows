@@ -9,19 +9,14 @@ import WorkflowEngine
 
 struct AutomaticSimpleGitWorkflow: Workflow {
     enum State: String, WorkflowState {
-        static let initial = State.begin
-        static let final = State.end
-
-        case begin
         case workingDirectoryCreated
         case repositoryCreated
         case readmeCreated
         case allCommited
-        case end
     }
 
     public var transitions: Transitions {
-        after {
+        afterStart {
             CreateTempWorkingDirectory.to(.workingDirectoryCreated)
             InitialiseRepository.to(.repositoryCreated)
             WriteReadmeFile.to(.readmeCreated)

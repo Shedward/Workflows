@@ -8,8 +8,12 @@
 import Core
 
 extension Workflow {
+    public func onStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
+        build().map { Transition<State>(from: State.start, to: $0.to, process: $0.process, workflow: self, trigger: .manual) }
+    }
+
     public func on(_ state: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        build().map { Transition(from: state, to: $0.to, process: $0.process, workflow: self, trigger: .manual) }
+        build().map { Transition(from: state.id, to: $0.to, process: $0.process, workflow: self, trigger: .manual) }
     }
 
     public func on(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
@@ -20,18 +24,36 @@ extension Workflow {
         State.allCases.flatMap { on($0, build: build) }
     }
 
-    public func after(_ initial: State = .initial, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        var currentState = initial
+    public func afterStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
+        var currentStateId = State.start
 
         let transitions = build().map { toTransition in
-            let transition = Transition(
-                from: currentState,
+            let transition = Transition<State>(
+                from: currentStateId,
                 to: toTransition.to,
                 process: toTransition.process,
                 workflow: self,
                 trigger: .automatic
             )
-            currentState = toTransition.to
+            currentStateId = toTransition.to
+            return transition
+        }
+
+        return transitions
+    }
+
+    public func after(_ initial: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
+        var currentStateId = initial.id
+
+        let transitions = build().map { toTransition in
+            let transition = Transition<State>(
+                from: currentStateId,
+                to: toTransition.to,
+                process: toTransition.process,
+                workflow: self,
+                trigger: .automatic
+            )
+            currentStateId = toTransition.to
             return transition
         }
 

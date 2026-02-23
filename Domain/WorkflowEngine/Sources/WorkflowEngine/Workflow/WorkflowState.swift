@@ -6,13 +6,19 @@
 //
 
 public protocol WorkflowState: Sendable, RawRepresentable, CaseIterable where RawValue == StateID {
-    static var initial: Self { get }
-    static var final: Self { get }
 }
 
 extension WorkflowState {
     public var id: StateID {
         rawValue
+    }
+
+    public static var start: StateID  {
+        "_start"
+    }
+
+    public static var finish: StateID {
+        "_finish"
     }
 }
 

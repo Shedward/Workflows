@@ -28,7 +28,8 @@ struct WorkflowsController: Controller {
                     API.Transition(
                         processId: transition.id.processId,
                         fromState: transition.id.from,
-                        toState: transition.id.to
+                        toState: transition.id.to,
+                        trigger: transition.trigger.rawValue
                     )
                 }
             )

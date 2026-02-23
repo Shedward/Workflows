@@ -29,12 +29,12 @@ extension Workflow {
         State.allCases.map(\.id)
     }
 
-    public var initialState: StateID {
-        State.initial.id
+    public var startId: StateID {
+        State.start
     }
 
-    public var finalState: StateID {
-        State.final.id
+    public var finishId: StateID {
+        State.finish
     }
 
     public var version: WorkflowVersion {

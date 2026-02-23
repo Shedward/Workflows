@@ -10,8 +10,8 @@ public protocol AnyWorkflow: Sendable {
     var anyTransitions: [AnyTransition] { get }
 
     var states: [StateID] { get }
-    var initialState: StateID { get }
-    var finalState: StateID { get }
+    var startId: StateID { get }
+    var finishId: StateID { get }
 }
 
 extension Workflow {

@@ -10,7 +10,7 @@ extension Workflows {
         let instance = try await instance(id: instanceId)
         let workflow = try await workflow(id: instance.workflowId)
 
-        return workflow.anyTransitions.filter { $0.fromStateId == instance.state }
+        return workflow.anyTransitions.filter { $0.from == instance.state }
     }
 
     public func transition(id: TransitionID) async throws -> AnyTransition {
@@ -49,7 +49,7 @@ extension Workflows {
         let workflow = try await self.workflow(id: instance.workflowId)
 
         let possibleTransitions = workflow.anyTransitions.filter { transition in
-            instance.state == transition.fromStateId && transition.id.processId == processId
+            instance.state == transition.from && transition.id.processId == processId
         }
 
         guard possibleTransitions.count == 1 else {
