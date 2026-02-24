@@ -8,10 +8,12 @@
 import WorkflowEngine
 import WorkflowServer
 import TestingWorkflows
+import os
 
 @main
 struct App {
     static func main() async throws {
+        Logger.enable(.workflow)
         let dependencies = DependenciesContainer()
 
         let workflows = try await Workflows(dependencies: dependencies) {
