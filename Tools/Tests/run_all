@@ -8,6 +8,7 @@ readonly TEST_SCRIPTS=(
   run_simple_git_workflow
   run_automatic_simple_git_workflow
   run_waiting_workflow
+  run_subflow_workflow
 )
 
 readonly GREEN='\033[0;32m'

@@ -16,7 +16,7 @@ public extension Action where Self: TransitionProcess {
         var action = self
 
         try Failure.wrap("Failed to prepare to run action \(type(of: self))") {
-            try action.bind(BindInputs(data: context.data))
+            try action.bind(BindInputs(data: context.instance.data))
             try action.bind(CreateOutputStorage())
             try action.bind(SetDependencies(container: context.dependancyContainer))
         }
@@ -27,13 +27,13 @@ public extension Action where Self: TransitionProcess {
         }
         action = runningAction
 
-        var readOutputs = ReadOutputs(data: context.data)
+        var readOutputs = ReadOutputs(data: context.instance.data)
 
         try Failure.wrap("Failed to finish action \(type(of: self))") {
             try action.bind(&readOutputs)
         }
 
-        context.data = readOutputs.data
+        context.instance.data = readOutputs.data
 
         return .completed
     }

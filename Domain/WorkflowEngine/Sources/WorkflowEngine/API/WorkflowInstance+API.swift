@@ -13,6 +13,9 @@ extension API.WorkflowInstance {
             id: model.id,
             workflowId: model.workflowId,
             state: model.state,
+            transitionState: model.transitionState.map {
+                API.TransitionState(model: $0)
+            },
             data: API.WorkflowData(model: model.data)
         )
     }

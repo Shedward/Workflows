@@ -11,5 +11,6 @@ public let workflows: [any Workflow] = [
     SimpleWorkflow(),
     SimpleGitWorkflow(),
     AutomaticSimpleGitWorkflow(),
-    WaitingWorkflow()
+    WaitingWorkflow(),
+    SubflowsWorkflow()
 ]

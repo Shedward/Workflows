@@ -54,12 +54,7 @@ struct WorkflowInstancesController: Controller {
         let workflowId = try context.parameters.require("id")
         let transitions = try await workflows.transitions(for: workflowId)
         let apiTransitions = transitions.map { transition in
-            API.Transition(
-                processId: transition.process.id,
-                fromState: transition.id.from,
-                toState: transition.id.to,
-                trigger: transition.trigger.rawValue
-            )
+            API.Transition(model: transition)
         }
         return ListBody(items: apiTransitions)
     }

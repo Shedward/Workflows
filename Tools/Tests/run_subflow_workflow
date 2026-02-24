@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+
+main() {
+
+  local response
+  response="$(request POST "/workflowInstances" '{"workflowId": "SubflowsWorkflow"}')"
+
+  local id
+  id="$(jq -r '.id' <<<"$response")"
+  readonly id
+
+  take_transition() {
+    local transition="${1:?transition required}"
+
+    request POST "/workflowInstances/$id/takeTransition" \
+      "{\"transitionProcessId\":\"$transition\"}"
+  }
+
+  assert_state() {
+    local expected="${1:?expected required}"
+
+    response="$(request GET "/workflowInstances/$id")"
+    local state
+    state="$(jq -r '.state' <<<"$response")"
+
+    if ! [[ "$state" == "$expected" ]]
+    then
+        echo "Expected $expected got $state"
+        exit 1
+    fi
+  }
+
+  take_transition "GoToSubflow"  >/dev/null
+  response="$(take_transition "SimpleWorkflow")"
+
+  local subflow_id
+  subflow_id="$(jq -r '.transitionState.state.waitingWorkflow.workflowId' <<<"$response")"
+  readonly subflow_id
+
+  if [[ -z "$subflow_id" || "$subflow_id" == "null" ]]; then
+    echo "Failed to extract subflow instance id" >&2
+    exit 1
+  fi
+
+  take_subflow_transition() {
+    local transition="${1:?transition required}"
+
+    request POST "/workflowInstances/$subflow_id/takeTransition" \
+      "{\"transitionProcessId\":\"$transition\"}" >/dev/null
+  }
+
+  assert_state "beforeSubflow"
+  take_subflow_transition "StartA"
+  take_subflow_transition "StartB"
+  assert_state "beforeSubflow"
+  take_subflow_transition "Finalize"
+
+  assert_state "subflowFinished"
+
+  take_transition "FinishAfterSubflow"  >/dev/null
+
+  echo
+  echo "Finished Successfully"
+}
+
+main "$@"

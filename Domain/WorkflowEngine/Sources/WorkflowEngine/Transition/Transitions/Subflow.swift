@@ -7,7 +7,11 @@
 
 public extension Workflow where Self: TransitionProcess {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
-        let subflowInstance = try await context.start(self, context.data)
+        if context.resume == .workflowFinished {
+            return .completed
+        }
+
+        let subflowInstance = try await context.start(self, context.instance.data)
         return .waiting(.workflowFinished(.init(id: subflowInstance.id)))
     }
 }

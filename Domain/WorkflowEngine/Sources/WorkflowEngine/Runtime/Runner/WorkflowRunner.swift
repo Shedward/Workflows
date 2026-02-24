@@ -14,8 +14,8 @@ actor WorkflowRunner {
     private let registry: WorkflowRegistry
     private let dependencies: DependenciesContainer
 
-    private lazy var scheduler: WaitScheduler = WaitScheduler { [weak self] instanceId in
-        await self?.resumeWaiting(instanceId: instanceId)
+    private lazy var scheduler: WaitScheduler = WaitScheduler { [weak self] instanceId, reason in
+        await self?.resumeWaiting(instanceId: instanceId, reason: reason)
     }
     private let logger = Logger(scope: .workflow)
 
@@ -41,13 +41,23 @@ actor WorkflowRunner {
     }
 
     @discardableResult
-    func takeTransition(_ transition: AnyTransition, on instance: WorkflowInstance, of workflow: AnyWorkflow) async throws -> WorkflowInstance {
+    func takeTransition(
+        _ transition: AnyTransition,
+        on instance: WorkflowInstance,
+        of workflow: AnyWorkflow,
+        resumeReason: WaitScheduler.ResumeReason? = nil
+    ) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
-        var context = WorkflowContext(data: instance.data, dependancyContainer: dependencies, start: self.start)
+        var context = WorkflowContext(
+            instance: instance,
+            resume: resumeReason,
+            dependancyContainer: dependencies,
+            start: self.start
+        )
         let result = try await transition.process.start(context: &context)
 
-        var next = instance.data(context.data)
+        var next = instance.data(context.instance.data)
         switch result {
         case .completed:
             next = next.transitionEnded().moveToState(transition.to)
@@ -112,7 +122,7 @@ actor WorkflowRunner {
 
     // MARK: - Waiting
 
-    private func resumeWaiting(instanceId: WorkflowInstanceID) async {
+    private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
         guard let instance = try? await storage.instance(id: instanceId),
@@ -124,7 +134,7 @@ actor WorkflowRunner {
         }
 
         do {
-            try await takeTransition(transition, on: instance, of: workflow)
+            try await takeTransition(transition, on: instance, of: workflow, resumeReason: reason)
         } catch {
             try? await storage.update(instance.transitionFailed(error, at: transition))
             logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")

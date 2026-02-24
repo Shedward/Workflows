@@ -10,7 +10,7 @@ import Core
 import os
 
 actor WaitScheduler {
-    typealias ResumeHandler = @Sendable (WorkflowInstanceID) async -> Void
+    typealias ResumeHandler = @Sendable (WorkflowInstanceID, ResumeReason) async -> Void
 
     private var timeTasks: [WorkflowInstanceID: Task<Void, Never>] = [:]
     private var finishWaiters: [WorkflowInstanceID: Set<WorkflowInstanceID>] = [:]
@@ -64,7 +64,7 @@ actor WaitScheduler {
         logger?.trace("Notify finishing for \(instanceId)")
         if let waiters = finishWaiters.removeValue(forKey: instanceId) {
             for waiterId in waiters {
-                await resume(waiterId)
+                await resume(waiterId, .workflowFinished)
             }
         }
 
@@ -90,7 +90,7 @@ actor WaitScheduler {
             logger?.trace("Schedule \(instanceId) finished")
             guard !Task.isCancelled else { return }
             logger?.trace("Resuming \(instanceId)")
-            await resume(instanceId)
+            await resume(instanceId, .time)
         }
 
         timeTasks[instanceId] = task
@@ -103,3 +103,9 @@ actor WaitScheduler {
     }
 }
 
+extension WaitScheduler {
+    enum ResumeReason {
+        case time
+        case workflowFinished
+    }
+}

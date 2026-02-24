@@ -21,18 +21,7 @@ struct WorkflowsController: Controller {
     private func getWorkflowTypes(request: Request, body: EmptyBody, context: Context) async throws -> ListBody<API.Workflow> {
         let allWorkflows = await workflows.workflows()
         let instances = allWorkflows.map { workflow in
-            API.Workflow(
-                id: workflow.id,
-                stateId: workflow.states,
-                transitions: workflow.anyTransitions.map { transition in
-                    API.Transition(
-                        processId: transition.id.processId,
-                        fromState: transition.id.from,
-                        toState: transition.id.to,
-                        trigger: transition.trigger.rawValue
-                    )
-                }
-            )
+            API.Workflow(model: workflow)
         }
         return ListBody(items: instances)
     }
