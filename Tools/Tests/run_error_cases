@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Start nonexistent workflow → should fail
+  assert_fails request POST "/workflowInstances" \
+    '{"workflowId":"NonExistentWorkflow"}'
+
+  # Get nonexistent instance → should fail
+  assert_fails request GET "/workflowInstances/no-such-id"
+
+  # Take transition on nonexistent instance → should fail
+  assert_fails request POST "/workflowInstances/no-such-id/takeTransition" \
+    '{"transitionProcessId":"StartA"}'
+
+  # Start a real workflow, then take an invalid transition
+  start_workflow "SimpleWorkflow"
+
+  # Take a transition that doesn't exist at all
+  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition" \
+    '{"transitionProcessId":"NonExistentTransition"}'
+
+  # Take a transition that exists but not from current state
+  # Instance is at _start, only StartA is valid — try StartB
+  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition" \
+    '{"transitionProcessId":"StartB"}'
+
+  echo "Finished Successfully"
+}
+
+main "$@"

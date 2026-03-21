@@ -6,13 +6,19 @@ set -euo pipefail
 
 main() {
   start_workflow "SimpleWorkflow"
-  assert_exists
 
+  # After StartA: valueA should be set
   take_transition "StartA"
-  take_transition "StartB"
-  take_transition "Finalize"
+  assert_data "valueA" '"Returned"'
 
+  # After StartB: valueB should be valueA + "_suffix"
+  take_transition "StartB"
+  assert_data "valueA" '"Returned"'
+  assert_data "valueB" '"Returned_suffix"'
+
+  take_transition "Finalize"
   assert_finished
+
   echo "Finished Successfully"
 }
 

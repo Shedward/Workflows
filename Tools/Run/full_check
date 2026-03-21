@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$SCRIPT_DIR/../.."
+
+cleanup() {
+  if [[ -n "${SERVER_PID:-}" ]]; then
+    kill "$SERVER_PID" 2>/dev/null
+    wait "$SERVER_PID" 2>/dev/null
+  fi
+}
+trap cleanup EXIT
+
+# Build
+echo "Building workflow-server..."
+xcodebuild build \
+  -workspace "$ROOT_DIR/Workflow.xcworkspace" \
+  -scheme "workflow-server" \
+  -configuration Debug \
+  -derivedDataPath "$ROOT_DIR/.build/DerivedData" \
+  -quiet 2>&1 | grep -v "^$" || true
+
+EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-server"
+
+if [[ ! -x "$EXECUTABLE" ]]; then
+  echo "Build failed: executable not found" >&2
+  exit 1
+fi
+
+echo "Build succeeded."
+
+# Start server
+"$EXECUTABLE" &
+SERVER_PID=$!
+
+# Wait for server
+echo "Waiting for server..."
+for i in $(seq 1 15); do
+  if curl -s http://127.0.0.1:8080/health >/dev/null 2>&1; then
+    echo "Server is ready."
+    break
+  fi
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    echo "Server process died" >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+if ! curl -s http://127.0.0.1:8080/health >/dev/null 2>&1; then
+  echo "Server failed to start within 15s" >&2
+  exit 1
+fi
+
+# Run tests
+echo ""
+"$ROOT_DIR/Tools/Tests/run_all"

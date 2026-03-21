@@ -2,23 +2,11 @@
 set -euo pipefail
 
 . "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
 
 main() {
-  request GET "/workflows" >/dev/null
-
-  local response
-  response="$(request POST "/workflowInstances" '{"workflowId": "AutomaticSimpleGitWorkflow"}')"
-
-  local id
-  id="$(jq -r '.id' <<<"$response")"
-
-  if request GET "/workflowInstances" \
-    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
-  then
-    echo "Instance still exists"
-    exit 1
-  fi
-
+  start_workflow "AutomaticSimpleGitWorkflow"
+  assert_finished
   echo "Finished Successfully"
 }
 

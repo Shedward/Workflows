@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "SimpleWorkflow"
+
+  # At _start: only StartA should be available
+  assert_transition_available "StartA"
+  assert_transition_unavailable "StartB"
+  assert_transition_unavailable "Finalize"
+
+  take_transition "StartA"
+
+  # At state a: only StartB should be available
+  assert_transition_unavailable "StartA"
+  assert_transition_available "StartB"
+  assert_transition_unavailable "Finalize"
+
+  take_transition "StartB"
+
+  # At state b: only Finalize should be available
+  assert_transition_unavailable "StartA"
+  assert_transition_unavailable "StartB"
+  assert_transition_available "Finalize"
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

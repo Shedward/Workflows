@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "FailingWorkflow"
+
+  # Move to shouldFail state
+  take_transition "GoNextStep"
+  assert_state "shouldFail"
+
+  # FailAction should fail with an HTTP error
+  assert_fails try_take_transition "FailAction"
+
+  # Instance should still exist at the same state
+  assert_exists
+  assert_state "shouldFail"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

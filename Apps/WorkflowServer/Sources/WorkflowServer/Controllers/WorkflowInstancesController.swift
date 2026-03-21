@@ -18,7 +18,7 @@ struct WorkflowInstancesController: Controller {
             .on(GetWorkflowsInstances.self, use: getWorkflows)
             .on(StartWorkflow.self, use: startWorkflow)
             .on(GetWorkflowInstance.self, use: getWorkflow)
-            .on(TakeTransition.self, use: startWorkflow)
+            .on(TakeTransition.self, use: takeTransition)
             .on(AvailableTransitions.self, use: availableTransitions)
     }
 
@@ -36,12 +36,13 @@ struct WorkflowInstancesController: Controller {
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
-        let workflowInstance = try await workflows.start(body.workflowId)
+        let initialData = body.initialData.map { WorkflowData(api: $0) } ?? WorkflowData()
+        let workflowInstance = try await workflows.start(body.workflowId, initialData: initialData)
         let instance = API.WorkflowInstance(model: workflowInstance)
         return instance
     }
 
-    private func startWorkflow(request: Request, body: TakeTransition.RequestBody, context: Context) async throws -> API.WorkflowInstance {
+    private func takeTransition(request: Request, body: TakeTransition.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let workflowId = try context.parameters.require("id")
         let transitionProcessId = body.transitionProcessId
 

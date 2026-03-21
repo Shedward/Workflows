@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Test taking the left branch
+  start_workflow "BranchingWorkflow"
+  take_transition "GoNextStep"
+  assert_state "fork"
+
+  # Both branches should be available
+  assert_transition_available "GoLeft"
+  assert_transition_available "GoRight"
+
+  take_transition "GoLeft"
+  assert_state "left"
+
+  # Only Finalize should be available now
+  assert_transition_available "Finalize"
+  assert_transition_unavailable "GoLeft"
+  assert_transition_unavailable "GoRight"
+
+  take_transition "Finalize"
+  assert_finished
+
+  # Test taking the right branch
+  start_workflow "BranchingWorkflow"
+  take_transition "GoNextStep"
+  assert_state "fork"
+
+  take_transition "GoRight"
+  assert_state "right"
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"
