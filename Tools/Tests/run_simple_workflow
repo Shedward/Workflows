@@ -2,42 +2,17 @@
 set -euo pipefail
 
 . "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
 
 main() {
-  request GET "/workflows" >/dev/null
+  start_workflow "SimpleWorkflow"
+  assert_exists
 
-  local response
-  response="$(request POST "/workflowInstances" \
-    '{"workflowId":"SimpleWorkflow"}')"
+  take_transition "StartA"
+  take_transition "StartB"
+  take_transition "Finalize"
 
-  local id
-  id="$(jq -r '.id' <<<"$response")"
-
-  if [[ -z "$id" || "$id" == "null" ]]; then
-    echo "Failed to extract workflow instance id" >&2
-    exit 1
-  fi
-
-  if ! request GET "/workflowInstances" \
-    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
-  then
-    echo "Instance not found"
-    exit 1
-  fi
-
-  local transition
-  for transition in StartA StartB Finalize; do
-    request POST "/workflowInstances/$id/takeTransition" \
-      "{\"transitionProcessId\":\"$transition\"}" >/dev/null
-  done
-
-  if request GET "/workflowInstances" \
-    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
-  then
-    echo "Instance still exists"
-    exit 1
-  fi
-
+  assert_finished
   echo "Finished Successfully"
 }
 

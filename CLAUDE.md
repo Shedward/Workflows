@@ -20,7 +20,7 @@ swift test --package-path Core/Core
 ./Tools/Run/run_server
 
 # Build, run server, run all integration tests, then shut down
-./Tools/Run/run_server_and_test
+./Tools/Run/full_check
 
 # Integration tests (require running server)
 ./Tools/Tests/run_all                          # Run all integration tests

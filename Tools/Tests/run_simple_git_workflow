@@ -2,23 +2,10 @@
 set -euo pipefail
 
 . "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
 
 main() {
-  request GET "/workflows" >/dev/null
-
-  local response
-  response="$(request POST "/workflowInstances" '{"workflowId": "SimpleGitWorkflow"}')"
-
-  local id
-  id="$(jq -r '.id' <<<"$response")"
-  readonly id
-
-  take_transition() {
-    local transition="${1:?transition required}"
-
-    request POST "/workflowInstances/$id/takeTransition" \
-      "{\"transitionProcessId\":\"$transition\"}" >/dev/null
-  }
+  start_workflow "SimpleGitWorkflow"
 
   take_transition "CreateTempWorkingDirectory"
   take_transition "InitialiseRepository"
@@ -26,13 +13,7 @@ main() {
   take_transition "CommitChanges"
   take_transition "CleanWorkingFolder"
 
-  if request GET "/workflowInstances" \
-    | jq -e --arg id "$id" 'any(.[]; .id == $id)' >/dev/null
-  then
-    echo "Instance still exists"
-    exit 1
-  fi
-
+  assert_finished
   echo "Finished Successfully"
 }
 
