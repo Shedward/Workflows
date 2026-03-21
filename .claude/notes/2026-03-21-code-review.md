@@ -42,6 +42,20 @@ Zero Swift unit tests for: WorkflowEngine, REST client, API layer, controllers, 
 
 **Created build & test tooling:**
 - `Tools/Run/run_server` — Builds via xcodebuild and runs the server.
-- `Tools/Run/run_server_and_test` — Builds, starts server, runs all integration tests, then shuts down. Use after every iteration.
+- `Tools/Run/full_check` — Builds, starts server, runs all integration tests, then shuts down. Use after every iteration.
 
-**All 5 integration tests pass.**
+**Expanded integration test suite (5 → 13 tests, + 1 skipped):**
+- Refactored test DSL into `Tools/Lib/workflow.sh` with helpers: `start_workflow`, `take_transition`, `assert_state`, `assert_exists`, `assert_finished`, `assert_fails`, `assert_data`, `assert_transition_available`, `assert_workflow_registered`, etc.
+- New test workflows: `FailingWorkflow` (action that throws), `BranchingWorkflow` (multiple transitions from one state), `InitialDataWorkflow` (reads initial data passed at start).
+- New test scripts:
+  - `run_error_cases` — nonexistent workflow/instance, invalid/wrong-state transitions
+  - `run_data_flow` — verifies Input/Output data propagation between transitions
+  - `run_available_transitions` — tests GET transitions endpoint at each state
+  - `run_initial_data` — tests passing initialData when starting a workflow
+  - `run_multiple_instances` — verifies independent parallel instances
+  - `run_workflow_listing` — validates GET /workflows response
+  - `run_failing_workflow` — verifies error handling for failing actions
+  - `run_branching_workflow` — tests both branches of a fork
+- Skipped: `run_automatic_subflow_workflow` — discovered pre-existing bug where automatic subflows get stuck.
+
+**All 13 active integration tests pass.**

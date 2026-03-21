@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Start two instances of the same workflow
+  start_workflow "SimpleWorkflow"
+  local id1="$INSTANCE_ID"
+
+  start_workflow "SimpleWorkflow"
+  local id2="$INSTANCE_ID"
+
+  # They should be different instances
+  if [[ "$id1" == "$id2" ]]; then
+    echo "Expected different instance IDs, got same: $id1" >&2
+    exit 1
+  fi
+
+  # Both should exist
+  assert_exists "$id1"
+  assert_exists "$id2"
+
+  # Advance first instance, second should stay at _start
+  take_transition "StartA" "$id1"
+  assert_state "a" "$id1"
+  assert_state "_start" "$id2"
+
+  # Finish first instance
+  take_transition "StartB" "$id1"
+  take_transition "Finalize" "$id1"
+  assert_finished "$id1"
+
+  # Second should still exist
+  assert_exists "$id2"
+
+  # Finish second
+  take_transition "StartA" "$id2"
+  take_transition "StartB" "$id2"
+  take_transition "Finalize" "$id2"
+  assert_finished "$id2"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

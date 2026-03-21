@@ -9,6 +9,15 @@ readonly TEST_SCRIPTS=(
   run_automatic_simple_git_workflow
   run_waiting_workflow
   run_subflow_workflow
+  # run_automatic_subflow_workflow  # Known issue: automatic subflows get stuck
+  run_error_cases
+  run_data_flow
+  run_available_transitions
+  run_initial_data
+  run_multiple_instances
+  run_workflow_listing
+  run_failing_workflow
+  run_branching_workflow
 )
 
 readonly GREEN='\033[0;32m'

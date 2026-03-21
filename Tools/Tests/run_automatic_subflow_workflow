@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "AutomaticSubflowsWorkflow"
+
+  # Automatic subflows may take a moment to cascade through
+  local attempts=10
+  for i in $(seq 1 "$attempts"); do
+    if ! request GET "/workflowInstances" \
+      | jq -e --arg id "$INSTANCE_ID" 'any(.[]; .id == $id)' >/dev/null 2>&1
+    then
+      echo "Finished Successfully"
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "Instance $INSTANCE_ID still exists after ${attempts}s" >&2
+  exit 1
+}
+
+main "$@"

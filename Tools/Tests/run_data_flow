@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "SimpleWorkflow"
+
+  # After StartA: valueA should be set
+  take_transition "StartA"
+  assert_data "valueA" '"Returned"'
+
+  # After StartB: valueB should be valueA + "_suffix"
+  take_transition "StartB"
+  assert_data "valueA" '"Returned"'
+  assert_data "valueB" '"Returned_suffix"'
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

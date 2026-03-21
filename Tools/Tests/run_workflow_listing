@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Verify all registered workflows are listed
+  assert_workflow_registered "SimpleWorkflow"
+  assert_workflow_registered "SimpleGitWorkflow"
+  assert_workflow_registered "AutomaticSimpleGitWorkflow"
+  assert_workflow_registered "WaitingWorkflow"
+  assert_workflow_registered "SubflowsWorkflow"
+  assert_workflow_registered "AutomaticSubflowsWorkflow"
+  assert_workflow_registered "FailingWorkflow"
+  assert_workflow_registered "BranchingWorkflow"
+  assert_workflow_registered "InitialDataWorkflow"
+
+  # Verify workflow has transitions
+  local response
+  response="$(request GET "/workflows")"
+
+  local transition_count
+  transition_count="$(jq --arg wid "BranchingWorkflow" \
+    '[.[] | select(.id == $wid)][0].transitions | length' <<<"$response")"
+
+  if [[ "$transition_count" -lt 1 ]]; then
+    echo "BranchingWorkflow should have transitions" >&2
+    exit 1
+  fi
+
+  echo "Finished Successfully"
+}
+
+main "$@"

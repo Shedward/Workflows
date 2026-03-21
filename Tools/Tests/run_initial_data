@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # WorkflowData values are JSON-encoded strings
+  # String "hello" → stored as "\"hello\""
+  start_workflow_with_data "InitialDataWorkflow" '{"greeting":"\"hello\""}'
+
+  # After start: greeting should be in data
+  assert_data "greeting" '"hello"'
+
+  # Take ReadInitialData transition
+  take_transition "ReadInitialData"
+
+  # result should be greeting + "_processed"
+  assert_data "greeting" '"hello"'
+  assert_data "result" '"hello_processed"'
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"
