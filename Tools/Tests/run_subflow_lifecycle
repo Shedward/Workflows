@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "SubflowsWorkflow"
+  local parent_id="$INSTANCE_ID"
+
+  # Move to beforeSubflow state
+  take_transition "GoToSubflow" "$parent_id"
+  assert_state "beforeSubflow" "$parent_id"
+
+  # Take the subflow transition — starts a SimpleWorkflow child
+  take_transition "SimpleWorkflow" "$parent_id"
+
+  # Extract child instance ID from the take_transition response
+  local child_id
+  child_id="$(response_field '.transitionState.state.waitingWorkflow.workflowId')"
+  if [[ -z "$child_id" || "$child_id" == "null" ]]; then
+    echo "Could not extract child instance ID from response" >&2
+    exit 1
+  fi
+
+  # Parent should be waiting for subflow
+  local parent_response
+  parent_response="$(request GET "/workflowInstances/$parent_id")"
+  local wait_state
+  wait_state="$(jq -r '.transitionState.state | keys[0] // empty' <<<"$parent_response")"
+  if [[ "$wait_state" != "waitingWorkflow" ]]; then
+    echo "Expected parent waitingWorkflow, got '$wait_state'" >&2
+    exit 1
+  fi
+
+  # Child should be visible in instance listing
+  assert_exists "$child_id"
+
+  # Child should be a SimpleWorkflow
+  local child_response
+  child_response="$(request GET "/workflowInstances/$child_id")"
+  local child_workflow
+  child_workflow="$(jq -r '.workflowId' <<<"$child_response")"
+  if [[ "$child_workflow" != "SimpleWorkflow" ]]; then
+    echo "Expected child workflow 'SimpleWorkflow', got '$child_workflow'" >&2
+    exit 1
+  fi
+
+  # Drive child to completion
+  take_transition "StartA" "$child_id"
+  take_transition "StartB" "$child_id"
+  take_transition "Finalize" "$child_id"
+
+  # Child should be finished (removed from listing)
+  assert_finished "$child_id"
+
+  # Parent should have resumed — moved past beforeSubflow
+  assert_state "subflowFinished" "$parent_id"
+
+  # Parent's transitionState should be cleared (no longer waiting)
+  parent_response="$(request GET "/workflowInstances/$parent_id")"
+  local ts
+  ts="$(jq -r '.transitionState' <<<"$parent_response")"
+  if [[ "$ts" != "null" ]]; then
+    echo "Expected parent transitionState null after resume, got '$ts'" >&2
+    exit 1
+  fi
+
+  # Finish parent
+  take_transition "FinishAfterSubflow" "$parent_id"
+  assert_finished "$parent_id"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

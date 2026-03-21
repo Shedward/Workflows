@@ -85,3 +85,20 @@ Evaluated but deferred — the targeted fix above solves the immediate problem w
 - Add `Task.yield()` between events for fairness in the cooperative scheduler
 - Ensure `processQueue` never throws — catch per-event to avoid poisoning the queue
 - Watch out for: `isProcessing` flag pitfalls, settlement continuation leaks, loss of call-stack debuggability
+
+---
+
+### 2026-03-22
+
+**Created API specification:** `Documentation/API.md` — full REST API reference with all 7 endpoints, request/response schemas, model definitions, error reference table, and behavioral notes (automatic transitions, subflows, waiting, data encoding, finished-instance cleanup).
+
+**Added 5 QA edge-case test scripts (14 → 19 tests):**
+- `run_malformed_requests` — empty bodies, missing required fields on POST endpoints
+- `run_finished_instance` — GET/transitions/takeTransition on completed instance (all 404), instance count lifecycle
+- `run_failed_transition` — inspect state after failure, verify transition still available, retry fails again
+- `run_subflow_lifecycle` — child visibility in listing, parent waitingWorkflow state, child cleanup, parent resume, transitionState cleared
+- `run_http_edge_cases` — health endpoint, nonexistent paths, wrong HTTP methods
+
+**QA finding:** Manual transition failures (e.g., FailAction) propagate as HTTP 500 errors but do NOT set `transitionState.failed` on the instance. The `transitionState.failed` state is only set for automatic transition failures (in `nextAutomaticTransitionInstance`). This is asymmetric behavior — consider whether manual failures should also persist the error in `transitionState` for observability.
+
+**All 19 integration tests pass.**

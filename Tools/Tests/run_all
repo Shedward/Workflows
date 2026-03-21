@@ -18,6 +18,11 @@ readonly TEST_SCRIPTS=(
   run_workflow_listing
   run_failing_workflow
   run_branching_workflow
+  run_malformed_requests
+  run_finished_instance
+  run_failed_transition
+  run_subflow_lifecycle
+  run_http_edge_cases
 )
 
 readonly GREEN='\033[0;32m'

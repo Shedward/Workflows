@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # POST /workflowInstances with empty body
+  assert_fails request POST "/workflowInstances"
+
+  # POST /workflowInstances with missing workflowId
+  assert_fails request POST "/workflowInstances" '{}'
+
+  # Start a real instance to test takeTransition with bad bodies
+  start_workflow "SimpleWorkflow"
+
+  # POST takeTransition with empty body
+  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition"
+
+  # POST takeTransition with missing transitionProcessId
+  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition" '{}'
+
+  echo "Finished Successfully"
+}
+
+main "$@"

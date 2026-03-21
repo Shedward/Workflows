@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  local count_before
+  count_before="$(instance_count)"
+
+  # Run SimpleWorkflow to completion
+  start_workflow "SimpleWorkflow"
+  local finished_id="$INSTANCE_ID"
+
+  # Verify count increased
+  local count_during
+  count_during="$(instance_count)"
+  if [[ "$count_during" -ne $((count_before + 1)) ]]; then
+    echo "Expected count $((count_before + 1)), got $count_during" >&2
+    exit 1
+  fi
+
+  take_transition "StartA"
+  take_transition "StartB"
+  take_transition "Finalize"
+  assert_finished "$finished_id"
+
+  # Verify count restored
+  local count_after
+  count_after="$(instance_count)"
+  if [[ "$count_after" -ne "$count_before" ]]; then
+    echo "Expected count $count_before after finish, got $count_after" >&2
+    exit 1
+  fi
+
+  # GET finished instance should fail
+  assert_fails request GET "/workflowInstances/$finished_id"
+
+  # GET transitions on finished instance should fail
+  assert_fails request GET "/workflowInstances/$finished_id/transitions"
+
+  # POST takeTransition on finished instance should fail
+  assert_fails request POST "/workflowInstances/$finished_id/takeTransition" \
+    '{"transitionProcessId":"StartA"}'
+
+  echo "Finished Successfully"
+}
+
+main "$@"
