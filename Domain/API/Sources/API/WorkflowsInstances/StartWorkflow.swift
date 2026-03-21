@@ -14,7 +14,7 @@ public struct StartWorkflow: WorkflowApi {
     static public let path = "/workflowInstances"
 
     let workflowId: String
-    let initialData: String
+    let initialData: WorkflowData?
 
     public var request: RouteRequest {
         request(body: RequestBody(workflowId: workflowId, initialData: initialData))
@@ -24,9 +24,9 @@ public struct StartWorkflow: WorkflowApi {
 extension StartWorkflow {
     public struct RequestBody: JSONBody {
         public let workflowId: String
-        public let initialData: String?
+        public let initialData: WorkflowData?
 
-        init(workflowId: String, initialData: String?) {
+        init(workflowId: String, initialData: WorkflowData?) {
             self.workflowId = workflowId
             self.initialData = initialData
         }
