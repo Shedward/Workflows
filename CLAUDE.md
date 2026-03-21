@@ -9,12 +9,9 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 ## Build & Test Commands
 
 ```bash
-# Build (from any package directory or root)
-swift build
-swift build -c release
-
-# Run unit tests (Core module has Swift Testing tests)
-swift test --package-path Core/Core
+# Build (project uses Xcode workspace, not SPM at the root)
+# xcodebuild is the primary build tool — see Tools/Run/run_server for details
+swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
 # Build and run the server
 ./Tools/Run/run_server
@@ -22,13 +19,9 @@ swift test --package-path Core/Core
 # Build, run server, run all integration tests, then shut down
 ./Tools/Run/full_check
 
-# Integration tests (require running server)
+# Integration tests (require running server on :8080)
 ./Tools/Tests/run_all                          # Run all integration tests
 ./Tools/Tests/run_simple_workflow              # Run a single test
-./Tools/Tests/run_waiting_workflow
-./Tools/Tests/run_subflow_workflow
-./Tools/Tests/run_simple_git_workflow
-./Tools/Tests/run_automatic_simple_git_workflow
 ```
 
 ## Architecture
@@ -47,17 +40,30 @@ swift test --package-path Core/Core
 
 **Workflow Protocol** — Define workflows by providing a `State` enum (conforming to `WorkflowState`), an `id`, `version`, and `transitions`. Start/finish states are implicit (`_start`, `_finish`).
 
-**Transition System** — Three types:
-- `Action` — Immediate execution with data I/O
-- `Wait` — Suspends until external signal
-- `Subflow` — Nests another workflow
+**Transition System** — Four types:
+- `Action` — Immediate execution with data I/O via `@Input`/`@Output`
+- `Pass` — No-op, used for state routing and branching
+- `Wait` — Suspends until external signal (time-based or custom condition)
+- `Subflow` — Nests another workflow; parent waits for child to finish
+
+**Transition Triggers:**
+- `onStart`/`on(.state)` — Manual triggers, require explicit `takeTransition` API call
+- `afterStart`/`after(.state)` — Automatic triggers, execute inline without API call
 
 Workflows are defined with a DSL:
 ```swift
 var transitions: Transitions {
-    onStart { StartAction.to(.stateA) }
-    on(.stateA) { NextAction.to(.stateB) }
-    on(.stateB) { FinalAction.toFinish() }
+    onStart { StartAction.to(.stateA) }       // manual
+    on(.stateA) { NextAction.to(.stateB) }    // manual
+    on(.stateB) { FinalAction.toFinish() }    // manual
+}
+// Or automatic:
+var transitions: Transitions {
+    afterStart {
+        StepOne.to(.a)                         // automatic chain
+        StepTwo.to(.b)
+        StepThree.toFinish()
+    }
 }
 ```
 
@@ -71,18 +77,50 @@ Actor-based (`Workflows`, `WorkflowRunner`) with Swift async/await throughout. S
 
 ### REST API Endpoints
 
-- `GET /workflows` — List workflow types
-- `GET /workflowInstances` — List instances
-- `POST /workflowInstances` — Start workflow
-- `GET /workflowInstances/:id` — Instance status
-- `POST /workflowInstances/:id/takeTransition` — Execute transition
-- `GET /workflowInstances/:id/transitions` — Available transitions
+Full specification: `Documentation/API.md`
 
-### Testing Workflow
+- `GET /health` — Liveness check
+- `GET /workflows` — List workflow types
+- `GET /workflowInstances` — List active instances (finished instances are removed)
+- `POST /workflowInstances` — Start workflow (`{workflowId, initialData?}`)
+- `GET /workflowInstances/:id` — Instance status
+- `POST /workflowInstances/:id/takeTransition` — Execute transition (`{transitionProcessId}`)
+- `GET /workflowInstances/:id/transitions` — Available transitions from current state
+
+**Key behaviors:**
+- Automatic transitions execute inline — the response already reflects the final state.
+- Finished instances are deleted from in-memory storage and return 404.
+- Subflow transitions create a child instance; parent enters `waitingWorkflow` state.
+- All `WorkflowData` values are JSON-encoded strings (`"hello"` → `"\"hello\""`).
+- Error responses: `{userDescription, debugDescription}` with appropriate HTTP status codes.
+
+### Testing
 
 When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkflows**:
 1. Add or update integration test scripts in `Tools/Tests/` to cover new or changed behavior.
-2. Run `./Tools/Run/full_check` to build, start the server, and run all integration tests before considering the work done.
+2. Register new test scripts in `Tools/Tests/run_all`.
+3. Run `./Tools/Run/full_check` to build, start the server, and run all integration tests before considering the work done.
+
+**Test infrastructure:**
+- `Tools/Lib/request.sh` — HTTP helper (`request METHOD PATH [BODY]`), exits 1 on 4xx/5xx
+- `Tools/Lib/workflow.sh` — Test DSL: `start_workflow`, `take_transition`, `assert_state`, `assert_exists`, `assert_finished`, `assert_fails`, `assert_data`, `assert_transition_available`, `assert_transition_unavailable`, `assert_transition_failed`, `assert_workflow_registered`, `start_workflow_with_data`, `instance_count`
+- Test workflows defined in `Workflows/TestingWorkflows/` — register new ones in `TestingWorkflows.swift`
+
+### Known Issues
+
+- **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
+- **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
+- **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — could crash the server in production.
+- **Manual vs automatic failure asymmetry**: Manual transition failures propagate as HTTP 500 but do NOT set `transitionState.failed`. Only automatic transition failures persist the error in `transitionState`. Consider unifying.
+- **No persistent storage** — in-memory only, all state lost on restart.
+- **No retry mechanism** for failed transitions.
+- **No timeout** for wait transitions.
+- **Workflow `version` field** exists but is unused by engine.
+
+### Documentation
+
+- `Documentation/API.md` — Full REST API specification (endpoints, models, errors, behaviors)
+- `.claude/notes/` — Session notes with findings, decisions, and plans
 
 ### Notes
 

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  start_workflow "FailingWorkflow"
+  take_transition "GoNextStep"
+  assert_state "shouldFail"
+
+  # Take the failing transition — should return HTTP 500
+  assert_fails try_take_transition "FailAction"
+
+  # Instance should still be at shouldFail (state unchanged)
+  assert_state "shouldFail"
+
+  # transitionState should be null (manual failures propagate as HTTP errors,
+  # they do NOT set transitionState.failed — that only happens for automatic transitions)
+  local response
+  response="$(request GET "/workflowInstances/$INSTANCE_ID")"
+  local ts
+  ts="$(jq -r '.transitionState' <<<"$response")"
+  if [[ "$ts" != "null" ]]; then
+    echo "Expected transitionState null after manual failure, got '$ts'" >&2
+    exit 1
+  fi
+
+  # The failing transition should still be available (state didn't change)
+  assert_transition_available "FailAction"
+
+  # Retry the same transition — should fail again
+  assert_fails try_take_transition "FailAction"
+  assert_state "shouldFail"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

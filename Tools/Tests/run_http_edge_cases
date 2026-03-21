@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+
+# Helper: assert that a raw curl request returns HTTP 2xx
+assert_http_ok() {
+  local method="$1"
+  local path="$2"
+  local http_code
+  http_code=$(curl -sS -o /dev/null -w "%{http_code}" -X "$method" "${BASE}${path}")
+  if [[ "$http_code" -ge 400 ]]; then
+    echo "Expected 2xx for $method $path, got $http_code" >&2
+    exit 1
+  fi
+}
+
+# Helper: assert that a raw curl request returns HTTP 4xx/5xx
+assert_http_error() {
+  local method="$1"
+  local path="$2"
+  local http_code
+  http_code=$(curl -sS -o /dev/null -w "%{http_code}" -X "$method" "${BASE}${path}")
+  if [[ "$http_code" -lt 400 ]]; then
+    echo "Expected 4xx/5xx for $method $path, got $http_code" >&2
+    exit 1
+  fi
+}
+
+main() {
+  # Health endpoint returns 200
+  assert_http_ok GET "/health"
+
+  # Nonexistent path returns error
+  assert_http_error GET "/nonexistent-path"
+
+  # POST to GET-only endpoint returns error
+  assert_http_error POST "/workflows"
+
+  # DELETE on instances endpoint returns error
+  assert_http_error DELETE "/workflowInstances"
+
+  echo "Finished Successfully"
+}
+
+main "$@"
