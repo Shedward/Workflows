@@ -58,11 +58,11 @@ Zero Swift unit tests for: WorkflowEngine, REST client, API layer, controllers, 
   - `run_branching_workflow` — tests both branches of a fork
 - ~~Skipped: `run_automatic_subflow_workflow` — discovered pre-existing bug where automatic subflows get stuck.~~ Now fixed and un-skipped.
 
-**Fixed automatic subflow race condition (3-part fix):**
+**Fixed automatic subflow race condition (2-part fix):**
 - **Root cause**: In `Subflow.start()`, `context.start()` runs the child workflow inline including all automatic transitions. If the child is fully automatic, it finishes and `scheduler.notifyFinished()` fires before the parent calls `scheduler.schedule()` — the notification fires with no registered waiters.
-- **Part 1** (`Subflow.swift`): After `context.start()` returns, check if child already reached its `finishId`. If so, return `.completed` instead of `.waiting`.
-- **Part 2** (`WaitScheduler.swift`): Track finished instance IDs in a `finishedInstances` set. If a wait is registered after the child already finished, resume immediately (belt-and-suspenders).
-- **Part 3** (`WorkflowRunner.swift`): Added max-steps counter (1000) to `takeAutomaticTransitionsLoop` to prevent infinite loops from cyclic workflow definitions.
+- **Part 1** (`Subflow.swift`): After `context.start()` returns, check if child already reached its `finishId`. If so, return `.completed` instead of `.waiting`. This is the real fix — works because `takeAutomaticTransitionsLoop` runs inline on the same actor, so the returned instance already has its final state.
+- **Part 2** (`WorkflowRunner.swift`): Added max-steps counter (1000) to `takeAutomaticTransitionsLoop` to prevent infinite loops from cyclic workflow definitions.
+- **Rejected**: A `finishedInstances` set in WaitScheduler was considered but removed — it grows unboundedly over the server's lifetime with no cleanup path, and Part 1 already handles the race completely since everything runs on the same actor.
 
 **All 14 integration tests pass (including automatic subflow).**
 
