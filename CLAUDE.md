@@ -78,6 +78,12 @@ Actor-based (`Workflows`, `WorkflowRunner`) with Swift async/await throughout. S
 - `POST /workflowInstances/:id/takeTransition` — Execute transition
 - `GET /workflowInstances/:id/transitions` — Available transitions
 
+### Testing Workflow
+
+When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkflows**:
+1. Add or update integration test scripts in `Tools/Tests/` to cover new or changed behavior.
+2. Run `./Tools/Run/full_check` to build, start the server, and run all integration tests before considering the work done.
+
 ### Notes
 
 Project notes are stored in `.claude/notes/`. Use dated markdown files (e.g. `2026-03-21-topic.md`) for session findings, decisions, and plans. Check existing notes at the start of a session for context.
