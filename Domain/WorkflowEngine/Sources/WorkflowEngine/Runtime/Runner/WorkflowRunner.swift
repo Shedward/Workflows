@@ -86,8 +86,15 @@ actor WorkflowRunner {
     @discardableResult
     private func takeAutomaticTransitionsLoop(from start: WorkflowInstance) async -> WorkflowInstance {
         var current = start
+        var steps = 0
+        let maxSteps = 1000
         while let next = await nextAutomaticTransitionInstance(from: current) {
             current = next
+            steps += 1
+            if steps >= maxSteps {
+                logger?.error("Automatic transition limit (\(maxSteps)) reached for \(current.id)")
+                break
+            }
         }
         return current
     }

@@ -56,6 +56,32 @@ Zero Swift unit tests for: WorkflowEngine, REST client, API layer, controllers, 
   - `run_workflow_listing` — validates GET /workflows response
   - `run_failing_workflow` — verifies error handling for failing actions
   - `run_branching_workflow` — tests both branches of a fork
-- Skipped: `run_automatic_subflow_workflow` — discovered pre-existing bug where automatic subflows get stuck.
+- ~~Skipped: `run_automatic_subflow_workflow` — discovered pre-existing bug where automatic subflows get stuck.~~ Now fixed and un-skipped.
 
-**All 13 active integration tests pass.**
+**Fixed automatic subflow race condition (3-part fix):**
+- **Root cause**: In `Subflow.start()`, `context.start()` runs the child workflow inline including all automatic transitions. If the child is fully automatic, it finishes and `scheduler.notifyFinished()` fires before the parent calls `scheduler.schedule()` — the notification fires with no registered waiters.
+- **Part 1** (`Subflow.swift`): After `context.start()` returns, check if child already reached its `finishId`. If so, return `.completed` instead of `.waiting`.
+- **Part 2** (`WaitScheduler.swift`): Track finished instance IDs in a `finishedInstances` set. If a wait is registered after the child already finished, resume immediately (belt-and-suspenders).
+- **Part 3** (`WorkflowRunner.swift`): Added max-steps counter (1000) to `takeAutomaticTransitionsLoop` to prevent infinite loops from cyclic workflow definitions.
+
+**All 14 integration tests pass (including automatic subflow).**
+
+---
+
+## Future: Event Queue Architecture
+
+Evaluated but deferred — the targeted fix above solves the immediate problem without the complexity. Revisit when the system genuinely needs:
+- **Parallel transition execution** — multiple transitions running concurrently
+- **External event sources / webhooks** — events arriving from outside the REST API
+- **Real-time state observation** — SSE/WebSocket for live workflow state streaming
+- **Retry policies / compensation logic** — automatic retry with backoff, saga-style rollbacks
+
+**Key design notes for when we build it:**
+- Use a Swift enum for event types (internal, compiler-enforced exhaustive handling)
+- Add `EventContext` struct for metadata (trace IDs, retry counts, timestamps)
+- Use `AsyncStream` continuations for settlement (supports multiple observers)
+- Structure drain loop with single `handle(_:)` method for easy hook points
+- Route errors through dedicated `transitionFailed` event (not thrown exceptions)
+- Add `Task.yield()` between events for fairness in the cooperative scheduler
+- Ensure `processQueue` never throws — catch per-event to avoid poisoning the queue
+- Watch out for: `isProcessing` flag pitfalls, settlement continuation leaks, loss of call-stack debuggability

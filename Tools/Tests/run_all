@@ -9,7 +9,7 @@ readonly TEST_SCRIPTS=(
   run_automatic_simple_git_workflow
   run_waiting_workflow
   run_subflow_workflow
-  # run_automatic_subflow_workflow  # Known issue: automatic subflows get stuck
+  run_automatic_subflow_workflow
   run_error_cases
   run_data_flow
   run_available_transitions
