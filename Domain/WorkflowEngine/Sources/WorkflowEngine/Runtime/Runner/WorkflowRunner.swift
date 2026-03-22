@@ -30,14 +30,19 @@ actor WorkflowRunner {
         logger?.trace("Resume runner (\(instances.count) instances)")
         await scheduler.rebuild(from: instances)
         for instance in instances {
-            await takeAutomaticTransitionsLoop(from: instance)
+            await runAutomaticTransitions(from: instance)
         }
+    }
+
+    func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
+        logger?.trace("Create \(workflow.id, privacy: .public)")
+        return try await storage.create(workflow, initialData: initialData)
     }
 
     func start(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         logger?.trace("Start \(workflow.id, privacy: .public)")
-        let instance = try await storage.create(workflow, initialData: initialData)
-        return await takeAutomaticTransitionsLoop(from: instance)
+        let instance = try await create(workflow, initialData: initialData)
+        return await runAutomaticTransitions(from: instance)
     }
 
     @discardableResult
@@ -49,13 +54,23 @@ actor WorkflowRunner {
     ) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
+        let executing = instance.transitionExecuting(transition)
+        try await storage.update(executing)
+
         var context = WorkflowContext(
-            instance: instance,
+            instance: executing,
             resume: resumeReason,
             dependancyContainer: dependencies,
             start: self.start
         )
-        let result = try await transition.process.start(context: &context)
+        let result: TransitionResult
+        do {
+            result = try await transition.process.start(context: &context)
+        } catch {
+            let restored = instance.transitionEnded()
+            try? await storage.update(restored)
+            throw error
+        }
 
         var next = instance.data(context.instance.data)
         switch result {
@@ -72,7 +87,7 @@ actor WorkflowRunner {
             try await storage.update(next)
         }
 
-        return await takeAutomaticTransitionsLoop(from: next)
+        return await runAutomaticTransitions(from: next)
     }
 
     func finish(_ instance: WorkflowInstance) async throws {
@@ -84,7 +99,7 @@ actor WorkflowRunner {
     // MARK: - Automatic transitions
 
     @discardableResult
-    private func takeAutomaticTransitionsLoop(from start: WorkflowInstance) async -> WorkflowInstance {
+    func runAutomaticTransitions(from start: WorkflowInstance) async -> WorkflowInstance {
         var current = start
         var steps = 0
         let maxSteps = 1000

@@ -6,6 +6,7 @@
 //
 
 import Core
+import Foundation
 
 public struct WorkflowInstance: Sendable {
     public var id: WorkflowInstanceID
@@ -13,19 +14,22 @@ public struct WorkflowInstance: Sendable {
     public var state: StateID
     public var transitionState: TransitionState?
     public var data: WorkflowData
+    public var finishedAt: Date?
 
     init(
         id: WorkflowInstanceID,
         workflowId: WorkflowID,
         state: StateID,
         transitionState: TransitionState?,
-        data: WorkflowData
+        data: WorkflowData,
+        finishedAt: Date? = nil
     ) {
         self.id = id
         self.workflowId = workflowId
         self.state = state
         self.transitionState = transitionState
         self.data = data
+        self.finishedAt = finishedAt
     }
 }
 
@@ -40,6 +44,10 @@ extension WorkflowInstance: Modifiers {
 
     public func transitionFailed(_ error: Error, at transition: AnyTransition) -> Self {
         with { $0.transitionState = TransitionState(transitionId: transition.id, state: .failed(error)) }
+    }
+
+    public func transitionExecuting(_ transition: AnyTransition) -> Self {
+        with { $0.transitionState = TransitionState(transitionId: transition.id, state: .executing) }
     }
 
     public func transitionEnded() -> Self {

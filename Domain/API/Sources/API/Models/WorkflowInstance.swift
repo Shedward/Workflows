@@ -5,6 +5,7 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
+import Foundation
 import Rest
 
 public struct WorkflowInstance: JSONBody {
@@ -13,18 +14,21 @@ public struct WorkflowInstance: JSONBody {
     public let state: String
     public let transitionState: TransitionState?
     public let data: WorkflowData
+    public let finishedAt: Date?
 
     public init(
         id: String,
         workflowId: String,
         state: String,
         transitionState: TransitionState?,
-        data: WorkflowData
+        data: WorkflowData,
+        finishedAt: Date? = nil
     ) {
         self.id = id
         self.workflowId = workflowId
         self.state = state
         self.transitionState = transitionState
         self.data = data
+        self.finishedAt = finishedAt
     }
 }

@@ -23,6 +23,7 @@ readonly TEST_SCRIPTS=(
   run_failed_transition
   run_subflow_lifecycle
   run_http_edge_cases
+  run_slow_workflow
 )
 
 readonly GREEN='\033[0;32m'
