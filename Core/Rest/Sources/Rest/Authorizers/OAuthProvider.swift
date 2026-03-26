@@ -3,6 +3,8 @@
 //  Rest
 //
 
+import Foundation
+
 /// An OAuth2 provider that manages the authorization flow for a specific service.
 /// Lives alongside `AccessTokenAuthorizer` — implement both on the same type
 /// to get a token provider that can also participate in the `/auth` endpoints.

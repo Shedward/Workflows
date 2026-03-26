@@ -3,6 +3,7 @@
 //  WorkflowServer
 //
 
+import Core
 import Foundation
 import Hummingbird
 import Rest
@@ -10,17 +11,17 @@ import Rest
 /// Exposes OAuth authorization endpoints.
 ///
 /// Routes:
-/// - `GET /auth`                              — list all providers and their auth status
-/// - `GET /auth/{service}`                    — `{ "url": "https://..." }` to start the flow
-/// - `GET /auth/{service}/callback?code=&state=` — OAuth callback; exchanges code, stores token
+/// - `GET /auth`                                  — list all providers and their auth status
+/// - `GET /auth/{service}`                        — `{ "url": "https://..." }` to start the flow
+/// - `GET /auth/{service}/callback?code=&state=`  — OAuth callback; exchanges code, stores token
 struct AuthController: Controller {
     let registry: AuthRegistry
 
     var endpoints: RouteCollection<AppRequestContext> {
         RouteCollection(context: AppRequestContext.self)
             .get("auth", use: listProviders)
-            .get("auth", ":service", use: authorizationURL)
-            .get("auth", ":service", "callback", use: handleCallback)
+            .get("auth/:service", use: authorizationURL)
+            .get("auth/:service/callback", use: handleCallback)
     }
 
     // MARK: - Handlers
@@ -54,8 +55,10 @@ struct AuthController: Controller {
             throw HTTPError(.notFound, message: "Unknown auth service: \(serviceID)")
         }
 
-        guard let code = request.uri.queryParameters.get("code").map(String.init),
-              let state = request.uri.queryParameters.get("state").map(String.init) else {
+        guard
+            let code = request.uri.queryParameters.get("code").map({ String($0) }),
+            let state = request.uri.queryParameters.get("state").map({ String($0) })
+        else {
             throw HTTPError(.badRequest, message: "Missing required 'code' or 'state' query parameters")
         }
 
