@@ -14,6 +14,7 @@ let package = Package(
     dependencies: [
         .package(path: "../Core/Core"),
         .package(path: "../Services/Git"),
+        .package(path: "../Services/GoogleServices"),
         .package(path: "../Domain/WorkflowEngine")
     ],
     targets: [
@@ -22,6 +23,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Core", package: "Core"),
                 .product(name: "Git", package: "Git"),
+                .product(name: "GoogleServices", package: "GoogleServices"),
                 .product(name: "WorkflowEngine", package: "WorkflowEngine")
             ]
         ),
