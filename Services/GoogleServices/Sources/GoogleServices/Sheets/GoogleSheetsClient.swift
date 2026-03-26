@@ -10,7 +10,7 @@ import Rest
 public final class GoogleSheetsClient: Sendable {
     private let rest: NetworkRestClient
 
-    public init(tokenProvider: ServiceAccountTokenProvider) {
+    public init(tokenProvider: any AccessTokenAuthorizer) {
         let endpoint = NetworkRestClient.Endpoint(host: URL(string: "https://sheets.googleapis.com")!)
         self.rest = NetworkRestClient(
             endpoint: endpoint,

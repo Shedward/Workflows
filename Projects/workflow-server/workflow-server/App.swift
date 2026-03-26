@@ -21,17 +21,22 @@ struct App {
 
         let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
 
-        let serviceAccountURL = workflowsConfigDir.appending(path: "google_cloud/service_account.json").standardizedFileURL
-        let credentials = try ServiceAccountCredentials.load(from: serviceAccountURL.path)
-        let tokenProvider = ServiceAccountTokenProvider(
-            credentials: credentials,
+        let oauthCredentials = try GoogleOAuthCredentials.load(
+            from: workflowsConfigDir.appending(path: "google_cloud/oauth_client.json")
+        )
+        let googleProvider = UserOAuthTokenProvider(
+            credentials: oauthCredentials,
             scopes: [
-                "https://www.googleapis.com/auth/drive.file",
+                "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/spreadsheets",
             ]
         )
-        let driveClient = GoogleDriveClient(tokenProvider: tokenProvider)
-        let sheetsClient = GoogleSheetsClient(tokenProvider: tokenProvider)
+
+        let authRegistry = AuthRegistry()
+        await authRegistry.register(googleProvider)
+
+        let driveClient = GoogleDriveClient(tokenProvider: googleProvider)
+        let sheetsClient = GoogleSheetsClient(tokenProvider: googleProvider)
 
         dependencies.set(driveClient, forKey: "googleDrive")
         dependencies.set(sheetsClient, forKey: "googleSheets")
@@ -40,8 +45,7 @@ struct App {
             TestingWorkflows.workflows
             HHWorkflows.workflows
         }
-        let app = WorkflowServer.App(workflows: workflows)
+        let app = WorkflowServer.App(workflows: workflows, authRegistry: authRegistry)
         try await app.main()
     }
 }
-

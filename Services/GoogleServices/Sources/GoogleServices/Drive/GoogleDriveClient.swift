@@ -10,7 +10,7 @@ import Rest
 public final class GoogleDriveClient: Sendable {
     private let rest: NetworkRestClient
 
-    public init(tokenProvider: ServiceAccountTokenProvider) {
+    public init(tokenProvider: any AccessTokenAuthorizer) {
         let endpoint = NetworkRestClient.Endpoint(host: URL(string: "https://www.googleapis.com")!)
         self.rest = NetworkRestClient(
             endpoint: endpoint,
@@ -24,7 +24,7 @@ public final class GoogleDriveClient: Sendable {
         let body = CopyFileBody(name: name, parents: [folderId])
         let request = Request<CopyFileBody, DriveFileResponse>(
             .post,
-            "/drive/v3/files/\(id)/copy",
+            "/drive/v3/files/\(id)/copy?supportsAllDrives=true",
             body: body
         )
         let response = try await rest.fetch(request)
