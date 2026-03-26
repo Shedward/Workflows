@@ -8,4 +8,5 @@
 import WorkflowEngine
 
 public let workflows: [any Workflow] = [
+    Декомпозиция_портфеля(),
 ]
