@@ -17,7 +17,7 @@ public struct GitClient: Sendable {
         arguments: String...,
         output: Output = .string(limit: 4096),
         error: Error = .discarded
-    ) async throws -> CollectedResult<Output, Error> {
+    ) async throws -> ExecutionRecord<Output, Error> {
         try await Failure.wrap("Failed git \(command) \(arguments)") {
             try await Subprocess.run(
                 .name("git"),
