@@ -27,12 +27,12 @@ public final class GoogleSheetsClient: Sendable {
             valueInputOption: "USER_ENTERED",
             data: updates.map { BatchUpdateBody.ValueRange(range: $0.range, values: [[$0.value]]) }
         )
-        let request = Request(
+        let request = Request<BatchUpdateBody, EmptyBody>(
             .post,
             "/v4/spreadsheets/\(spreadsheetId)/values:batchUpdate",
             body: body
         )
-        let _: EmptyBody = try await rest.fetch(request)
+        _ = try await rest.fetch(request)
     }
 }
 

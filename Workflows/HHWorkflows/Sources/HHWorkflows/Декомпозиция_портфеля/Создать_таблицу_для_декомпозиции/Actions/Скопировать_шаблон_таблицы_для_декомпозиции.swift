@@ -11,7 +11,7 @@ import WorkflowEngine
 @DataBindable
 struct Скопировать_шаблон_таблицы_для_декомпозиции: Action {
     private static let templateSpreadsheetId = "1V4VFXKHZSLltv_zYcD7i8WDMWPbVHrBvkkFM-3ZBx3M"
-    private static let decompositionFolderId = "<decomposition-folder-id>"
+    private static let decompositionFolderId = "1vlcteIRUy76mePEg6aPCreayTobmZpeg"
 
     @Input var portfolioKey: String
     @Output var spreadsheetId: String

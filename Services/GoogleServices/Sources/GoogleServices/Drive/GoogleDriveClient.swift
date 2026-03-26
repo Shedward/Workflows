@@ -22,12 +22,12 @@ public final class GoogleDriveClient: Sendable {
     /// Returns the new file's Drive ID.
     public func copyFile(id: String, named name: String, to folderId: String) async throws -> String {
         let body = CopyFileBody(name: name, parents: [folderId])
-        let request = Request(
+        let request = Request<CopyFileBody, DriveFileResponse>(
             .post,
             "/drive/v3/files/\(id)/copy",
             body: body
         )
-        let response: DriveFileResponse = try await rest.fetch(request)
+        let response = try await rest.fetch(request)
         return response.id
     }
 }

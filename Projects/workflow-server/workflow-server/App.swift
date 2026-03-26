@@ -11,6 +11,7 @@ import TestingWorkflows
 import HHWorkflows
 import GoogleServices
 import os
+import Foundation
 
 @main
 struct App {
@@ -18,7 +19,10 @@ struct App {
         Logger.enable(.workflow)
         let dependencies = DependenciesContainer()
 
-        let credentials = try ServiceAccountCredentials.load(from: "/path/to/service-account.json")
+        let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
+
+        let serviceAccountURL = workflowsConfigDir.appending(path: "google_cloud/service_account.json").standardizedFileURL
+        let credentials = try ServiceAccountCredentials.load(from: serviceAccountURL.path)
         let tokenProvider = ServiceAccountTokenProvider(
             credentials: credentials,
             scopes: [
