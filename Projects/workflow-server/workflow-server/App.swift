@@ -26,11 +26,7 @@ struct App {
                 "https://www.googleapis.com/auth/spreadsheets",
             ]
         )
-        let driveClient = GoogleDriveClient(
-            tokenProvider: tokenProvider,
-            templateSpreadsheetId: "1V4VFXKHZSLltv_zYcD7i8WDMWPbVHrBvkkFM-3ZBx3M",
-            decompositionFolderId: "<decomposition-folder-id>"
-        )
+        let driveClient = GoogleDriveClient(tokenProvider: tokenProvider)
         let sheetsClient = GoogleSheetsClient(tokenProvider: tokenProvider)
 
         dependencies.set(driveClient, forKey: "googleDrive")

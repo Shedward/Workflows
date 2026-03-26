@@ -9,30 +9,22 @@ import Rest
 
 public final class GoogleDriveClient: Sendable {
     private let rest: NetworkRestClient
-    private let templateSpreadsheetId: String
-    private let decompositionFolderId: String
 
-    public init(
-        tokenProvider: ServiceAccountTokenProvider,
-        templateSpreadsheetId: String,
-        decompositionFolderId: String
-    ) {
+    public init(tokenProvider: ServiceAccountTokenProvider) {
         let endpoint = NetworkRestClient.Endpoint(host: URL(string: "https://www.googleapis.com")!)
         self.rest = NetworkRestClient(
             endpoint: endpoint,
             requestDecorators: RequestDecoratorsSet().authorizer(tokenProvider)
         )
-        self.templateSpreadsheetId = templateSpreadsheetId
-        self.decompositionFolderId = decompositionFolderId
     }
 
-    /// Copies the template spreadsheet into the decomposition folder.
+    /// Copies a Drive file into the specified folder.
     /// Returns the new file's Drive ID.
-    public func copyTemplate(named name: String) async throws -> String {
-        let body = CopyFileBody(name: name, parents: [decompositionFolderId])
+    public func copyFile(id: String, named name: String, to folderId: String) async throws -> String {
+        let body = CopyFileBody(name: name, parents: [folderId])
         let request = Request(
             .post,
-            "/drive/v3/files/\(templateSpreadsheetId)/copy",
+            "/drive/v3/files/\(id)/copy",
             body: body
         )
         let response: DriveFileResponse = try await rest.fetch(request)
