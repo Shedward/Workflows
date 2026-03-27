@@ -14,14 +14,18 @@ public struct KeychainStorage: Sendable {
         self.service = service
     }
 
-    public func read(key: String) throws -> String? {
-        let query: [CFString: Any] = [
-            kSecClass:        kSecClassGenericPassword,
-            kSecAttrService:  service,
-            kSecAttrAccount:  key,
-            kSecReturnData:   true,
-            kSecMatchLimit:   kSecMatchLimitOne,
+    private func baseQuery(key: String) -> [CFString: Any] {
+        [
+            kSecClass:       kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: key,
         ]
+    }
+
+    public func read(key: String) throws -> String? {
+        var query = baseQuery(key: key)
+        query[kSecReturnData] = true
+        query[kSecMatchLimit] = kSecMatchLimitOne
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
@@ -45,23 +49,14 @@ public struct KeychainStorage: Sendable {
         }
 
         if (try? read(key: key)) != nil {
-            let query: [CFString: Any] = [
-                kSecClass:       kSecClassGenericPassword,
-                kSecAttrService: service,
-                kSecAttrAccount: key,
-            ]
             let update: [CFString: Any] = [kSecValueData: data]
-            let status = SecItemUpdate(query as CFDictionary, update as CFDictionary)
+            let status = SecItemUpdate(baseQuery(key: key) as CFDictionary, update as CFDictionary)
             guard status == errSecSuccess else {
                 throw Failure("Keychain update failed for '\(key)' (OSStatus \(status))")
             }
         } else {
-            let attrs: [CFString: Any] = [
-                kSecClass:       kSecClassGenericPassword,
-                kSecAttrService: service,
-                kSecAttrAccount: key,
-                kSecValueData:   data,
-            ]
+            var attrs = baseQuery(key: key)
+            attrs[kSecValueData] = data
             let status = SecItemAdd(attrs as CFDictionary, nil)
             guard status == errSecSuccess else {
                 throw Failure("Keychain write failed for '\(key)' (OSStatus \(status))")
@@ -70,12 +65,7 @@ public struct KeychainStorage: Sendable {
     }
 
     public func delete(key: String) throws {
-        let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecAttrAccount: key,
-        ]
-        let status = SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(baseQuery(key: key) as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw Failure("Keychain delete failed for '\(key)' (OSStatus \(status))")
         }
