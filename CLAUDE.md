@@ -120,6 +120,7 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 ### Documentation
 
 - `Documentation/API.md` — Full REST API specification (endpoints, models, errors, behaviors)
+- `Documentation/Architecture.md` — Code style, REST framework, Api DSL pattern, auth system
 - `.claude/notes/` — Session notes with findings, decisions, and plans
 
 ### Notes
