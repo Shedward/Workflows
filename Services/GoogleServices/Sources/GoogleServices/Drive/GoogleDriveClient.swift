@@ -24,9 +24,9 @@ public final class GoogleDriveClient: Sendable {
         let body = CopyFileBody(name: name, parents: [folderId])
         let request = Request<CopyFileBody, DriveFileResponse>(
             .post,
-            "/drive/v3/files/\(id)/copy?supportsAllDrives=true",
+            "/drive/v3/files/\(id)/copy",
             body: body
-        )
+        ).query("supportsAllDrives", to: "true")
         let response = try await rest.fetch(request)
         return response.id
     }
