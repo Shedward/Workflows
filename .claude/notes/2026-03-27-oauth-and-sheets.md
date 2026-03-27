@@ -248,3 +248,103 @@ Plan written to `/Users/v.maltsev/.claude/plans/binary-booping-tide.md`. Commit 
 4. Both providers — add HTTP status check + `ErrorResponse` parsing
 5. `AuthController` — `requireProvider` helper
 6. Bootstrap — pass `redirectURI` explicitly
+
+---
+
+## Session 3 (same day): Architecture refactors + Api DSL + skill creation
+
+### What was done
+
+All branch review fixes from Session 2 were implemented and committed. Then three architectural improvements were made:
+
+#### 1. Content-Type moved to body types (commit `33cb448`)
+
+**Problem:** `NetworkRestClient` hardcoded `"application/json"` for every request with a body — wrong for non-JSON body types, and wrong for GET requests.
+
+**Solution:** Added `var contentType: String?` to `DataEncodable` protocol (default `nil`). Each body type self-declares:
+- `JSONEncodableBody` → `"application/json"`
+- `PlainTextBody` → `"text/plain; charset=utf-8"`
+- `URLEncodedBody` → `"application/x-www-form-urlencoded"`
+
+`NetworkRestClient` reads `request.body.contentType` — sets the header only if non-nil and not already set. No service-level configuration needed.
+
+Also added `Bool: QueryConvertible` (needed for Drive/Sheets boolean query params).
+
+#### 2. RSA key parsing replaced with `SecItemImport` (commit `378b4ac`)
+
+**Problem:** `ServiceAccountTokenProvider` had ~65 lines of manual PKCS#8 DER parsing + ASN.1 offset arithmetic — fragile and opaque.
+
+**Solution:** `SecItemImport(pemData, nil, &format, &type, [], nil, nil, &outItems)` handles PEM → `SecKey` natively. Pass `nil` for `importKeychain` to avoid storing in Keychain.
+
+**Key:** `nil` keychain parameter = parse only, no storage. `SecExternalFormat.formatPEMSequence` + `SecExternalItemType.itemTypePrivateKey` guide format inference.
+
+#### 3. Api DSL applied to Google clients (commits `70d1c82`, `5f9ca00`)
+
+New files following the `ListRepositoriesForAuthenticatedUser` pattern:
+
+| File | Description |
+|------|-------------|
+| `Drive/GoogleDriveApi.swift` | `public protocol GoogleDriveApi: Api {}` |
+| `Drive/Api/CopyFile.swift` | Full endpoint: all documented params, Modifiers, Defaultable, docs link |
+| `Drive/Models/DriveFile.swift` | Response model |
+| `Sheets/GoogleSheetsApi.swift` | `public protocol GoogleSheetsApi: Api {}` |
+| `Sheets/Api/BatchUpdateValues.swift` | Full endpoint with nested enums for render options |
+
+Both `GoogleDriveClient` and `GoogleSheetsClient` now store `private let rest: RestClient` (not `NetworkRestClient`) and expose a generic `fetch<A: ServiceApi>` method.
+
+**Swift 6 discovery:** Associated type witnesses in `public protocol Api` must be `public`. If `RequestBody` is not `EmptyBody`, you must declare `public typealias RequestBody = BodyType` AND the body struct must be `public`. Private/internal body structs cause Swift 6 to fall back to the default `EmptyBody` silently, producing a type mismatch error at the `Request(...)` call site.
+
+`RestClient` needed `: Sendable` conformance for storage in `Sendable` classes.
+
+### Architecture documentation
+
+Created `Documentation/Architecture.md` covering:
+- REST body types + `contentType` ownership
+- Request composition + Query builder syntax
+- `NetworkRestClient` URL construction rules
+- Api DSL pattern + endpoint file conventions (one file per endpoint, docs link, all params, Modifiers, Defaultable)
+- Core syntax utilities (Modifiers, Defaultable, DictionarySemantic)
+- Auth system
+- GoogleServices clients
+
+Linked from `CLAUDE.md`.
+
+### End-to-end test
+
+Ran `POST /workflowInstances` with `workflowId: Декомпозиция_портфеля`, `initialData.data.portfolioKey: '"TEST-2026"'` → created instance. Then `takeTransition` with `Создать_таблицу_для_декомпозиции` → workflow reached `нужно_заполнить_таблицу`. Drive file was copied and Sheets batchUpdate succeeded end-to-end.
+
+**initialData format reminder:**
+```json
+{
+  "workflowId": "...",
+  "initialData": {
+    "data": {
+      "key": "\"value\""
+    }
+  }
+}
+```
+The `data` wrapper is required (maps to `WorkflowData`'s internal dict). All values are JSON-encoded strings.
+
+### Claude Code skill created
+
+`.claude/skills/gen-api-endpoint/SKILL.md` — generates a complete Swift Api DSL endpoint file.
+
+Usage: `/gen-api-endpoint <description> [docs-url]`
+
+Example: `/gen-api-endpoint Create Jira issue https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post`
+
+The skill:
+1. Fetches the docs URL (if provided) for authoritative parameter list
+2. Checks if a `ServiceApi` protocol already exists for the target service
+3. Generates a complete endpoint file: all params, `///` doc comments, `Modifiers`, `Defaultable`, nested enums with `Sendable`, body struct as `public` with explicit `typealias`
+4. Notes what `Models/ResponseType.swift` needs if a response model is required
+5. Shows the `ServiceApi.swift` protocol file if the service is new
+
+### Lessons learned this session
+
+1. **Swift 6 associated type witnesses must be `public`** — if `protocol Api` is `public` and your `RequestBody` typealias points to a non-public struct, Swift silently uses the default `EmptyBody` instead of erroring at the typealias site. Error appears at `Request(... body: MyBody())` as a type mismatch.
+2. **`RestClient` must be `Sendable`** — storing `any RestClient` in a `Sendable` class requires `public protocol RestClient: Sendable`.
+3. **`SecItemImport` replaces manual PKCS#8 parsing** — pass `nil` for `importKeychain`, provide `&format` and `&type`, get back `[SecKey]`. No Keychain storage, no manual DER offset arithmetic.
+4. **Content-Type belongs on the body type** — `NetworkRestClient` should not know the MIME type; it reads `body.contentType` instead.
+5. **Claude Code skills** are loaded at session start from `.claude/skills/<name>/SKILL.md`. Newly created skills require a session restart to be invocable via `/skill-name`.
