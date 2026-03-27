@@ -15,13 +15,13 @@ struct Заполнить_поля_таблицы_декомпозиции: Acti
     @Dependency var googleSheets: GoogleSheetsClient
 
     func run() async throws {
-        try await googleSheets.batchUpdateValues(
-            spreadsheetId: spreadsheetId,
-            updates: [
-                (range: "A1", value: portfolioKey),
-                (range: "B14", value: "Mob"),
-                (range: "B15", value: "iOS"),
-            ]
+        _ = try await googleSheets.fetch(
+            BatchUpdateValues(spreadsheetId: spreadsheetId)
+                .data([
+                    BatchUpdateValues.ValueRange(range: "A1",  values: [[portfolioKey]]),
+                    BatchUpdateValues.ValueRange(range: "B14", values: [["Mob"]]),
+                    BatchUpdateValues.ValueRange(range: "B15", values: [["iOS"]]),
+                ])
         )
     }
 }

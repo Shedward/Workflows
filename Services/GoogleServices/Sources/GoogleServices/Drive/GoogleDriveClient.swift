@@ -8,7 +8,7 @@ import Foundation
 import Rest
 
 public final class GoogleDriveClient: Sendable {
-    private let rest: NetworkRestClient
+    private let rest: RestClient
 
     public init(tokenProvider: any AccessTokenAuthorizer) {
         let endpoint = NetworkRestClient.Endpoint(host: URL(string: "https://www.googleapis.com")!)
@@ -18,27 +18,7 @@ public final class GoogleDriveClient: Sendable {
         )
     }
 
-    /// Copies a Drive file into the specified folder.
-    /// Returns the new file's Drive ID.
-    public func copyFile(id: String, named name: String, to folderId: String) async throws -> String {
-        let body = CopyFileBody(name: name, parents: [folderId])
-        let request = Request<CopyFileBody, DriveFileResponse>(
-            .post,
-            "/drive/v3/files/\(id)/copy",
-            body: body
-        ).query("supportsAllDrives", to: "true")
-        let response = try await rest.fetch(request)
-        return response.id
+    public func fetch<A: GoogleDriveApi>(_ api: A) async throws -> A.ResponseBody {
+        try await rest.fetch(api)
     }
-}
-
-// MARK: - Request / Response types
-
-private struct CopyFileBody: JSONEncodableBody {
-    let name: String
-    let parents: [String]
-}
-
-private struct DriveFileResponse: JSONDecodableBody {
-    let id: String
 }
