@@ -120,74 +120,28 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
     // MARK: - RSA signing
 
     private func loadPrivateKey(from pem: String) throws -> SecKey {
-        // Strip PEM headers and decode base64 to get DER bytes
-        let lines = pem.components(separatedBy: .newlines)
-            .filter { !$0.hasPrefix("-----") && !$0.isEmpty }
-        guard let der = Data(base64Encoded: lines.joined()) else {
-            throw Failure("Failed to base64-decode PEM private key")
+        guard let pemData = pem.data(using: .utf8) else {
+            throw Failure("PEM private key is not valid UTF-8")
         }
-
-        // Google service account keys are PKCS#8. SecKeyCreateWithData expects PKCS#1.
-        // Extract the inner PKCS#1 RSA key from the PKCS#8 wrapper.
-        let pkcs1 = try extractPKCS1FromPKCS8(der)
-
-        let attrs: [CFString: Any] = [
-            kSecAttrKeyType: kSecAttrKeyTypeRSA,
-            kSecAttrKeyClass: kSecAttrKeyClassPrivate,
-        ]
-        var cfError: Unmanaged<CFError>?
-        guard let key = SecKeyCreateWithData(pkcs1 as CFData, attrs as CFDictionary, &cfError) else {
-            let error = cfError?.takeRetainedValue()
-            throw Failure("Failed to create RSA key", underlyingError: error.map { $0 as Error })
+        var format = SecExternalFormat.formatPEMSequence
+        var type = SecExternalItemType.itemTypePrivateKey
+        var outItems: CFArray?
+        let status = SecItemImport(
+            pemData as CFData,
+            nil,    // fileName — format inferred from content
+            &format,
+            &type,
+            [],     // flags
+            nil,    // keyParams — no passphrase
+            nil,    // importKeychain — nil means don't store in Keychain
+            &outItems
+        )
+        guard status == errSecSuccess,
+              let items = outItems as? [SecKey],
+              let key = items.first else {
+            throw Failure("Failed to import RSA private key from PEM (OSStatus \(status))")
         }
         return key
-    }
-
-    /// Extracts the inner PKCS#1 RSA key bytes from a PKCS#8 DER-encoded wrapper.
-    /// PKCS#8: SEQUENCE { INTEGER(0), SEQUENCE { OID, NULL }, OCTET STRING { <pkcs1> } }
-    private func extractPKCS1FromPKCS8(_ der: Data) throws -> Data {
-        var i = 0
-
-        func readTag() throws -> UInt8 {
-            guard i < der.count else { throw Failure("Unexpected end of DER data") }
-            let tag = der[i]; i += 1
-            return tag
-        }
-
-        func readLength() throws -> Int {
-            guard i < der.count else { throw Failure("Unexpected end of DER data at length") }
-            let first = Int(der[i]); i += 1
-            if first < 0x80 { return first }
-            let numBytes = first & 0x7F
-            guard numBytes > 0, i + numBytes <= der.count else { throw Failure("Invalid DER length") }
-            var length = 0
-            for _ in 0..<numBytes { length = (length << 8) | Int(der[i]); i += 1 }
-            return length
-        }
-
-        func skipValue() throws {
-            let len = try readLength()
-            guard i + len <= der.count else { throw Failure("DER value out of bounds") }
-            i += len
-        }
-
-        // outer SEQUENCE tag + length (just advance past them)
-        guard try readTag() == 0x30 else { throw Failure("Expected outer SEQUENCE in PKCS#8") }
-        _ = try readLength()
-
-        // INTEGER (version = 0)
-        guard try readTag() == 0x02 else { throw Failure("Expected INTEGER in PKCS#8") }
-        try skipValue()
-
-        // SEQUENCE (AlgorithmIdentifier)
-        guard try readTag() == 0x30 else { throw Failure("Expected AlgorithmIdentifier SEQUENCE") }
-        try skipValue()
-
-        // OCTET STRING containing the PKCS#1 key
-        guard try readTag() == 0x04 else { throw Failure("Expected OCTET STRING in PKCS#8") }
-        let keyLen = try readLength()
-        guard i + keyLen <= der.count else { throw Failure("PKCS#1 key data out of bounds") }
-        return der[i..<(i + keyLen)]
     }
 
     private func rsaSign(_ data: Data, with key: SecKey) throws -> Data {
