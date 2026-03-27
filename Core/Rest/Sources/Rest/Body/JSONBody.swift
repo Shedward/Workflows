@@ -17,6 +17,8 @@ public extension JSONEncodableBody {
         try Self.encoder().encode(self)
     }
 
+    var contentType: String? { "application/json" }
+
     static func encoder() -> JSONEncoder {
         JSONEncoder()
     }

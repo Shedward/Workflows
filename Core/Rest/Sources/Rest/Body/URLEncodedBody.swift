@@ -14,6 +14,8 @@ public struct UrlEncodedBody: DataEncodable {
         self.query = query
     }
 
+    public var contentType: String? { "application/x-www-form-urlencoded" }
+
     public func data() throws -> Data? {
         let string = query.values
             .compactMap { key, value in

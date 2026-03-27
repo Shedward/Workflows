@@ -43,7 +43,7 @@ public actor NetworkRestClient: RestClient {
                 var url = endpoint.host
 
                 if let path = decoratedRequest.path {
-                    url.append(path: path)
+                    url = URL(string: url.absoluteString + path) ?? url
                 }
 
                 let queryItems = request.query.values
@@ -54,7 +54,12 @@ public actor NetworkRestClient: RestClient {
                 var urlRequest = URLRequest(url: url)
                 urlRequest.httpMethod = request.method.rawValue
                 urlRequest.allHTTPHeaderFields = decoratedRequest.headers.values
-                urlRequest.httpBody = try request.body.data()
+                let bodyData = try request.body.data()
+                urlRequest.httpBody = bodyData
+                if let contentType = request.body.contentType,
+                   urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                    urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
+                }
                 return urlRequest
             }
 
@@ -81,6 +86,7 @@ public actor NetworkRestClient: RestClient {
 
             return responseBody
         } catch {
+            let responseString = responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "<no response>"
             logger?.error(
                 """
                 ← Failed \(request.shortDescription, privacy: .public)
@@ -88,7 +94,7 @@ public actor NetworkRestClient: RestClient {
                 Error:
                 \(error, privacy: .public)
                 Response:
-                \(responseData.flatMap { String(data: $0, encoding: .utf8) } ?? "<no response>", privacy: .public)
+                \(responseString, privacy: .public)
                 """
             )
             throw error

@@ -19,6 +19,10 @@ extension Int: QueryConvertible {
     public var queryValue: String? { String(self) }
 }
 
+extension Bool: QueryConvertible {
+    public var queryValue: String? { self ? "true" : "false" }
+}
+
 private extension Collection where Element: QueryConvertible {
     func joinedQueryValue() -> String? {
         let parts = compactMap { $0.queryValue }

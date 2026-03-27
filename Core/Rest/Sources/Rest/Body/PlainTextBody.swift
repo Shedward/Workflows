@@ -25,4 +25,6 @@ public struct PlainTextBody: DataCodable {
     public func data() throws -> Data? {
         body.data(using: .utf8)
     }
+
+    public var contentType: String? { "text/plain; charset=utf-8" }
 }

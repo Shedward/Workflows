@@ -16,6 +16,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-configuration.git", from: "1.0.0", traits: ["CommandLineArguments"]),
+        .package(path: "../../Core/Rest"),
         .package(path: "../Domain/API"),
         .package(path: "../Domain/WorkflowEngine")
     ],
@@ -25,6 +26,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Hummingbird", package: "hummingbird"),
                 .product(name: "Configuration", package: "swift-configuration"),
+                .product(name: "Rest", package: "Rest"),
                 .product(name: "WorkflowEngine", package: "WorkflowEngine"),
                 .product(name: "API", package: "API")
             ]

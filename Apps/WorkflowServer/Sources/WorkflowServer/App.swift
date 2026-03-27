@@ -14,9 +14,11 @@ typealias AppRequestContext = BasicRequestContext
 public struct App {
 
     public let workflows: Workflows
+    public let authRegistry: AuthRegistry
 
-    public init(workflows: Workflows) {
+    public init(workflows: Workflows, authRegistry: AuthRegistry = AuthRegistry()) {
         self.workflows = workflows
+        self.authRegistry = authRegistry
     }
 
     public func main() async throws {
@@ -38,7 +40,7 @@ public struct App {
             return logger
         }()
 
-        let router = try buildRouter(workflows: workflows)
+        let router = try buildRouter(workflows: workflows, authRegistry: authRegistry)
 
         let app = Application(
             router: router,
@@ -48,7 +50,7 @@ public struct App {
         return app
     }
 
-    func buildRouter(workflows: Workflows) throws -> Router<AppRequestContext> {
+    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) throws -> Router<AppRequestContext> {
         let router = Router(context: AppRequestContext.self)
         router.addMiddleware {
             LogRequestsMiddleware(.info)
@@ -60,6 +62,7 @@ public struct App {
 
         router.addRoutes(WorkflowInstancesController(workflows: workflows).endpoints)
         router.addRoutes(WorkflowsController(workflows: workflows).endpoints)
+        router.addRoutes(AuthController(registry: authRegistry).endpoints)
 
         return router
     }
