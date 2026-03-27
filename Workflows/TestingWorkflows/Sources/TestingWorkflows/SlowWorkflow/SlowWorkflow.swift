@@ -30,7 +30,7 @@ struct AutomaticSlowWorkflow: Workflow {
     }
 
     var transitions: Transitions {
-        afterStart {
+        chainedAfterStart {
             SlowAction.to(.done)
             QuickFinish.toFinish()
         }
