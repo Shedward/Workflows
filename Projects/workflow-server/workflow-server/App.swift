@@ -12,11 +12,14 @@ import HHWorkflows
 import GoogleServices
 import os
 import Foundation
+import Rest
 
 @main
 struct App {
     static func main() async throws {
         Logger.enable(.workflow)
+        Logger.enable(.network)
+
         let dependencies = DependenciesContainer()
 
         let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
