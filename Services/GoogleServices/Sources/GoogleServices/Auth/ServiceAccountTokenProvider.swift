@@ -38,7 +38,10 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
             throw Failure("Invalid token URI: \(credentials.tokenUri)")
         }
 
-        let body = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=\(jwt)"
+        let body = formEncode([
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "assertion":  jwt,
+        ])
         let urlRequest: URLRequest = {
             var r = URLRequest(url: url)
             r.httpMethod = "POST"
@@ -47,9 +50,10 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
             return r
         }()
 
-        let (data, _) = try await Failure.wrap("Failed to exchange JWT for access token") {
+        let (data, urlResponse) = try await Failure.wrap("Failed to exchange JWT for access token") {
             try await URLSession.shared.data(for: urlRequest)
         }
+        try validateTokenResponse(data, urlResponse)
 
         struct TokenResponse: Decodable {
             let access_token: String
@@ -89,21 +93,28 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
         let signingInput = "\(header).\(payload)"
         let key = try loadPrivateKey(from: credentials.privateKeyPem)
         let signature = try rsaSign(Data(signingInput.utf8), with: key)
-        return "\(signingInput).\(base64url(signature))"
+        return "\(signingInput).\(signature.base64URLEncoded())"
     }
 
     private func base64urlEncoded<T: Encodable>(_ value: T) throws -> String {
         let data = try Failure.wrap("Failed to encode JWT component") {
             try JSONEncoder().encode(value)
         }
-        return base64url(data)
+        return data.base64URLEncoded()
     }
 
-    private func base64url(_ data: Data) -> String {
-        data.base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
+    // MARK: - Response validation
+
+    private func validateTokenResponse(_ data: Data, _ urlResponse: URLResponse) throws {
+        guard let http = urlResponse as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            struct ErrorResponse: Decodable { let error: String?; let error_description: String? }
+            let errorBody = try? JSONDecoder().decode(ErrorResponse.self, from: data)
+            let detail = errorBody?.error_description
+                ?? errorBody?.error
+                ?? String(data: data, encoding: .utf8)
+                ?? "HTTP \((urlResponse as? HTTPURLResponse)?.statusCode ?? -1)"
+            throw Failure("Token request failed: \(detail)")
+        }
     }
 
     // MARK: - RSA signing

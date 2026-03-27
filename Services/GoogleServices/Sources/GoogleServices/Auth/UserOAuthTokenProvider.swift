@@ -46,11 +46,14 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
     private var pendingVerifiers: [String: PendingVerifier] = [:]
     private static let verifierTTL: TimeInterval = 600 // 10 minutes
 
+    private let redirectURI: String
+
     // MARK: - Init
 
-    public init(credentials: GoogleOAuthCredentials, scopes: [String]) {
+    public init(credentials: GoogleOAuthCredentials, scopes: [String], redirectURI: String) {
         self.credentials = credentials
         self.scopes = scopes
+        self.redirectURI = redirectURI
     }
 
     // MARK: - AccessTokenAuthorizer
@@ -126,9 +129,10 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
         ])
 
         let request = try urlRequest(tokenURI: credentials.tokenURI, body: body)
-        let (data, _) = try await Failure.wrap("Token refresh request failed") {
+        let (data, urlResponse) = try await Failure.wrap("Token refresh request failed") {
             try await URLSession.shared.data(for: request)
         }
+        try validateTokenResponse(data, urlResponse, context: "Token refresh failed")
         let response = try Failure.wrap("Failed to decode token refresh response") {
             try JSONDecoder().decode(TokenResponse.self, from: data)
         }
@@ -142,15 +146,16 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
             "code":          code,
             "client_id":     credentials.clientID,
             "client_secret": credentials.clientSecret,
-            "redirect_uri":  Self.redirectURI,
+            "redirect_uri":  redirectURI,
             "grant_type":    "authorization_code",
             "code_verifier": codeVerifier,
         ])
 
         let request = try urlRequest(tokenURI: credentials.tokenURI, body: body)
-        let (data, _) = try await Failure.wrap("Token exchange request failed") {
+        let (data, urlResponse) = try await Failure.wrap("Token exchange request failed") {
             try await URLSession.shared.data(for: request)
         }
+        try validateTokenResponse(data, urlResponse, context: "Token exchange failed")
         return try Failure.wrap("Failed to decode token exchange response") {
             try JSONDecoder().decode(TokenResponse.self, from: data)
         }
@@ -181,13 +186,13 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
     // MARK: - Auth URL
 
-    static let redirectURI = "http://localhost:8080/auth/google/callback"
-
     private func buildAuthURL(codeChallenge: String, state: String) throws -> URL {
-        var components = URLComponents(string: credentials.authURI)!
+        guard var components = URLComponents(string: credentials.authURI) else {
+            throw Failure("Invalid auth URI: \(credentials.authURI)")
+        }
         components.queryItems = [
             URLQueryItem(name: "client_id",             value: credentials.clientID),
-            URLQueryItem(name: "redirect_uri",          value: Self.redirectURI),
+            URLQueryItem(name: "redirect_uri",          value: redirectURI),
             URLQueryItem(name: "response_type",         value: "code"),
             URLQueryItem(name: "scope",                 value: scopes.joined(separator: " ")),
             URLQueryItem(name: "code_challenge",        value: codeChallenge),
@@ -215,14 +220,17 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
         return request
     }
 
-    private func formEncode(_ params: [String: String]) -> String {
-        params
-            .map { "\($0.key)=\(percentEncode($0.value))" }
-            .joined(separator: "&")
-    }
+    // MARK: - Response validation
 
-    private func percentEncode(_ string: String) -> String {
-        string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? string
+    private func validateTokenResponse(_ data: Data, _ urlResponse: URLResponse, context: String) throws {
+        guard let http = urlResponse as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            let errorBody = try? JSONDecoder().decode(ErrorResponse.self, from: data)
+            let detail = errorBody?.error_description
+                ?? errorBody?.error
+                ?? String(data: data, encoding: .utf8)
+                ?? "HTTP \((urlResponse as? HTTPURLResponse)?.statusCode ?? -1)"
+            throw Failure("\(context): \(detail)")
+        }
     }
 
     // MARK: - Decodable
@@ -232,15 +240,9 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
         let refresh_token: String?
         let expires_in: Int?
     }
-}
 
-// MARK: - Data base64url
-
-private extension Data {
-    func base64URLEncoded() -> String {
-        base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
+    private struct ErrorResponse: Decodable {
+        let error: String?
+        let error_description: String?
     }
 }
