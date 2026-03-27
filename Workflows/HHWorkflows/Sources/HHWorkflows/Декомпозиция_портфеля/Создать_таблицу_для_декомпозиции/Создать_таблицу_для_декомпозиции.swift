@@ -15,7 +15,7 @@ struct Создать_таблицу_для_декомпозиции: Workflow {
     }
 
     public var transitions: Transitions {
-        chainAfterStart {
+        chainedAfterStart {
             Скопировать_шаблон_таблицы_для_декомпозиции.to(.шаблон_скопирован)
             Заполнить_поля_таблицы_декомпозиции.toFinish()
         }

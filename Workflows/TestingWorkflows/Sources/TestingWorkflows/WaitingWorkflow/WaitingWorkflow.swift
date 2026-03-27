@@ -18,7 +18,7 @@ struct WaitingWorkflow: Workflow {
             CreateMessageTemplateFile.to(.templateCreated)
         }
 
-        chainAfter(.templateCreated) {
+        chainedAfter(.templateCreated) {
             WaitForFileContent.to(.messageReady)
         }
 

@@ -24,7 +24,7 @@ extension Workflow {
         State.allCases.flatMap { on($0, build: build) }
     }
 
-    public func chainAfterStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
+    public func chainedAfterStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
         var currentStateId = State.start
 
         let transitions = build().map { toTransition in
@@ -42,7 +42,7 @@ extension Workflow {
         return transitions
     }
 
-    public func chainAfter(_ initial: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
+    public func chainedAfter(_ initial: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
         var currentStateId = initial.id
 
         let transitions = build().map { toTransition in
@@ -61,6 +61,6 @@ extension Workflow {
     }
 
     public func chainAfter(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        states.flatMap { chainAfter($0, build: build) }
+        states.flatMap { chainedAfter($0, build: build) }
     }
 }

@@ -16,7 +16,7 @@ struct SubflowX: Workflow {
     }
 
     var transitions: Transitions {
-        chainAfterStart {
+        chainedAfterStart {
             GoNextStep.to(.x1)
             GoNextStep.to(.x2)
             GoNextStep.toFinish()
@@ -32,7 +32,7 @@ struct SubflowY: Workflow {
     }
 
     var transitions: Transitions {
-        chainAfterStart {
+        chainedAfterStart {
             GoNextStep.to(.y1)
             GoNextStep.to(.y2)
             GoNextStep.to(.y3)
@@ -49,7 +49,7 @@ struct AutomaticSubflowsWorkflow: Workflow {
     }
 
     var transitions: Transitions {
-        chainAfterStart {
+        chainedAfterStart {
             GoNextStep.to(.s1)
             SubflowX.to(.s2)
             SubflowY.to(.s3)

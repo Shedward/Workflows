@@ -16,7 +16,7 @@ struct AutomaticSimpleGitWorkflow: Workflow {
     }
 
     public var transitions: Transitions {
-        chainAfterStart {
+        chainedAfterStart {
             CreateTempWorkingDirectory.to(.workingDirectoryCreated)
             InitialiseRepository.to(.repositoryCreated)
             WriteReadmeFile.to(.readmeCreated)
