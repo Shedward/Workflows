@@ -16,7 +16,8 @@ extension API.WorkflowInstance {
             transitionState: model.transitionState.map {
                 API.TransitionState(model: $0)
             },
-            data: API.WorkflowData(model: model.data)
+            data: API.WorkflowData(model: model.data),
+            finishedAt: model.finishedAt
         )
     }
 }

@@ -6,11 +6,14 @@
 //
 
 import API
+import Core
 import Rest
 import Hummingbird
 import WorkflowEngine
 
 struct WorkflowInstancesController: Controller {
+    static let defaultTimeout: Double = 5.0
+
     let workflows: Workflows
 
     var endpoints: RouteCollection<AppRequestContext> {
@@ -36,19 +39,44 @@ struct WorkflowInstancesController: Controller {
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
+        let timeout = self.timeout(from: request)
         let initialData = body.initialData.map { WorkflowData(api: $0) } ?? WorkflowData()
-        let workflowInstance = try await workflows.start(body.workflowId, initialData: initialData)
-        let instance = API.WorkflowInstance(model: workflowInstance)
-        return instance
+
+        let created = try await workflows.create(body.workflowId, initialData: initialData)
+
+        let result = await withTimeout(seconds: timeout) { [workflows] in
+            try await workflows.runAutomaticTransitions(on: created.id)
+        }
+
+        switch result {
+        case .completed(.success(let instance)):
+            return API.WorkflowInstance(model: instance)
+        case .completed(.failure(let error)):
+            throw error
+        case .timedOut:
+            let current = try await workflows.instance(id: created.id)
+            return API.WorkflowInstance(model: current)
+        }
     }
 
     private func takeTransition(request: Request, body: TakeTransition.RequestBody, context: Context) async throws -> API.WorkflowInstance {
-        let workflowId = try context.parameters.require("id")
+        let instanceId = try context.parameters.require("id")
+        let timeout = self.timeout(from: request)
         let transitionProcessId = body.transitionProcessId
 
-        let nextInstance = try await workflows.takeTransition(processId: transitionProcessId, on: workflowId)
+        let result = await withTimeout(seconds: timeout) { [workflows] in
+            try await workflows.takeTransition(processId: transitionProcessId, on: instanceId)
+        }
 
-        return API.WorkflowInstance(model: nextInstance)
+        switch result {
+        case .completed(.success(let instance)):
+            return API.WorkflowInstance(model: instance)
+        case .completed(.failure(let error)):
+            throw error
+        case .timedOut:
+            let current = try await workflows.instance(id: instanceId)
+            return API.WorkflowInstance(model: current)
+        }
     }
 
     private func availableTransitions(request: Request, body: AvailableTransitions.RequestBody, context: Context) async throws -> ListBody<API.Transition> {
@@ -58,5 +86,11 @@ struct WorkflowInstancesController: Controller {
             API.Transition(model: transition)
         }
         return ListBody(items: apiTransitions)
+    }
+
+    private func timeout(from request: Request) -> Double {
+        request.uri.queryParameters["timeout"]
+            .flatMap { Double($0) }
+            ?? Self.defaultTimeout
     }
 }

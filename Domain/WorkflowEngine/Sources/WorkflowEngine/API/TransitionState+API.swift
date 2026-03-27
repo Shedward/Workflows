@@ -19,6 +19,8 @@ extension API.TransitionState {
 extension API.TransitionState.State {
     init(model: WorkflowEngine.TransitionState.State) {
         switch model {
+        case .executing:
+            self = .executing
         case .failed(let error):
             self = .failed(error: ErrorDescription(error: error))
         case .waiting(.time(let time)):
