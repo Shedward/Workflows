@@ -56,8 +56,9 @@ public actor NetworkRestClient: RestClient {
                 urlRequest.allHTTPHeaderFields = decoratedRequest.headers.values
                 let bodyData = try request.body.data()
                 urlRequest.httpBody = bodyData
-                if bodyData != nil && urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                    urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                if let contentType = request.body.contentType,
+                   urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                    urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
                 }
                 return urlRequest
             }

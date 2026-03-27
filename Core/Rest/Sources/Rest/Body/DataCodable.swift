@@ -9,6 +9,11 @@ import Foundation
 
 public protocol DataEncodable: Sendable {
     func data() throws -> Data?
+    var contentType: String? { get }
+}
+
+public extension DataEncodable {
+    var contentType: String? { nil }
 }
 
 public protocol DataDecodable: Sendable {
