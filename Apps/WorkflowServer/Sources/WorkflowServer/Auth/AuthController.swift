@@ -40,20 +40,22 @@ struct AuthController: Controller {
         return try jsonResponse(items)
     }
 
-    private func authorizationURL(request: Request, context: Context) async throws -> Response {
+    private func requireProvider(context: Context) async throws -> any OAuthProvider {
         let serviceID = try context.parameters.require("service")
         guard let provider = await registry.provider(for: serviceID) else {
             throw HTTPError(.notFound, message: "Unknown auth service: \(serviceID)")
         }
+        return provider
+    }
+
+    private func authorizationURL(request: Request, context: Context) async throws -> Response {
+        let provider = try await requireProvider(context: context)
         let url = try await provider.authorizationURL()
         return try jsonResponse(AuthURLResponse(url: url.absoluteString))
     }
 
     private func handleCallback(request: Request, context: Context) async throws -> Response {
-        let serviceID = try context.parameters.require("service")
-        guard let provider = await registry.provider(for: serviceID) else {
-            throw HTTPError(.notFound, message: "Unknown auth service: \(serviceID)")
-        }
+        let provider = try await requireProvider(context: context)
 
         guard
             let code = request.uri.queryParameters.get("code").map({ String($0) }),
