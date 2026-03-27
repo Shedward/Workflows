@@ -9,6 +9,11 @@ import Foundation
 
 public actor InMemoryWorkflowStorage: WorkflowStorage {
     private var instances: [WorkflowInstance] = []
+    private let retentionInterval: TimeInterval
+
+    public init(retentionInterval: TimeInterval = 3600) {
+        self.retentionInterval = retentionInterval
+    }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         let newId = UUID().uuidString
@@ -26,16 +31,29 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
     public func update(_ instance: WorkflowInstance) async throws {
         instances = instances.filter { $0.id != instance.id } + [instance]
     }
-    
+
     public func finish(_ instance: WorkflowInstance) async throws {
-        instances = instances.filter { $0.id != instance.id }
+        var finished = instance
+        finished.finishedAt = Date()
+        instances = instances.filter { $0.id != instance.id } + [finished]
+        cleanupExpired()
     }
-    
+
     public func all() async throws -> [WorkflowInstance] {
-        instances
+        cleanupExpired()
+        return instances.filter { $0.finishedAt == nil }
     }
 
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
-        instances.first { $0.id == id }
+        cleanupExpired()
+        return instances.first { $0.id == id }
+    }
+
+    private func cleanupExpired() {
+        let now = Date()
+        instances.removeAll { instance in
+            guard let finishedAt = instance.finishedAt else { return false }
+            return now.timeIntervalSince(finishedAt) > retentionInterval
+        }
     }
 }

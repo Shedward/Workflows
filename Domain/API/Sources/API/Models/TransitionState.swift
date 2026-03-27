@@ -21,6 +21,7 @@ public struct TransitionState: JSONBody {
 
 extension TransitionState {
     public enum State: JSONBody {
+        case executing
         case waitingTime(date: Date)
         case waitingWorkflow(workflowId: String)
         case failed(error: ErrorDescription)

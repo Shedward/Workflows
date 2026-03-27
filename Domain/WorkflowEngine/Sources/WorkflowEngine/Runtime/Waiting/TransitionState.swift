@@ -12,6 +12,7 @@ public struct TransitionState: Sendable {
 
 extension TransitionState {
     public enum State: Sendable {
+        case executing
         case waiting(Waiting)
         case failed(Error)
     }

@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # --- Test 1: Manual slow transition with timeout ---
+  # Start a SlowWorkflow (manual transitions, so start returns immediately)
+  start_workflow "SlowWorkflow"
+  local slow_id="$INSTANCE_ID"
+
+  # Take the slow transition with a short timeout — should return executing state
+  LAST_RESPONSE="$(request POST "/workflowInstances/$slow_id/takeTransition?timeout=1" \
+    '{"transitionProcessId":"SlowAction"}')"
+
+  local state_type
+  state_type="$(jq -r '.transitionState.state | keys[0] // empty' <<<"$LAST_RESPONSE")"
+  if [[ "$state_type" != "executing" ]]; then
+    echo "Expected executing state after timeout, got '$state_type'" >&2
+    exit 1
+  fi
+
+  # Poll until the slow action completes (up to 10 seconds)
+  local attempts=0
+  local max_attempts=20
+  while [[ $attempts -lt $max_attempts ]]; do
+    sleep 0.5
+    local poll_response
+    poll_response="$(request GET "/workflowInstances/$slow_id")"
+    local poll_state
+    poll_state="$(jq -r '.transitionState // empty' <<<"$poll_response")"
+    if [[ -z "$poll_state" || "$poll_state" == "null" ]]; then
+      # Transition completed, transitionState cleared
+      break
+    fi
+    attempts=$((attempts + 1))
+  done
+
+  if [[ $attempts -ge $max_attempts ]]; then
+    echo "Slow transition did not complete within polling window" >&2
+    exit 1
+  fi
+
+  # Instance should now be in 'processing' state (SlowAction completed)
+  assert_state "processing" "$slow_id"
+
+  # Finish the workflow
+  take_transition "QuickFinish" "$slow_id"
+  assert_finished "$slow_id"
+
+  # Finished instance should still be accessible via direct GET (retained)
+  local finished_response
+  finished_response="$(request GET "/workflowInstances/$slow_id")"
+  local finished_at
+  finished_at="$(jq -r '.finishedAt' <<<"$finished_response")"
+  if [[ "$finished_at" == "null" || -z "$finished_at" ]]; then
+    echo "Expected finishedAt to be set on finished instance" >&2
+    exit 1
+  fi
+
+  # --- Test 2: Automatic slow workflow with timeout on start ---
+  LAST_RESPONSE="$(request POST "/workflowInstances?timeout=1" \
+    '{"workflowId":"AutomaticSlowWorkflow"}')"
+  local auto_id
+  auto_id="$(jq -r '.id' <<<"$LAST_RESPONSE")"
+
+  state_type="$(jq -r '.transitionState.state | keys[0] // empty' <<<"$LAST_RESPONSE")"
+  if [[ "$state_type" != "executing" ]]; then
+    echo "Expected executing state on auto workflow start, got '$state_type'" >&2
+    exit 1
+  fi
+
+  # Poll until it finishes
+  attempts=0
+  while [[ $attempts -lt $max_attempts ]]; do
+    sleep 0.5
+    local auto_response
+    auto_response="$(request GET "/workflowInstances/$auto_id")"
+    local auto_finished
+    auto_finished="$(jq -r '.finishedAt // empty' <<<"$auto_response")"
+    if [[ -n "$auto_finished" && "$auto_finished" != "null" ]]; then
+      break
+    fi
+    attempts=$((attempts + 1))
+  done
+
+  if [[ $attempts -ge $max_attempts ]]; then
+    echo "Automatic slow workflow did not finish within polling window" >&2
+    exit 1
+  fi
+
+  # --- Test 3: Fast workflow still works synchronously ---
+  # With default timeout (5s), a fast workflow should complete inline
+  start_workflow "SimpleWorkflow"
+  local fast_id="$INSTANCE_ID"
+  take_transition "StartA" "$fast_id"
+  take_transition "StartB" "$fast_id"
+  take_transition "Finalize" "$fast_id"
+  assert_finished "$fast_id"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

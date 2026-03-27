@@ -33,11 +33,15 @@ main() {
     exit 1
   fi
 
-  # GET finished instance should fail
-  assert_fails request GET "/workflowInstances/$finished_id"
-
-  # GET transitions on finished instance should fail
-  assert_fails request GET "/workflowInstances/$finished_id/transitions"
+  # GET finished instance should return it with finishedAt set
+  local finished_response
+  finished_response="$(request GET "/workflowInstances/$finished_id")"
+  local finished_at
+  finished_at="$(jq -r '.finishedAt' <<<"$finished_response")"
+  if [[ "$finished_at" == "null" || -z "$finished_at" ]]; then
+    echo "Expected finishedAt to be set, got null" >&2
+    exit 1
+  fi
 
   # POST takeTransition on finished instance should fail
   assert_fails request POST "/workflowInstances/$finished_id/takeTransition" \
