@@ -9,6 +9,7 @@ import Rest
 
 /// Sets values in one or more ranges of a spreadsheet.
 public struct BatchUpdateValues: GoogleSheetsApi {
+    public typealias RequestBody = BatchUpdateValuesBody
 
     /// The ID of the spreadsheet to update.
     public var spreadsheetId: String
@@ -45,10 +46,6 @@ public struct BatchUpdateValues: GoogleSheetsApi {
     }
 }
 
-extension BatchUpdateValues: Defaultable {
-    public init() { self.init(spreadsheetId: "") }
-}
-
 extension BatchUpdateValues: Modifiers {
     public func valueInputOption(_ option: ValueInputOption) -> Self         { with { $0.valueInputOption = option } }
     public func data(_ data: [ValueRange]) -> Self                           { with { $0.data = data } }
@@ -59,7 +56,7 @@ extension BatchUpdateValues: Modifiers {
 
 extension BatchUpdateValues {
     /// Determines how input data should be interpreted.
-    public enum ValueInputOption: String {
+    public enum ValueInputOption: String, Sendable {
         /// Values will be parsed as if the user typed them into the UI.
         case userEntered = "USER_ENTERED"
         /// Values will not be parsed and will be stored as-is.
@@ -67,7 +64,7 @@ extension BatchUpdateValues {
     }
 
     /// Determines how dates and times in the response should be rendered.
-    public enum DateTimeRenderOption: String {
+    public enum DateTimeRenderOption: String, Sendable {
         /// Instructs date, time, datetime, and duration fields to be output as doubles.
         case serialNumber = "SERIAL_NUMBER"
         /// Instructs date, time, datetime, and duration fields to be output as strings.
@@ -75,7 +72,7 @@ extension BatchUpdateValues {
     }
 
     /// Determines how values in the response should be rendered.
-    public enum ValueRenderOption: String {
+    public enum ValueRenderOption: String, Sendable {
         /// Values will be calculated and formatted according to the cell's formatting.
         case formattedValue = "FORMATTED_VALUE"
         /// Values will be calculated but not formatted.
@@ -100,7 +97,7 @@ extension BatchUpdateValues {
 
 // MARK: - Request body
 
-private struct BatchUpdateValuesBody: JSONEncodableBody {
+public struct BatchUpdateValuesBody: JSONEncodableBody {
     let valueInputOption: String
     let data: [BatchUpdateValues.ValueRange]
     let includeValuesInResponse: Bool?

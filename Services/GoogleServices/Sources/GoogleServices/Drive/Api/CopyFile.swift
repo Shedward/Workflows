@@ -9,6 +9,7 @@ import Rest
 
 /// Creates a copy of a file in the user's My Drive or a shared drive.
 public struct CopyFile: GoogleDriveApi {
+    public typealias RequestBody = CopyFileBody
     public typealias ResponseBody = DriveFile
 
     /// The ID of the file to copy.
@@ -84,10 +85,6 @@ public struct CopyFile: GoogleDriveApi {
     }
 }
 
-extension CopyFile: Defaultable {
-    public init() { self.init(fileId: "") }
-}
-
 extension CopyFile: Modifiers {
     public func name(_ name: String) -> Self                        { with { $0.name = name } }
     public func parents(_ parents: [String]) -> Self               { with { $0.parents = parents } }
@@ -103,7 +100,7 @@ extension CopyFile: Modifiers {
 
 // MARK: - Request body
 
-private struct CopyFileBody: JSONEncodableBody {
+public struct CopyFileBody: JSONEncodableBody {
     let name: String?
     let parents: [String]?
     let description: String?
