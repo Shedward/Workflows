@@ -162,3 +162,89 @@ Expected request body:
 3. **`AuthController` routing**: use single string `"auth/:service"` not variadic `"auth", ":service"`
 4. **Actor properties accessed from outside** must be `nonisolated` (e.g. `serviceID`, `displayName`)
 5. **`OAuthProvider` protocol** needs `import Foundation` for `URL` type
+
+---
+
+## Session 2 (continued same day): Bug diagnosis + branch review
+
+### What was fixed
+
+#### Sheets batchUpdate 400 — root cause found and fixed
+
+Root cause: **`Content-Type: application/json` was never set** on POST requests in `NetworkRestClient`.
+
+Google Sheets API treats the request body as a query parameter when Content-Type is missing, resulting in:
+```
+"Invalid JSON payload received. Unknown name {entire JSON body}... Cannot bind query parameter."
+```
+
+**Fix in `Core/Rest/Sources/Rest/Client/NetworkRestClient.swift`:**
+```swift
+let bodyData = try request.body.data()
+urlRequest.httpBody = bodyData
+if bodyData != nil && urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+    urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+}
+```
+
+Also improved error logging — response body now printed in error path.
+
+#### URL construction changed
+
+`url.append(path: path)` replaced with:
+```swift
+url = URL(string: url.absoluteString + path) ?? url
+```
+Avoids any ambiguity about whether `:` in `values:batchUpdate` gets encoded.
+
+#### Network logger enabled
+
+Added `Logger.enable(.network)` to `Projects/workflow-server/workflow-server/App.swift`. Without this, oslog network traces were silently discarded.
+
+**Key oslog diagnostic command:**
+```bash
+/usr/bin/log stream --predicate 'subsystem == "me.shedward.workflows"' --level debug
+```
+Logs go to oslog, NOT stdout. Must use `log stream` or Console.app to see them.
+
+#### WorkflowData initial data format
+
+`POST /workflowInstances` requires JSON-encoded string values inside a `data` wrapper:
+```json
+{
+  "workflowId": "Декомпозиция_портфеля",
+  "initialData": {
+    "data": {
+      "portfolioKey": "\"PORTFOLIO-TEST-00\""
+    }
+  }
+}
+```
+The outer `"data"` key maps to `WorkflowData`'s internal dict. All values are JSON-encoded strings (double-quoted inside the JSON string).
+
+### Branch review findings (3 agents)
+
+Three parallel agents reviewed the diff vs `main`. Key findings:
+
+#### Critical (correctness)
+- **No HTTP status check on token endpoints** — Google returns `{"error": "invalid_grant"}` with HTTP 400; current code tries to decode it as `TokenResponse` and gives a useless "Failed to decode" error. Should check status, decode `ErrorResponse`, and surface Google's message.
+- **Force-unwrap** on `credentials.authURI` in `buildAuthURL` (UserOAuthTokenProvider line 187).
+- **Hardcoded redirect URI** `http://localhost:8080/auth/google/callback` inside `GoogleServices` — couples the service library to the server's port. Should be a constructor parameter.
+
+#### High (duplication)
+- `base64url` encoding implemented twice: `Data.base64URLEncoded()` extension in `UserOAuthTokenProvider` and `base64url(_ data: Data)` method in `ServiceAccountTokenProvider`. Extract to shared `OAuthHelpers.swift`.
+- `formEncode`/`percentEncode` instance methods in `UserOAuthTokenProvider` not shared with `ServiceAccountTokenProvider` (which uses an inline string). Unify.
+
+#### Medium (cleanup)
+- `KeychainStorage`: base query dict `[kSecClass, kSecAttrService, kSecAttrAccount]` built 3× in `read`, `write`, `delete`. Extract private `baseQuery(key:)`.
+- `AuthController`: provider lookup guard duplicated in `authorizationURL` and `handleCallback`. Extract `requireProvider(context:)`.
+
+### Pending fixes (planned, not yet implemented)
+
+Plan written to `/Users/v.maltsev/.claude/plans/binary-booping-tide.md`. Commit order:
+1. `KeychainStorage` — `baseQuery` helper
+2. `OAuthHelpers.swift` — extract `base64URLEncoded` + `formEncode`
+3. `UserOAuthTokenProvider` — fix force-unwrap, make `redirectURI` a param
+4. Both providers — add HTTP status check + `ErrorResponse` parsing
+5. `AuthController` — `requireProvider` helper
+6. Bootstrap — pass `redirectURI` explicitly
