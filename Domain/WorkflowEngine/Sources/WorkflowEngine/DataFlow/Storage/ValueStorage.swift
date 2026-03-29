@@ -11,21 +11,21 @@ final class ValueStorage: @unchecked Sendable {
     private var _value: Sendable?
     private var lock = os_unfair_lock_s()
 
-    init(_ value: Sendable? = nil) {
-        _value = value
-    }
-
     var value: Sendable? {
         get {
             os_unfair_lock_lock(&lock)
-            let v = _value
+            let value = _value
             os_unfair_lock_unlock(&lock)
-            return v
+            return value
         }
         set {
             os_unfair_lock_lock(&lock)
             _value = newValue
             os_unfair_lock_unlock(&lock)
         }
+    }
+
+    init(_ value: Sendable? = nil) {
+        _value = value
     }
 }

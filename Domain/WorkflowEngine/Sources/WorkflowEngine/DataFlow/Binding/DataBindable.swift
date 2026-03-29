@@ -10,7 +10,7 @@ public protocol DataBindable: Sendable {
 }
 
 extension DataBindable {
-    mutating public func bind<Binding: DataBinding>(_ binding: Binding) throws {
+    public mutating func bind<Binding: DataBinding>(_ binding: Binding) throws {
         var binding = binding
         try bind(&binding)
     }

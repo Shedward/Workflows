@@ -12,7 +12,7 @@ import WorkflowEngine
 struct WriteReadmeFile: Action {
     @Input var workingDirectory: URL
 
-    func run() async throws {
+    func run() throws {
         let readmePath = workingDirectory
             .appending(component: "README.md", directoryHint: .notDirectory)
 

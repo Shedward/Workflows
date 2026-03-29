@@ -8,7 +8,10 @@
 /// A type-erased, sendable box for any Error.
 public struct AnySendableError: Error, @unchecked Sendable {
     public let base: any Error
-    public init(_ base: any Error) { self.base = base }
+
+    public init(_ base: any Error) {
+        self.base = base
+    }
 }
 
 public struct Failure: DescriptiveError, CustomDebugStringConvertible, Sendable {
@@ -16,6 +19,20 @@ public struct Failure: DescriptiveError, CustomDebugStringConvertible, Sendable 
     public let line: UInt
     public let message: String
     public let cause: String?
+
+    public var debugDescription: String {
+        if let cause {
+            return "\(file):\(line): \(message)\n ↪ \(cause)"
+        }
+        return "\(file):\(line): \(message)"
+    }
+
+    public var userDescription: String {
+        if let cause {
+            return "\(message)\n ↪ \(cause)"
+        }
+        return message
+    }
 
     public init(
         _ message: String,
@@ -37,16 +54,6 @@ public struct Failure: DescriptiveError, CustomDebugStringConvertible, Sendable 
         } else {
             self.cause = nil
         }
-    }
-
-    public var debugDescription: String {
-        if let cause { return "\(file):\(line): \(message)\n ↪ \(cause)" }
-        return "\(file):\(line): \(message)"
-    }
-
-    public var userDescription: String {
-        if let cause { return "\(message)\n ↪ \(cause)" }
-        return message
     }
 }
 

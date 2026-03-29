@@ -10,6 +10,6 @@ import Rest
 public struct GetWorkflows: WorkflowApi {
     public typealias ResponseBody = ListBody<Workflow>
 
-    static public let method = Method.get
-    static public let path = "/workflows"
+    public static let method = Method.get
+    public static let path = "/workflows"
 }

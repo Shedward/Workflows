@@ -18,9 +18,9 @@ struct Заполнить_поля_таблицы_декомпозиции: Acti
         _ = try await googleSheets.fetch(
             BatchUpdateValues(spreadsheetId: spreadsheetId)
                 .data([
-                    BatchUpdateValues.ValueRange(range: "A1",  values: [[portfolioKey]]),
+                    BatchUpdateValues.ValueRange(range: "A1", values: [[portfolioKey]]),
                     BatchUpdateValues.ValueRange(range: "B14", values: [["Mob"]]),
-                    BatchUpdateValues.ValueRange(range: "B15", values: [["iOS"]]),
+                    BatchUpdateValues.ValueRange(range: "B15", values: [["iOS"]])
                 ])
         )
     }

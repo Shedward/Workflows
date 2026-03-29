@@ -15,7 +15,7 @@ struct SimpleGitWorkflow: Workflow {
         case allCommited
     }
 
-    public var transitions: Transitions {
+    var transitions: Transitions {
         onStart {
             CreateTempWorkingDirectory.to(.workingDirectoryCreated)
         }

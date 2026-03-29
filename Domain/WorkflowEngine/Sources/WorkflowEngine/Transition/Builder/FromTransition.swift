@@ -27,7 +27,7 @@ extension Workflow {
     public func chainedAfterStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
         var currentStateId = State.start
 
-        let transitions = build().map { toTransition in
+        return build().map { toTransition in
             let transition = Transition<State>(
                 from: currentStateId,
                 to: toTransition.to,
@@ -38,14 +38,12 @@ extension Workflow {
             currentStateId = toTransition.to
             return transition
         }
-
-        return transitions
     }
 
     public func chainedAfter(_ initial: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
         var currentStateId = initial.id
 
-        let transitions = build().map { toTransition in
+        return build().map { toTransition in
             let transition = Transition<State>(
                 from: currentStateId,
                 to: toTransition.to,
@@ -56,8 +54,6 @@ extension Workflow {
             currentStateId = toTransition.to
             return transition
         }
-
-        return transitions
     }
 
     public func chainAfter(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {

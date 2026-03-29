@@ -12,10 +12,10 @@ public struct EmptyBody: DataCodable {
     public init() {
     }
 
-    public init(data: Data) throws {
+    public init(data: Data) {
     }
 
-    public func data() throws -> Data? {
+    public func data() -> Data? {
         nil
     }
 }

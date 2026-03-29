@@ -7,8 +7,8 @@
 
 import API
 import Core
-import Rest
 import Hummingbird
+import Rest
 import WorkflowEngine
 
 struct WorkflowInstancesController: Controller {
@@ -34,8 +34,7 @@ struct WorkflowInstancesController: Controller {
     private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowInstance {
         let workflowId = try context.parameters.require("id")
         let workflow = try await workflows.instance(id: workflowId)
-        let instance = API.WorkflowInstance(model: workflow)
-        return instance
+        return API.WorkflowInstance(model: workflow)
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
@@ -79,7 +78,11 @@ struct WorkflowInstancesController: Controller {
         }
     }
 
-    private func availableTransitions(request: Request, body: AvailableTransitions.RequestBody, context: Context) async throws -> ListBody<API.Transition> {
+    private func availableTransitions(
+        request: Request,
+        body: AvailableTransitions.RequestBody,
+        context: Context
+    ) async throws -> ListBody<API.Transition> {
         let workflowId = try context.parameters.require("id")
         let transitions = try await workflows.transitions(for: workflowId)
         let apiTransitions = transitions.map { transition in

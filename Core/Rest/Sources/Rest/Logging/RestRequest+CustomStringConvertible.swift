@@ -47,7 +47,9 @@ extension Request: CustomStringConvertible {
 
 extension Query: CustomStringConvertible {
     public var description: String {
-        if values.isEmpty {  return "Query()" }
+        if values.isEmpty {
+            return "Query()"
+        }
 
         let valuesList = values
             .filter { $1.queryValue != nil }
@@ -64,7 +66,9 @@ extension Query: CustomStringConvertible {
 
 extension Headers: CustomStringConvertible {
     public var description: String {
-        if values.isEmpty {  return "Headers()" }
+        if values.isEmpty {
+            return "Headers()"
+        }
 
         let valuesList = values
             .map { "  \($0): \(redactHeaderIfNeeded($0, value: $1))"}
@@ -76,7 +80,7 @@ extension Headers: CustomStringConvertible {
         )
         """
     }
-    
+
     private func redactHeaderIfNeeded(_ key: String, value: String) -> String {
         if shouldRedactHeader(key) {
             return String(repeating: "█", count: value.count)
@@ -84,7 +88,7 @@ extension Headers: CustomStringConvertible {
             return value
         }
     }
-    
+
     private func shouldRedactHeader(_ key: String) -> Bool {
         switch key {
         case "Authorization":
@@ -94,4 +98,3 @@ extension Headers: CustomStringConvertible {
         }
     }
 }
-

@@ -10,8 +10,8 @@ import Rest
 public struct GetWorkflowInstance: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance
 
-    static public let method = Method.get
-    static public let path = "/workflowInstances/:id"
+    public static let method = Method.get
+    public static let path = "/workflowInstances/:id"
 
     public let instanceId: String
     public let transitionProcessId: String

@@ -11,7 +11,7 @@ import WorkflowEngine
 struct StartA: Action {
     @Output var valueA: String
 
-    func run() async throws {
+    func run() {
         valueA = "Returned"
     }
 }

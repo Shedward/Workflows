@@ -29,34 +29,33 @@ public struct App {
                 "http.serverName": "workflow-server"
             ])
         ])
-        let app = try await buildApplication(reader: reader)
+        let app = buildApplication(reader: reader)
         try await app.runService()
     }
 
-    func buildApplication(reader: ConfigReader) async throws -> some ApplicationProtocol {
+    func buildApplication(reader: ConfigReader) -> some ApplicationProtocol {
         let logger = {
             var logger = Logger(label: "workflow-server")
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
             return logger
         }()
 
-        let router = try buildRouter(workflows: workflows, authRegistry: authRegistry)
+        let router = buildRouter(workflows: workflows, authRegistry: authRegistry)
 
-        let app = Application(
+        return Application(
             router: router,
             configuration: ApplicationConfiguration(reader: reader.scoped(to: "http")),
             logger: logger
         )
-        return app
     }
 
-    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) throws -> Router<AppRequestContext> {
+    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) -> Router<AppRequestContext> {
         let router = Router(context: AppRequestContext.self)
         router.addMiddleware {
             LogRequestsMiddleware(.info)
         }
 
-        router.get("/health") { _,_ in
+        router.get("/health") { _, _ in
             HTTPResponse.Status.ok
         }
 

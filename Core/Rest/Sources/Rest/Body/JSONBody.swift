@@ -13,14 +13,14 @@ public protocol JSONEncodableBody: DataEncodable, Encodable, Sendable {
 }
 
 public extension JSONEncodableBody {
-    func data() throws -> Data? {
-        try Self.encoder().encode(self)
+    static func encoder() -> JSONEncoder {
+        JSONEncoder()
     }
 
     var contentType: String? { "application/json" }
 
-    static func encoder() -> JSONEncoder {
-        JSONEncoder()
+    func data() throws -> Data? {
+        try Self.encoder().encode(self)
     }
 }
 
@@ -29,12 +29,12 @@ public protocol JSONDecodableBody: DataDecodable, Decodable, Sendable {
 }
 
 public extension JSONDecodableBody {
-    init(data: Data) throws {
-        try self = Self.decoder().decode(Self.self, from: data)
-    }
-
     static func decoder() -> JSONDecoder {
         JSONDecoder()
+    }
+
+    init(data: Data) throws {
+        try self = Self.decoder().decode(Self.self, from: data)
     }
 }
 

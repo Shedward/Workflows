@@ -9,7 +9,7 @@ let package = Package(
         .library(
             name: "Rest",
             targets: ["Rest"]
-        ),
+        )
     ],
     dependencies: [
         .package(path: "../Core")
@@ -20,6 +20,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Core", package: "Core")
             ]
-        ),
+        )
     ]
 )

@@ -10,6 +10,10 @@ import Rest
 public actor AuthRegistry {
     private var providers: [String: any OAuthProvider] = [:]
 
+    public var allProviders: [any OAuthProvider] {
+        Array(providers.values)
+    }
+
     public init() {}
 
     public func register(_ provider: any OAuthProvider) {
@@ -18,9 +22,5 @@ public actor AuthRegistry {
 
     public func provider(for serviceID: String) -> (any OAuthProvider)? {
         providers[serviceID]
-    }
-
-    public var allProviders: [any OAuthProvider] {
-        Array(providers.values)
     }
 }

@@ -5,7 +5,6 @@
 //  Created by Мальцев Владислав on 26.03.2026.
 //
 
-
 import WorkflowEngine
 
 struct Декомпозиция_портфеля: Workflow {
@@ -14,7 +13,7 @@ struct Декомпозиция_портфеля: Workflow {
         case нужно_провести_декомпозицию
     }
 
-    public var transitions: Transitions {
+    var transitions: Transitions {
         onStart {
             Создать_таблицу_для_декомпозиции.to(.нужно_заполнить_таблицу)
         }

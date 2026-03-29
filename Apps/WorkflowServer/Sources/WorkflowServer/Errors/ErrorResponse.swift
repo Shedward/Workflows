@@ -24,7 +24,7 @@ struct ErrorResponse: ResponseGenerator {
     }
 
     func response(from request: Request, context: some RequestContext) throws -> Response {
-        let body =  Body(userDescription: userDescription, debugDescription: debugDescription)
+        let body = Body(userDescription: userDescription, debugDescription: debugDescription)
         var response = try context.responseEncoder.encode(body, from: request, context: context)
         response.status = status
         return response

@@ -47,11 +47,25 @@ public struct BatchUpdateValues: GoogleSheetsApi {
 }
 
 extension BatchUpdateValues: Modifiers {
-    public func valueInputOption(_ option: ValueInputOption) -> Self         { with { $0.valueInputOption = option } }
-    public func data(_ data: [ValueRange]) -> Self                           { with { $0.data = data } }
-    public func includeValuesInResponse(_ value: Bool) -> Self               { with { $0.includeValuesInResponse = value } }
-    public func responseDateTimeRenderOption(_ v: DateTimeRenderOption) -> Self { with { $0.responseDateTimeRenderOption = v } }
-    public func responseValueRenderOption(_ v: ValueRenderOption) -> Self    { with { $0.responseValueRenderOption = v } }
+    public func valueInputOption(_ option: ValueInputOption) -> Self {
+        with { $0.valueInputOption = option }
+    }
+
+    public func data(_ data: [ValueRange]) -> Self {
+        with { $0.data = data }
+    }
+
+    public func includeValuesInResponse(_ value: Bool) -> Self {
+        with { $0.includeValuesInResponse = value }
+    }
+
+    public func responseDateTimeRenderOption(_ option: DateTimeRenderOption) -> Self {
+        with { $0.responseDateTimeRenderOption = option }
+    }
+
+    public func responseValueRenderOption(_ option: ValueRenderOption) -> Self {
+        with { $0.responseValueRenderOption = option }
+    }
 }
 
 extension BatchUpdateValues {

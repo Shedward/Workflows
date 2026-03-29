@@ -12,7 +12,7 @@ public struct StaticTokenAuthorizer: AccessTokenAuthorizer {
         self.token = token
     }
 
-    public func authorizationHeaders() async throws -> Headers {
+    public func authorizationHeaders() -> Headers {
         bearer(token)
     }
 }

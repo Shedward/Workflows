@@ -9,15 +9,46 @@ import Rest
 import Security
 
 public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
+
+    // MARK: - Subtypes
+
+    private struct JWTHeader: Encodable {
+        let alg = "RS256"
+        let typ = "JWT"
+    }
+
+    private struct JWTPayload: Encodable {
+        let iss: String
+        let scope: String
+        let aud: String
+        let iat: Int
+        let exp: Int
+    }
+
+    private struct TokenResponse: Decodable {
+        let access_token: String
+    }
+
+    private struct ErrorResponse: Decodable {
+        let error: String?
+        let error_description: String?
+    }
+
+    // MARK: - Properties
+
     private let credentials: ServiceAccountCredentials
     private let scopes: [String]
     private var cachedToken: String?
     private var tokenExpiresAt: Date = .distantPast
 
+    // MARK: - Init
+
     public init(credentials: ServiceAccountCredentials, scopes: [String]) {
         self.credentials = credentials
         self.scopes = scopes
     }
+
+    // MARK: - AccessTokenAuthorizer
 
     public func authorizationHeaders() async throws -> Headers {
         if let token = cachedToken, Date() < tokenExpiresAt.addingTimeInterval(-60) {
@@ -40,14 +71,14 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
 
         let body = formEncode([
             "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-            "assertion":  jwt,
+            "assertion": jwt
         ])
         let urlRequest: URLRequest = {
-            var r = URLRequest(url: url)
-            r.httpMethod = "POST"
-            r.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            r.httpBody = body.data(using: .utf8)
-            return r
+            var req = URLRequest(url: url)
+            req.httpMethod = "POST"
+            req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            req.httpBody = body.data(using: .utf8)
+            return req
         }()
 
         let (data, urlResponse) = try await Failure.wrap("Failed to exchange JWT for access token") {
@@ -55,29 +86,12 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
         }
         try validateTokenResponse(data, urlResponse)
 
-        struct TokenResponse: Decodable {
-            let access_token: String
-        }
-
         return try Failure.wrap("Failed to decode token response") {
             try JSONDecoder().decode(TokenResponse.self, from: data).access_token
         }
     }
 
     // MARK: - JWT building
-
-    private struct JWTHeader: Encodable {
-        let alg = "RS256"
-        let typ = "JWT"
-    }
-
-    private struct JWTPayload: Encodable {
-        let iss: String
-        let scope: String
-        let aud: String
-        let iat: Int
-        let exp: Int
-    }
 
     private func buildJWT() throws -> String {
         let header = try base64urlEncoded(JWTHeader())
@@ -107,7 +121,6 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
 
     private func validateTokenResponse(_ data: Data, _ urlResponse: URLResponse) throws {
         guard let http = urlResponse as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            struct ErrorResponse: Decodable { let error: String?; let error_description: String? }
             let errorBody = try? JSONDecoder().decode(ErrorResponse.self, from: data)
             let detail = errorBody?.error_description
                 ?? errorBody?.error
@@ -136,9 +149,11 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
             nil,    // importKeychain — nil means don't store in Keychain
             &outItems
         )
-        guard status == errSecSuccess,
-              let items = outItems as? [SecKey],
-              let key = items.first else {
+        guard
+            status == errSecSuccess,
+            let items = outItems as? [SecKey],
+            let key = items.first
+        else {
             throw Failure("Failed to import RSA private key from PEM (OSStatus \(status))")
         }
         return key

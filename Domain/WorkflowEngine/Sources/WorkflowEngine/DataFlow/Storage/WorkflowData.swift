@@ -24,10 +24,8 @@ public struct WorkflowData: Sendable {
             throw Failure("Failed to convert string to data")
         }
 
-        let value = try JSONDecoder().decode(Value.self, from: data)
-        return value
+        return try JSONDecoder().decode(Value.self, from: data)
     }
-
 
     public mutating func set<Value: WorkflowValue>(_ key: String, _ value: Value) throws {
         let valueData = try JSONEncoder().encode(value)

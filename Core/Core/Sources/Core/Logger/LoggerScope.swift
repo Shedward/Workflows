@@ -6,12 +6,6 @@
 //
 
 public struct LoggerScope: Hashable, Sendable {
-    public let name: String
-
-    public init(name: String) {
-        self.name = name
-    }
-
     @available(*, deprecated, message: "For debug purposes, should not be commited")
     public static let debug = LoggerScope(name: "Debug")
 
@@ -19,5 +13,11 @@ public struct LoggerScope: Hashable, Sendable {
 
     public static func file(_ fileID: StaticString = #fileID) -> LoggerScope {
         LoggerScope(name: "\(fileID)")
+    }
+
+    public let name: String
+
+    public init(name: String) {
+        self.name = name
     }
 }

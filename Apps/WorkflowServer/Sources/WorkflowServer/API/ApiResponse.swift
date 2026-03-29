@@ -5,8 +5,8 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
-import Rest
 import Hummingbird
+import Rest
 
 struct ApiResponse<ResponseBody: DataEncodable>: ResponseGenerator {
     let responseBody: ResponseBody

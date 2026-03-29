@@ -9,19 +9,19 @@ let package = Package(
         .library(
             name: "GoogleServices",
             targets: ["GoogleServices"]
-        ),
+        )
     ],
     dependencies: [
         .package(path: "../Core/Core"),
-        .package(path: "../Core/Rest"),
+        .package(path: "../Core/Rest")
     ],
     targets: [
         .target(
             name: "GoogleServices",
             dependencies: [
                 .product(name: "Core", package: "Core"),
-                .product(name: "Rest", package: "Rest"),
+                .product(name: "Rest", package: "Rest")
             ]
-        ),
+        )
     ]
 )

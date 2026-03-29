@@ -7,10 +7,6 @@ import Core
 import Foundation
 
 public struct ServiceAccountCredentials: Codable, Sendable {
-    public let clientEmail: String
-    public let privateKeyPem: String
-    public let tokenUri: String
-
     enum CodingKeys: String, CodingKey {
         case clientEmail = "client_email"
         case privateKeyPem = "private_key"
@@ -26,4 +22,8 @@ public struct ServiceAccountCredentials: Codable, Sendable {
             try JSONDecoder().decode(ServiceAccountCredentials.self, from: data)
         }
     }
+
+    public let clientEmail: String
+    public let privateKeyPem: String
+    public let tokenUri: String
 }

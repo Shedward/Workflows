@@ -11,7 +11,7 @@ let package = Package(
         .library(
             name: "WorkflowServer",
             targets: ["WorkflowServer"]
-        ),
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
@@ -29,7 +29,7 @@ let package = Package(
                 .product(name: "Rest", package: "Rest"),
                 .product(name: "WorkflowEngine", package: "WorkflowEngine"),
                 .product(name: "API", package: "API")
-            ]
+            ],
         )
     ]
 )

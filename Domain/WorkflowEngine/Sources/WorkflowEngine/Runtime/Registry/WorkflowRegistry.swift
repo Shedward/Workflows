@@ -8,7 +8,7 @@
 import Core
 import Foundation
 
-public actor WorkflowRegistry: Sendable {
+public actor WorkflowRegistry {
     private var workflows: [WorkflowID: AnyWorkflow] = [:]
 
     public init(_ workflows: [AnyWorkflow]) throws {

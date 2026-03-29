@@ -9,7 +9,7 @@ let package = Package(
         .library(
             name: "HHWorkflows",
             targets: ["HHWorkflows"]
-        ),
+        )
     ],
     dependencies: [
         .package(path: "../Core/Core"),
@@ -26,6 +26,6 @@ let package = Package(
                 .product(name: "GoogleServices", package: "GoogleServices"),
                 .product(name: "WorkflowEngine", package: "WorkflowEngine")
             ]
-        ),
+        )
     ]
 )

@@ -11,20 +11,20 @@ struct Finalize: Pass { }
 
 struct SimpleWorkflow: Workflow {
     enum State: String, WorkflowState {
-        case a
-        case b
+        case stateA = "a"
+        case stateB = "b"
     }
 
     var transitions: Transitions {
         onStart {
-            StartA.to(.a)
+            StartA.to(.stateA)
         }
 
-        on(.a) {
-            StartB.to(.b)
+        on(.stateA) {
+            StartB.to(.stateB)
         }
 
-        on(.b) {
+        on(.stateB) {
             Finalize.toFinish()
         }
     }

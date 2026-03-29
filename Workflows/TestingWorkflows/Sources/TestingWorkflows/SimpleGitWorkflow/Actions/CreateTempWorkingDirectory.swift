@@ -12,7 +12,7 @@ import WorkflowEngine
 struct CreateTempWorkingDirectory: Action {
     @Output var workingDirectory: URL
 
-    func run() async throws {
+    func run() throws {
         let fileManager = FileManager.default
         let tempFolder = fileManager.temporaryDirectory
             .appending(component: "workflows", directoryHint: .isDirectory)

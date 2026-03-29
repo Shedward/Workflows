@@ -12,7 +12,7 @@ import WorkflowEngine
 struct CleanWorkingFolder: Action {
     @Input var workingDirectory: URL
 
-    func run() async throws {
+    func run() throws {
         try FileManager.default.removeItem(at: workingDirectory)
     }
 }

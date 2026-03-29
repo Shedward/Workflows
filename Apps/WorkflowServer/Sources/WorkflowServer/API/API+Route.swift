@@ -6,9 +6,9 @@
 //
 
 import API
-import Rest
-import Hummingbird
 import Foundation
+import Hummingbird
+import Rest
 
 extension RouteCollection where Context == AppRequestContext {
     @discardableResult func on<Api: WorkflowApi>(

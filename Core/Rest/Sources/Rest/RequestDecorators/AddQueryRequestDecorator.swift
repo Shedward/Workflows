@@ -11,10 +11,10 @@ public struct AddQueryRequestDecorator: RequestDecorator {
     public init(_ additionalQuery: Query) {
         self.additionalQuery = additionalQuery
     }
-    
+
     public func decorate<RequestBody, ResponseBody>(
         _ request: Request<RequestBody, ResponseBody>
-    ) async throws -> Request<RequestBody, ResponseBody> {
+    ) -> Request<RequestBody, ResponseBody> {
         request.with { $0.query.merge(additionalQuery) }
     }
 }

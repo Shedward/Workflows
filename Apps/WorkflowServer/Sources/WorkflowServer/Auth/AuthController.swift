@@ -15,6 +15,21 @@ import Rest
 /// - `GET /auth/{service}`                        — `{ "url": "https://..." }` to start the flow
 /// - `GET /auth/{service}/callback?code=&state=`  — OAuth callback; exchanges code, stores token
 struct AuthController: Controller {
+
+    // MARK: - Response types
+
+    private struct AuthStatusItem: Encodable {
+        let serviceId: String
+        let displayName: String
+        let authorized: Bool
+    }
+
+    private struct AuthURLResponse: Encodable {
+        let url: String
+    }
+
+    // MARK: - Properties
+
     let registry: AuthRegistry
 
     var endpoints: RouteCollection<AppRequestContext> {
@@ -23,6 +38,17 @@ struct AuthController: Controller {
             .get("auth/:service", use: authorizationURL)
             .get("auth/:service/callback", use: handleCallback)
     }
+
+    private let successHTML = """
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><title>Authorization Successful</title></head>
+        <body>
+        <h2>Authorization successful!</h2>
+        <p>You can close this tab and return to your workflow.</p>
+        </body>
+        </html>
+        """
 
     // MARK: - Handlers
 
@@ -73,18 +99,6 @@ struct AuthController: Controller {
         )
     }
 
-    // MARK: - Response types
-
-    private struct AuthStatusItem: Encodable {
-        let serviceId: String
-        let displayName: String
-        let authorized: Bool
-    }
-
-    private struct AuthURLResponse: Encodable {
-        let url: String
-    }
-
     // MARK: - Helpers
 
     private func jsonResponse<T: Encodable>(_ value: T) throws -> Response {
@@ -97,15 +111,4 @@ struct AuthController: Controller {
             body: .init(byteBuffer: ByteBuffer(data: data))
         )
     }
-
-    private let successHTML = """
-        <!DOCTYPE html>
-        <html>
-        <head><meta charset="utf-8"><title>Authorization Successful</title></head>
-        <body>
-        <h2>Authorization successful!</h2>
-        <p>You can close this tab and return to your workflow.</p>
-        </body>
-        </html>
-        """
 }

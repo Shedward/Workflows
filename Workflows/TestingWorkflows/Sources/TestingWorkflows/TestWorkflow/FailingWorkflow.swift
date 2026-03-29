@@ -10,7 +10,7 @@ import WorkflowEngine
 
 @DataBindable
 struct FailAction: Action {
-    func run() async throws {
+    func run() throws {
         throw Failure("Intentional test failure")
     }
 }

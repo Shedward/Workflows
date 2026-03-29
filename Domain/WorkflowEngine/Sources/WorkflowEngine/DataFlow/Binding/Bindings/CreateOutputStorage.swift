@@ -6,7 +6,7 @@
 //
 
 struct CreateOutputStorage: DataBinding {
-    func output<Value>(for key: String, at output: inout Output<Value>) throws where Value : Sendable {
+    func output<Value>(for key: String, at output: inout Output<Value>) where Value: Sendable {
         output.storage = .init()
     }
 }

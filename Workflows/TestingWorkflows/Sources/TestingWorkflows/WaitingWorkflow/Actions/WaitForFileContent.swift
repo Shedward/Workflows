@@ -12,7 +12,7 @@ import WorkflowEngine
 struct WaitForFileContent: Wait {
     @Input var messageFile: URL
 
-    func resume() async throws -> Waiting.Time? {
+    func resume() throws -> Waiting.Time? {
         let fileContent = try String(contentsOf: messageFile, encoding: .utf8)
 
         if fileContent.isEmpty {
@@ -22,4 +22,3 @@ struct WaitForFileContent: Wait {
         }
     }
 }
-

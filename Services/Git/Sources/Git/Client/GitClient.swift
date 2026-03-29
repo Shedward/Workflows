@@ -6,8 +6,8 @@
 //
 
 import Core
-import System
 import Subprocess
+import System
 
 public struct GitClient: Sendable {
     let workingPath: FilePath?

@@ -60,4 +60,3 @@ extension WorkflowInstance: Modifiers {
 }
 
 public typealias WorkflowInstanceID = String
-

@@ -12,7 +12,7 @@ struct StartB: Action {
     @Input var valueA: String
     @Output var valueB: String
 
-    func run() async throws {
+    func run() {
         valueB = valueA + "_suffix"
     }
 }

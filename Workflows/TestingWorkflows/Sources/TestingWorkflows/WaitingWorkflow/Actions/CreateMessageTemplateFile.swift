@@ -12,7 +12,7 @@ import WorkflowEngine
 struct CreateMessageTemplateFile: Action {
     @Output var messageFile: URL
 
-    func run() async throws {
+    func run() throws {
         let templateFileURL = URL(filePath: "/tmp/MessageTemplate.md")
         try "".write(to: templateFileURL, atomically: false, encoding: .utf8)
 

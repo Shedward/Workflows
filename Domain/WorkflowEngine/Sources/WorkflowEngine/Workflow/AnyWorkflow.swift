@@ -16,6 +16,6 @@ public protocol AnyWorkflow: Sendable {
 
 extension Workflow {
     public var anyTransitions: [AnyTransition] {
-        transitions.map { $0 }
+        transitions.map(\.self)
     }
 }

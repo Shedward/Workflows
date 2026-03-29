@@ -14,7 +14,7 @@ actor WorkflowRunner {
     private let registry: WorkflowRegistry
     private let dependencies: DependenciesContainer
 
-    private lazy var scheduler: WaitScheduler = WaitScheduler { [weak self] instanceId, reason in
+    private lazy var scheduler = WaitScheduler { [weak self] instanceId, reason in
         await self?.resumeWaiting(instanceId: instanceId, reason: reason)
     }
     private let logger = Logger(scope: .workflow)
@@ -126,8 +126,12 @@ actor WorkflowRunner {
 
         let automatic = workflow.anyTransitions.filter { $0.from == instance.state && $0.trigger == .automatic }
         guard let transition = automatic.first, automatic.count == 1 else {
-            if automatic.isEmpty { logger?.trace("No automatic transitions from \(instance.state, privacy: .public)") }
-            else { logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)") }
+            if automatic.isEmpty {
+                logger?.trace("No automatic transitions from \(instance.state, privacy: .public)")
+            } else {
+                // swiftlint:disable:next line_length
+                logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)")
+            }
             return nil
         }
 
@@ -147,10 +151,12 @@ actor WorkflowRunner {
     private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
-        guard let instance = try? await storage.instance(id: instanceId),
-              let transitionState = instance.transitionState,
-              let workflow = await registry.workflow(id: instance.workflowId),
-              let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId }) else {
+        guard
+            let instance = try? await storage.instance(id: instanceId),
+            let transitionState = instance.transitionState,
+            let workflow = await registry.workflow(id: instance.workflowId),
+            let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+        else {
             logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
             return
         }
@@ -163,4 +169,3 @@ actor WorkflowRunner {
         }
     }
 }
-
