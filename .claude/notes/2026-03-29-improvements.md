@@ -31,8 +31,8 @@ Manual transition failures return HTTP 500 but don't persist `transitionState.fa
 ### 7. Finished instance retention undocumented
 `API.md` says finished instances return 404, but they actually remain queryable for a retention interval (default 3600s) before cleanup.
 
-### 8. `ListBody` encoding unverified
-`API.md` says "raw JSON array" but implementation uses `ListBody<T>` wrapper. Should confirm they produce the same wire format.
+### 8. ~~`ListBody` encoding unverified~~ (RESOLVED)
+`ListBody.swift` encodes via `JSONEncoder().encode(items)` — produces a raw JSON array. Wire format matches API docs.
 
 ---
 
@@ -44,22 +44,17 @@ Manual transition failures return HTTP 500 but don't persist `transitionState.fa
 - `WorkflowInstancesController` — `defaultTimeout = 5`
 - Various token TTLs in GoogleServices auth (3600, 600, 60)
 
-### 10. Force unwraps on URL literals
-49 `!` across 17 files, mostly `URL(string: "https://...")!`. Safe for compile-time-known literals but noisy. Consider a helper or static lets.
+### 10. ~~Force unwraps on URL literals~~ (UNNECESSARY)
+All 49 occurrences are on compile-time-known string literals — these can never fail at runtime. Cosmetic noise, not a safety risk.
 
-### 11. `print` instead of Logger
-`TestingWorkflows/WaitingWorkflow/Actions/SendMessage.swift:16` uses `print("Message \(messageFile) sent")` instead of the project's `Logger`.
+### 11. ~~`print` instead of Logger~~ (UNNECESSARY)
+`SendMessage.swift` is in `TestingWorkflows` — test-only code. Using `print()` in test fixtures is acceptable.
 
 ### 12. Silent failures in JSONFileWorkflowStorage
 `JSONFileWorkflowStorage.swift` lines 19, 22, 96 — `try?` when reading/decoding/deleting instance files. A corrupted file silently vanishes.
 
-### 13. Additional `try?` across codebase
-- `UserOAuthTokenProvider.swift` lines 87, 128, 133, 245
-- `ServiceAccountTokenProvider.swift:124`
-- `KeychainStorage.swift:53`
-- `CollectMetadata.swift:72`
-- `WorkflowGraphBuilder.swift:104`
-- `WaitScheduler.swift:88`, `WithTimeout.swift:37` (Task.sleep — acceptable)
+### 13. ~~Additional `try?` across codebase~~ (UNNECESSARY)
+All uses are contextually appropriate: existence checks (keychain), optional error body parsing (OAuth), metadata introspection fallbacks (CollectMetadata, GraphBuilder), and Task.sleep.
 
 ---
 
@@ -70,17 +65,17 @@ Manual transition failures return HTTP 500 but don't persist `transitionState.fa
 ### 15. No timeout for wait transitions
 A wait can hang forever with no expiry.
 
-### 16. Subflow data isolation not enforced
-Subflows receive full parent `WorkflowData`; nothing scoped by declared `@Input`/`@Output`. Planned as Phase 2 of graph validation.
+### 16. ~~Subflow data isolation not enforced~~ (RESOLVED)
+Implemented this session. Input filtering already existed in `Subflow.swift`. Added output merging: child's declared `@Output` keys are merged back into parent on completion. Integration test `run_subflow_data_flow` covers it.
 
 ### 17. No migration path for workflow versions
 Bumping a workflow's `version` orphans persisted instances — they throw `WorkflowVersionMismatch` on startup and must be deleted manually.
 
-### 18. `unsatisfiedInput` validation error is dead code
-Defined in `ValidationResult` but never emitted by `DataFlowAnalyzer`. Noted in graph-validation session notes.
+### 18. ~~`unsatisfiedInput` validation error is dead code~~ (RESOLVED)
+Removed this session. The case was never emitted — `.undeclaredWorkflowInput` and `.conditionallyAvailableInput` cover the same scenarios.
 
-### 19. Required inputs not validated at API level
-`Workflows.create()` doesn't check provided `initialData` against the workflow's declared `@Input` from the graph. Validation only happens at transition execution time (via `fatalError`).
+### 19. ~~Required inputs not validated at API level~~ (RESOLVED)
+Already implemented in `Workflows+Start.swift:32-46` — both `create()` and `start()` call `validateRequiredInputs` which checks `initialData` against `graph.requiredInputs` and throws `MissingRequiredInputs`.
 
 ---
 
@@ -90,4 +85,4 @@ Defined in `ValidationResult` but never emitted by `DataFlowAnalyzer`. Noted in 
 `Core/Core/Tests/CoreTests/CoreTests.swift` has one placeholder test. All testing is integration-level via shell scripts.
 
 ### 21. `Todo` and `Implement` marks overlap
-Both `Core/Marks/Todo.swift` and `Core/Marks/Implement.swift` serve the same purpose (deprecated compile-time markers). Could consolidate.
+Both define `implement()` with the same name but different semantics: `Implement.swift` is a no-op, `Todo.swift` calls `fatalError`. Confusing overload. Low-priority — consolidate or rename one.
