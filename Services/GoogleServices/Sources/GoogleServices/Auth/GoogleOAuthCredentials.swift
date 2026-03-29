@@ -9,14 +9,6 @@ import Foundation
 /// OAuth 2.0 client credentials for a GCP "Desktop app" client.
 /// Load from the JSON file downloaded from GCP Console → APIs & Services → Credentials.
 public struct GoogleOAuthCredentials: Sendable {
-    /// Loads from `~/.workflows/google_cloud/oauth_client.json`.
-    public static func loadDefault() throws -> GoogleOAuthCredentials {
-        let url = FileManager.default
-            .homeDirectoryForCurrentUser
-            .appending(path: ".workflows/google_cloud/oauth_client.json")
-        return try load(from: url)
-    }
-
     public static func load(from url: URL) throws -> GoogleOAuthCredentials {
         let data = try Failure.wrap("Failed to read OAuth client JSON at \(url.path)") {
             try Data(contentsOf: url)
