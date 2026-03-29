@@ -29,10 +29,46 @@ public struct WorkflowValidator: Sendable {
             }
         }
 
+        validateSubflowInputs(
+            graph: graph,
+            analysis: analysis,
+            graphBuilder: &graphBuilder,
+            errors: &errors
+        )
+
         return WorkflowValidationResult(
             workflowId: workflow.id,
             errors: errors,
             warnings: warnings
         )
+    }
+
+    private static func validateSubflowInputs(
+        graph: WorkflowGraph,
+        analysis: DataFlowAnalyzer.Analysis?,
+        graphBuilder: inout WorkflowGraphBuilder,
+        errors: inout [ValidationError]
+    ) {
+        guard let availableAtState = analysis?.availableAtState else {
+            return
+        }
+
+        for transition in graph.transitions where transition.isSubflow {
+            guard let subflowId = transition.subflowId else {
+                continue
+            }
+
+            let parentAvailableKeys = availableAtState[transition.from] ?? []
+            let subflowGraph = graphBuilder.cachedGraph(for: subflowId)
+            let subflowRequiredKeys = subflowGraph?.requiredInputs ?? []
+
+            for field in subflowRequiredKeys where !parentAvailableKeys.contains(field.key) {
+                errors.append(.unsatisfiedSubflowInput(
+                    key: field.key,
+                    subflowId: subflowId,
+                    atState: transition.from
+                ))
+            }
+        }
     }
 }

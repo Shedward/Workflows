@@ -24,6 +24,7 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case undeclaredWorkflowInput(key: String, processId: TransitionProcessID)
     case undeclaredWorkflowOutput(key: String)
     case typeMismatch(key: String, types: [String], atState: StateID)
+    case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
 
     public var description: String {
         switch self {
@@ -43,6 +44,8 @@ public enum ValidationError: Sendable, CustomStringConvertible {
             "Declared workflow output '\(key)' is not produced on all paths to finish"
         case let .typeMismatch(key, types, atState):
             "Data key '\(key)' has conflicting types \(types.joined(separator: ", ")) at state '\(atState)'"
+        case let .unsatisfiedSubflowInput(key, subflowId, atState):
+            "Subflow '\(subflowId)' requires input '\(key)' which is not available at state '\(atState)'"
         }
     }
 }
