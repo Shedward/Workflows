@@ -12,6 +12,7 @@ xcodebuild build \
   -scheme "$SCHEME" \
   -configuration Debug \
   -derivedDataPath "$DERIVED_DATA" \
+  -destination "platform=macOS,arch=arm64" \
   -quiet
 
 EXECUTABLE="$DERIVED_DATA/Build/Products/Debug/$SCHEME"
