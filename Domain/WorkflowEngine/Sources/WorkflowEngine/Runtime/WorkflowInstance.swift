@@ -8,9 +8,10 @@
 import Core
 import Foundation
 
-public struct WorkflowInstance: Sendable {
+public struct WorkflowInstance: Sendable, Codable {
     public var id: WorkflowInstanceID
     public var workflowId: WorkflowID
+    public var workflowVersion: WorkflowVersion
     public var state: StateID
     public var transitionState: TransitionState?
     public var data: WorkflowData
@@ -19,6 +20,7 @@ public struct WorkflowInstance: Sendable {
     init(
         id: WorkflowInstanceID,
         workflowId: WorkflowID,
+        workflowVersion: WorkflowVersion,
         state: StateID,
         transitionState: TransitionState?,
         data: WorkflowData,
@@ -26,6 +28,7 @@ public struct WorkflowInstance: Sendable {
     ) {
         self.id = id
         self.workflowId = workflowId
+        self.workflowVersion = workflowVersion
         self.state = state
         self.transitionState = transitionState
         self.data = data

@@ -30,6 +30,16 @@ actor WorkflowRunner {
         logger?.trace("Resume runner (\(instances.count) instances)")
         await scheduler.rebuild(from: instances)
         for instance in instances {
+            if let workflow = await registry.workflow(instance: instance) {
+                guard instance.workflowVersion == workflow.version else {
+                    throw WorkflowsError.WorkflowVersionMismatch(
+                        instanceId: instance.id,
+                        workflowId: instance.workflowId,
+                        instanceVersion: instance.workflowVersion,
+                        workflowVersion: workflow.version
+                    )
+                }
+            }
             await runAutomaticTransitions(from: instance)
         }
     }
@@ -53,6 +63,15 @@ actor WorkflowRunner {
         resumeReason: WaitScheduler.ResumeReason? = nil
     ) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
+
+        guard instance.workflowVersion == workflow.version else {
+            throw WorkflowsError.WorkflowVersionMismatch(
+                instanceId: instance.id,
+                workflowId: instance.workflowId,
+                instanceVersion: instance.workflowVersion,
+                workflowVersion: workflow.version
+            )
+        }
 
         let executing = instance.transitionExecuting(transition)
         try await storage.update(executing)

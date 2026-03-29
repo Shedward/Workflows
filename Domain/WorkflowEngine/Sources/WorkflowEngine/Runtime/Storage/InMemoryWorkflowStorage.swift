@@ -20,6 +20,7 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
         let instance = WorkflowInstance(
             id: newId,
             workflowId: workflow.id,
+            workflowVersion: workflow.version,
             state: workflow.startId,
             transitionState: nil,
             data: initialData

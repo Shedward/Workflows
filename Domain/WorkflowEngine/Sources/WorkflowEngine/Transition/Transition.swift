@@ -27,7 +27,7 @@ public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendab
     }
 }
 
-public struct TransitionID: Hashable, Sendable {
+public struct TransitionID: Hashable, Sendable, Codable {
     public let from: StateID
     public let to: StateID
     public let processId: TransitionProcessID

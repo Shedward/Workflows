@@ -22,7 +22,17 @@ swift test --package-path Core/Core            # Unit tests (Core module, Swift 
 # Integration tests (require running server on :8080)
 ./Tools/Tests/run_all                          # Run all integration tests
 ./Tools/Tests/run_simple_workflow              # Run a single test
+
+# Lint
+swiftlint                                      # Run from project root (uses .swiftlint.yml)
+swiftlint --fix                                # Auto-fix formatting violations
 ```
+
+## SwiftLint
+
+- Config: `.swiftlint.yml` at project root. Stricter opt-in rules enabled (see file).
+- Xcode integration: Run Script phase calls `Tools/Run/swiftlint` (adds Homebrew to PATH).
+- Module override: `Workflows/HHWorkflows/.swiftlint.yml` disables `type_name` and `identifier_name` to allow Cyrillic identifiers.
 
 ## Architecture
 
@@ -69,7 +79,9 @@ var transitions: Transitions {
 
 **Data Flow** — `@Input<T>` and `@Output<T>` property wrappers for type-safe data binding between transitions. `@DataBindable` macro auto-generates binding conformance. Data stored in `WorkflowData` (JSON-serializable key-value store).
 
-**Runtime** — `Workflows` actor is the main facade. `WorkflowRunner` actor executes transitions and handles automatic transitions. `WorkflowRegistry` maps definitions to instances. `WorkflowStorage` persists state (in-memory default). `WaitScheduler` handles delayed resumption.
+**Runtime** — `Workflows` actor is the main facade. `WorkflowRunner` actor executes transitions and handles automatic transitions. `WorkflowRegistry` maps definitions to instances. `WorkflowStorage` persists state — `InMemoryWorkflowStorage` (default) or `JSONFileWorkflowStorage` (one JSON file per instance in a directory). `WaitScheduler` handles delayed resumption.
+
+`Workflows.init` accepts an optional `storage:` parameter (defaults to `InMemoryWorkflowStorage()`). The server passes `JSONFileWorkflowStorage(directory:)` pointing at `~/.workflows/instances/`.
 
 ### Concurrency Model
 
@@ -112,10 +124,9 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
 - **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — could crash the server in production.
 - **Manual vs automatic failure asymmetry**: Manual transition failures propagate as HTTP 500 but do NOT set `transitionState.failed`. Only automatic transition failures persist the error in `transitionState`. Consider unifying.
-- **No persistent storage** — in-memory only, all state lost on restart.
+- **No migration mechanism** — if a workflow's `version` is bumped, persisted instances with the old version will cause `WorkflowVersionMismatch` on startup; they must be deleted manually.
 - **No retry mechanism** for failed transitions.
 - **No timeout** for wait transitions.
-- **Workflow `version` field** exists but is unused by engine.
 
 ### Documentation
 

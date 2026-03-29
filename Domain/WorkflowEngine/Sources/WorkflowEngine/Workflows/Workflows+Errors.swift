@@ -31,4 +31,11 @@ public enum WorkflowsError {
         public let transitionId: TransitionProcessID
         public let availableTransitions: [TransitionID]
     }
+
+    public struct WorkflowVersionMismatch: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let workflowId: WorkflowID
+        public let instanceVersion: WorkflowVersion
+        public let workflowVersion: WorkflowVersion
+    }
 }
