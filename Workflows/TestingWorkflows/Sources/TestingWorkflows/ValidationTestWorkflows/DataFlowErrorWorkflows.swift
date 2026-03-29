@@ -12,25 +12,31 @@ import WorkflowEngine
 @DataBindable
 struct ProduceString: Action {
     @Output var data: String
-    func run() { data = "hello" }
+    func run() {
+      data = "hello"
+    }
 }
 
 @DataBindable
 struct ProduceInt: Action {
     @Output var data: Int
-    func run() { data = 42 }
+    func run() {
+      data = 42
+    }
 }
 
 @DataBindable
 struct ConsumeString: Action {
     @Input var data: String
-    func run() { }
+    func run() {
+    }
 }
 
 @DataBindable
 struct ConsumeGhost: Action {
     @Input var ghost: String
-    func run() { }
+    func run() {
+    }
 }
 
 // MARK: - Triggers: undeclaredWorkflowInput

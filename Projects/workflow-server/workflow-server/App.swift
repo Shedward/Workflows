@@ -26,7 +26,7 @@ enum App {
             directory: workflowsConfigDir.appending(path: "instances")
         )
 
-        let workflows = try await Workflows(storage: storage, dependencies: dependencies) {
+        let workflows = try await Workflows(storage: storage, dependencies: dependencies, validation: .strict) {
             TestingWorkflows.workflows
         }
         let app = WorkflowServer.App(workflows: workflows, authRegistry: authRegistry)
