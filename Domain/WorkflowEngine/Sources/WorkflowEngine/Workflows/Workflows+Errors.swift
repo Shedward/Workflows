@@ -47,4 +47,8 @@ public enum WorkflowsError {
         public let workflowId: WorkflowID
         public let missingKeys: Set<String>
     }
+
+    public struct CircularSubflows: Swift.Error {
+        public let cycles: [[WorkflowID]]
+    }
 }

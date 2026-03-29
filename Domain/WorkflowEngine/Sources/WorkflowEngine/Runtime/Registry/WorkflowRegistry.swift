@@ -78,19 +78,66 @@ public actor WorkflowRegistry {
             graphs[workflow.id] = graph
 
             for warning in result.warnings {
-                logger?.warning("[\(workflow.id)] \(warning.description)")
+                logger?.warning("[\(workflow.id, privacy: .public)] \(warning.description, privacy: .public)")
             }
 
             if !result.isValid {
                 for error in result.errors {
-                    logger?.error("[\(workflow.id)] \(error.description)")
+                    logger?.error("[\(workflow.id, privacy: .public)] \(error.description, privacy: .public)")
                 }
                 results.append(result)
             }
         }
 
+        let circularCycles = detectCircularSubflows()
+        for cycle in circularCycles {
+            let description = ValidationError.circularSubflow(cycle).description
+            logger?.error("\(description, privacy: .public)")
+        }
+        if !circularCycles.isEmpty, mode == .strict {
+            throw WorkflowsError.CircularSubflows(cycles: circularCycles)
+        }
+
         if mode == .strict, !results.isEmpty {
             throw WorkflowsError.ValidationFailed(results: results)
         }
+    }
+
+    private func detectCircularSubflows() -> [[WorkflowID]] {
+        var visited: Set<WorkflowID> = []
+        var inProgress: Set<WorkflowID> = []
+        var cycles: [[WorkflowID]] = []
+
+        func dfs(_ workflowId: WorkflowID, path: [WorkflowID]) {
+            guard let workflow = workflows[workflowId] else {
+                return
+            }
+            guard !visited.contains(workflowId) else {
+                return
+            }
+
+            inProgress.insert(workflowId)
+
+            for transition in workflow.anyTransitions {
+                guard let subflow = transition.process as? AnyWorkflow else { continue }
+                let subflowId = subflow.id
+
+                if inProgress.contains(subflowId) {
+                    let cycleStart = path.firstIndex(of: subflowId) ?? 0
+                    cycles.append(Array(path[cycleStart...]) + [subflowId])
+                } else if !visited.contains(subflowId) {
+                    dfs(subflowId, path: path + [subflowId])
+                }
+            }
+
+            inProgress.remove(workflowId)
+            visited.insert(workflowId)
+        }
+
+        for workflowId in workflows.keys {
+            dfs(workflowId, path: [workflowId])
+        }
+
+        return cycles
     }
 }

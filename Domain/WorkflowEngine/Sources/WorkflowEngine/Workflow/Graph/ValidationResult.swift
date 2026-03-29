@@ -26,6 +26,7 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case typeMismatch(key: String, types: [String], atState: StateID)
     case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
     case automaticCycleWithoutExit([StateID])
+    case circularSubflow([WorkflowID])
 
     public var description: String {
         switch self {
@@ -49,6 +50,8 @@ public enum ValidationError: Sendable, CustomStringConvertible {
             "Subflow '\(subflowId)' requires input '\(key)' which is not available at state '\(atState)'"
         case let .automaticCycleWithoutExit(states):
             "Cycle involving states \(states.joined(separator: " → ")) has only automatic transitions and no manual exit"
+        case let .circularSubflow(workflows):
+            "Circular subflow dependency detected: \(workflows.joined(separator: " → "))"
         }
     }
 }
