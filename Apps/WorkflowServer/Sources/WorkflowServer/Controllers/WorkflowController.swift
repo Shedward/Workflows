@@ -6,8 +6,8 @@
 //
 
 import API
-import Rest
 import Hummingbird
+import Rest
 import WorkflowEngine
 
 struct WorkflowsController: Controller {
@@ -18,7 +18,7 @@ struct WorkflowsController: Controller {
             .on(GetWorkflows.self, use: getWorkflowTypes)
     }
 
-    private func getWorkflowTypes(request: Request, body: EmptyBody, context: Context) async throws -> ListBody<API.Workflow> {
+    private func getWorkflowTypes(request: Request, body: EmptyBody, context: Context) async -> ListBody<API.Workflow> {
         let allWorkflows = await workflows.workflows()
         let instances = allWorkflows.map { workflow in
             API.Workflow(model: workflow)

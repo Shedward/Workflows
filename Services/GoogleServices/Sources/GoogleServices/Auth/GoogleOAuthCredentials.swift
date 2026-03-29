@@ -9,11 +9,6 @@ import Foundation
 /// OAuth 2.0 client credentials for a GCP "Desktop app" client.
 /// Load from the JSON file downloaded from GCP Console → APIs & Services → Credentials.
 public struct GoogleOAuthCredentials: Sendable {
-    public let clientID: String
-    public let clientSecret: String
-    public let authURI: String
-    public let tokenURI: String
-
     /// Loads from `~/.workflows/google_cloud/oauth_client.json`.
     public static func loadDefault() throws -> GoogleOAuthCredentials {
         let url = FileManager.default
@@ -36,6 +31,11 @@ public struct GoogleOAuthCredentials: Sendable {
             tokenURI: raw.installed.token_uri
         )
     }
+
+    public let clientID: String
+    public let clientSecret: String
+    public let authURI: String
+    public let tokenURI: String
 }
 
 // MARK: - GCP Console JSON shape

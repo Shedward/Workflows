@@ -106,7 +106,9 @@ public actor NetworkRestClient: RestClient {
     }
 
     private func responseDescription<Response>(_ urlResponse: URLResponse, responseBody: Response) -> String {
-        guard let urlResponse = urlResponse as? HTTPURLResponse else { return "Response: -" }
+        guard let urlResponse = urlResponse as? HTTPURLResponse else {
+            return "Response: -"
+        }
 
         return """
             Response:

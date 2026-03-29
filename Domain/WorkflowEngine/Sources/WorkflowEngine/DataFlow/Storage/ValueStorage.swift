@@ -11,10 +11,6 @@ final class ValueStorage: @unchecked Sendable {
     private var _value: Sendable?
     private var lock = os_unfair_lock_s()
 
-    init(_ value: Sendable? = nil) {
-        _value = value
-    }
-
     var value: Sendable? {
         get {
             os_unfair_lock_lock(&lock)
@@ -27,5 +23,9 @@ final class ValueStorage: @unchecked Sendable {
             _value = newValue
             os_unfair_lock_unlock(&lock)
         }
+    }
+
+    init(_ value: Sendable? = nil) {
+        _value = value
     }
 }

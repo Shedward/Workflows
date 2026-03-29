@@ -33,7 +33,7 @@ public struct App {
         try await app.runService()
     }
 
-    func buildApplication(reader: ConfigReader) async throws -> some ApplicationProtocol {
+    func buildApplication(reader: ConfigReader) throws -> some ApplicationProtocol {
         let logger = {
             var logger = Logger(label: "workflow-server")
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
@@ -42,15 +42,14 @@ public struct App {
 
         let router = try buildRouter(workflows: workflows, authRegistry: authRegistry)
 
-        let app = Application(
+        return Application(
             router: router,
             configuration: ApplicationConfiguration(reader: reader.scoped(to: "http")),
             logger: logger
         )
-        return app
     }
 
-    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) throws -> Router<AppRequestContext> {
+    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) -> Router<AppRequestContext> {
         let router = Router(context: AppRequestContext.self)
         router.addMiddleware {
             LogRequestsMiddleware(.info)

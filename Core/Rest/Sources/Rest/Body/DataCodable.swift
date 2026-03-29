@@ -8,8 +8,8 @@
 import Foundation
 
 public protocol DataEncodable: Sendable {
-    func data() throws -> Data?
     var contentType: String? { get }
+    func data() throws -> Data?
 }
 
 public extension DataEncodable {

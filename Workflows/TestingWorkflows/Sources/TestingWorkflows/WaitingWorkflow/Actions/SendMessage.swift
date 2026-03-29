@@ -12,7 +12,7 @@ import WorkflowEngine
 struct SendMessage: Action {
     @Input var messageFile: URL
 
-    func run() async throws {
+    func run() {
         print("Message \(messageFile) sent")
     }
 }

@@ -5,5 +5,5 @@
 //  Created by Vlad Maltsev on 03.01.2026.
 //
 
-@_exported import WorkflowMacro
 @_exported import Core
+@_exported import WorkflowMacro

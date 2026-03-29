@@ -21,6 +21,5 @@ let package = Package(
                 .product(name: "Rest", package: "Rest")
             ]
         )
-
     ]
 )

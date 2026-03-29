@@ -27,7 +27,6 @@ public final class GithubClient {
                 .addHeaders(headers)
                 .authorizer(authoriser)
         )
-
     }
 
     public func fetch<Api: GithubApi>(_ api: Api) async throws -> Api.ResponseBody {

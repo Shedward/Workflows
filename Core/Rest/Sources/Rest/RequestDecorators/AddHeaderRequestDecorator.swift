@@ -14,7 +14,7 @@ public struct AddHeadersRequestDecorator: RequestDecorator {
 
     public func decorate<RequestBody, ResponseBody>(
         _ request: Request<RequestBody, ResponseBody>
-    ) async throws -> Request<RequestBody, ResponseBody> {
+    ) -> Request<RequestBody, ResponseBody> {
         request.with { $0.headers.merge(additionalHeaders) }
     }
 }

@@ -14,12 +14,12 @@ public protocol WorkflowApi: Api, Sendable {
 }
 
 public extension WorkflowApi where RequestBody: Defaultable {
-    func request(_ pathElements: PathElements = .init()) -> Request<RequestBody, ResponseBody> {
-        Request(method: Self.method, path: pathElements.apply(to: Self.path), body: .init())
-    }
-
     var request: Request<RequestBody, ResponseBody> {
         request()
+    }
+
+    func request(_ pathElements: PathElements = .init()) -> Request<RequestBody, ResponseBody> {
+        Request(method: Self.method, path: pathElements.apply(to: Self.path), body: .init())
     }
 }
 

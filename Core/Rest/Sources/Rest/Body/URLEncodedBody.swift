@@ -10,13 +10,13 @@ import Foundation
 public struct UrlEncodedBody: DataEncodable {
     public var query: Query
 
+    public var contentType: String? { "application/x-www-form-urlencoded" }
+
     public init(query: Query) {
         self.query = query
     }
 
-    public var contentType: String? { "application/x-www-form-urlencoded" }
-
-    public func data() throws -> Data? {
+    public func data() -> Data? {
         let string = query.values
             .compactMap { key, value in
                 guard
@@ -27,7 +27,6 @@ public struct UrlEncodedBody: DataEncodable {
                 return "\(key)=\(encodedValue)"
             }
             .joined(separator: "&")
-        let data = string.data(using: .utf8)
-        return data
+        return string.data(using: .utf8)
     }
 }

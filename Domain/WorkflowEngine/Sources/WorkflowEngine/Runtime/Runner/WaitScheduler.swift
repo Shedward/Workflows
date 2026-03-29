@@ -5,8 +5,8 @@
 //  Created by Assistant on 02.01.2026.
 //
 
-import Foundation
 import Core
+import Foundation
 import os
 
 actor WaitScheduler {
@@ -88,7 +88,9 @@ actor WaitScheduler {
                 try? await Task.sleep(nanoseconds: nanos)
             }
             logger?.trace("Schedule \(instanceId) finished")
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else {
+                return
+            }
             logger?.trace("Resuming \(instanceId)")
             await resume(instanceId, .time)
         }

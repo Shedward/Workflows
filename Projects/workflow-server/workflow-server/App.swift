@@ -5,17 +5,17 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
+import Foundation
+import GoogleServices
+import HHWorkflows
+import os
+import Rest
+import TestingWorkflows
 import WorkflowEngine
 import WorkflowServer
-import TestingWorkflows
-import HHWorkflows
-import GoogleServices
-import os
-import Foundation
-import Rest
 
 @main
-struct App {
+enum App {
     static func main() async throws {
         Logger.enable(.workflow)
         Logger.enable(.network)

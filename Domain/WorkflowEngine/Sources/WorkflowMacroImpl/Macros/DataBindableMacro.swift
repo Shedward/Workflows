@@ -5,10 +5,10 @@
 //  Created by Vlad Maltsev on 03.01.2026.
 //
 
+import SwiftLexicalLookup
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftLexicalLookup
 
 private enum WrapperKind {
     case input(key: String)
@@ -44,7 +44,7 @@ public struct DataBindableMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
-    ) throws -> [DeclSyntax] {
+    ) -> [DeclSyntax] {
 
         let members = declaration.memberBlock.members
 

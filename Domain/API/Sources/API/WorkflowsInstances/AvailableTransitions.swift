@@ -11,8 +11,8 @@ import Rest
 public struct AvailableTransitions: WorkflowApi {
     public typealias ResponseBody = ListBody<Transition>
 
-    static public let method = Method.get
-    static public let path = "/workflowInstances/:id/transitions"
+    public static let method = Method.get
+    public static let path = "/workflowInstances/:id/transitions"
 
     public let instanceId: String
 

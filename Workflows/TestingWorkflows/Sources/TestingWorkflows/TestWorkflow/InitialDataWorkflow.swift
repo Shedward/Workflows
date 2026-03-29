@@ -12,7 +12,7 @@ struct ReadInitialData: Action {
     @Input var greeting: String
     @Output var result: String
 
-    func run() async throws {
+    func run() {
         result = greeting + "_processed"
     }
 }

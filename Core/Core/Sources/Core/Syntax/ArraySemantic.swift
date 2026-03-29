@@ -12,18 +12,18 @@ public protocol ArraySemantic {
 }
 
 extension ArraySemantic {
+    public var isEmpty: Bool {
+        items.isEmpty
+    }
+
     public subscript (_ index: Int) -> Item {
         get { items[index] }
         set { items[index] = newValue }
     }
-
-    public var isEmpty: Bool {
-        items.isEmpty
-    }
 }
 
 extension Modifiers where Self: ArraySemantic {
-    mutating public func append(_ item: Item) {
+    public mutating func append(_ item: Item) {
         items.append(item)
     }
 

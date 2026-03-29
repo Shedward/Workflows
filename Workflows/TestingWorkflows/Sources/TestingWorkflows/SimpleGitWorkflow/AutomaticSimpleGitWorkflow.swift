@@ -15,7 +15,7 @@ struct AutomaticSimpleGitWorkflow: Workflow {
         case allCommited
     }
 
-    public var transitions: Transitions {
+    var transitions: Transitions {
         chainedAfterStart {
             CreateTempWorkingDirectory.to(.workingDirectoryCreated)
             InitialiseRepository.to(.repositoryCreated)

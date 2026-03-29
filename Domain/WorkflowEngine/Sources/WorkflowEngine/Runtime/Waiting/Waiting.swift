@@ -14,8 +14,6 @@ public enum Waiting: Codable, Sendable {
 
 extension Waiting {
     public struct Time: Codable, Sendable {
-        public let date: Date
-
         public static func until(_ date: Date) -> Self {
             Time(date: date)
         }
@@ -34,6 +32,12 @@ extension Waiting {
 
         public static func after(days: Int) -> Self {
             .after(seconds: TimeInterval(days) * 86_400)
+        }
+
+        public let date: Date
+
+        public init(date: Date) {
+            self.date = date
         }
     }
 

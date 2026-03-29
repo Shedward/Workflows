@@ -20,6 +20,31 @@ import Security
 /// that let any client (browser, CLI, desktop app) trigger the authorization flow.
 public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
+    // MARK: - Subtypes
+
+    private struct PendingVerifier {
+        let codeVerifier: String
+        let createdAt: Date
+    }
+
+    // MARK: - Decodable
+
+    private struct TokenResponse: Decodable {
+        let access_token: String
+        let refresh_token: String?
+        let expires_in: Int?
+    }
+
+    private struct ErrorResponse: Decodable {
+        let error: String?
+        let error_description: String?
+    }
+
+    // MARK: - Type properties
+
+    private static let refreshTokenKey = "refreshToken"
+    private static let verifierTTL: TimeInterval = 600 // 10 minutes
+
     // MARK: - OAuthProvider identity
 
     public nonisolated let serviceID = "google"
@@ -30,7 +55,7 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
     private let credentials: GoogleOAuthCredentials
     private let scopes: [String]
     private let keychain = KeychainStorage(service: "com.workflows.google")
-    private static let refreshTokenKey = "refreshToken"
+    private let redirectURI: String
 
     // MARK: - Cached access token
 
@@ -39,14 +64,7 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
     // MARK: - Pending PKCE verifiers (keyed by state UUID string)
 
-    private struct PendingVerifier {
-        let codeVerifier: String
-        let createdAt: Date
-    }
     private var pendingVerifiers: [String: PendingVerifier] = [:]
-    private static let verifierTTL: TimeInterval = 600 // 10 minutes
-
-    private let redirectURI: String
 
     // MARK: - Init
 
@@ -65,11 +83,11 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
     // MARK: - OAuthProvider
 
-    public func isAuthorized() async -> Bool {
+    public func isAuthorized() -> Bool {
         (try? keychain.read(key: Self.refreshTokenKey)) != nil
     }
 
-    public func authorizationURL() async throws -> URL {
+    public func authorizationURL() throws -> URL {
         pruneExpiredVerifiers()
 
         let (verifier, challenge) = makePKCE()
@@ -231,18 +249,5 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
                 ?? "HTTP \((urlResponse as? HTTPURLResponse)?.statusCode ?? -1)"
             throw Failure("\(context): \(detail)")
         }
-    }
-
-    // MARK: - Decodable
-
-    private struct TokenResponse: Decodable {
-        let access_token: String
-        let refresh_token: String?
-        let expires_in: Int?
-    }
-
-    private struct ErrorResponse: Decodable {
-        let error: String?
-        let error_description: String?
     }
 }

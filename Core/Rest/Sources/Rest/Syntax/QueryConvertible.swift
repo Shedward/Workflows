@@ -25,7 +25,7 @@ extension Bool: QueryConvertible {
 
 private extension Collection where Element: QueryConvertible {
     func joinedQueryValue() -> String? {
-        let parts = compactMap { $0.queryValue }
+        let parts = compactMap(\.queryValue)
         return parts.isEmpty ? nil : parts.joined(separator: ",")
     }
 }
@@ -44,7 +44,7 @@ extension Set: QueryConvertible where Element: QueryConvertible {
 
 extension Optional: QueryConvertible where Wrapped: QueryConvertible {
     public var queryValue: String? {
-        map { $0.queryValue } ?? nil
+        map(\.queryValue)
     }
 }
 

@@ -15,7 +15,7 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
         self.retentionInterval = retentionInterval
     }
 
-    public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
+    public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) -> WorkflowInstance {
         let newId = UUID().uuidString
         let instance = WorkflowInstance(
             id: newId,
@@ -28,18 +28,18 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
         return instance
     }
 
-    public func update(_ instance: WorkflowInstance) async throws {
+    public func update(_ instance: WorkflowInstance) {
         instances = instances.filter { $0.id != instance.id } + [instance]
     }
 
-    public func finish(_ instance: WorkflowInstance) async throws {
+    public func finish(_ instance: WorkflowInstance) {
         var finished = instance
         finished.finishedAt = Date()
         instances = instances.filter { $0.id != instance.id } + [finished]
         cleanupExpired()
     }
 
-    public func all() async throws -> [WorkflowInstance] {
+    public func all() -> [WorkflowInstance] {
         cleanupExpired()
         return instances.filter { $0.finishedAt == nil }
     }
@@ -52,7 +52,9 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
     private func cleanupExpired() {
         let now = Date()
         instances.removeAll { instance in
-            guard let finishedAt = instance.finishedAt else { return false }
+            guard let finishedAt = instance.finishedAt else {
+                return false
+            }
             return now.timeIntervalSince(finishedAt) > retentionInterval
         }
     }

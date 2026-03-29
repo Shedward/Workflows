@@ -47,7 +47,9 @@ extension Request: CustomStringConvertible {
 
 extension Query: CustomStringConvertible {
     public var description: String {
-        if values.isEmpty {  return "Query()" }
+        if values.isEmpty {
+            return "Query()"
+        }
 
         let valuesList = values
             .filter { $1.queryValue != nil }
@@ -64,7 +66,9 @@ extension Query: CustomStringConvertible {
 
 extension Headers: CustomStringConvertible {
     public var description: String {
-        if values.isEmpty {  return "Headers()" }
+        if values.isEmpty {
+            return "Headers()"
+        }
 
         let valuesList = values
             .map { "  \($0): \(redactHeaderIfNeeded($0, value: $1))"}

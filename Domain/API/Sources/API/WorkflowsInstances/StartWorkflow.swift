@@ -10,8 +10,8 @@ import Rest
 public struct StartWorkflow: WorkflowApi {
     public typealias ResponseBody = WorkflowInstance
 
-    static public let method = Method.post
-    static public let path = "/workflowInstances"
+    public static let method = Method.post
+    public static let path = "/workflowInstances"
 
     let workflowId: String
     let initialData: WorkflowData?

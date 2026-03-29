@@ -31,8 +31,10 @@ public struct KeychainStorage: Sendable {
 
         switch status {
         case errSecSuccess:
-            guard let data = result as? Data,
-                  let value = String(data: data, encoding: .utf8) else {
+            guard
+                let data = result as? Data,
+                let value = String(data: data, encoding: .utf8)
+            else {
                 throw Failure("Keychain item for '\(key)' is not valid UTF-8")
             }
             return value

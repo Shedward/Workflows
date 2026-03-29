@@ -86,16 +86,45 @@ public struct CopyFile: GoogleDriveApi {
 }
 
 extension CopyFile: Modifiers {
-    public func name(_ name: String) -> Self { with { $0.name = name } }
-    public func parents(_ parents: [String]) -> Self { with { $0.parents = parents } }
-    public func description(_ description: String) -> Self { with { $0.description = description } }
-    public func mimeType(_ mimeType: String) -> Self { with { $0.mimeType = mimeType } }
-    public func supportsAllDrives(_ value: Bool) -> Self { with { $0.supportsAllDrives = value } }
-    public func ignoreDefaultVisibility(_ value: Bool) -> Self { with { $0.ignoreDefaultVisibility = value } }
-    public func keepRevisionForever(_ value: Bool) -> Self { with { $0.keepRevisionForever = value } }
-    public func ocrLanguage(_ value: String) -> Self { with { $0.ocrLanguage = value } }
-    public func includeLabels(_ value: String) -> Self { with { $0.includeLabels = value } }
-    public func includePermissionsForView(_ value: String) -> Self { with { $0.includePermissionsForView = value } }
+    public func name(_ name: String) -> Self {
+        with { $0.name = name }
+    }
+
+    public func parents(_ parents: [String]) -> Self {
+        with { $0.parents = parents }
+    }
+
+    public func description(_ description: String) -> Self {
+        with { $0.description = description }
+    }
+
+    public func mimeType(_ mimeType: String) -> Self {
+        with { $0.mimeType = mimeType }
+    }
+
+    public func supportsAllDrives(_ value: Bool) -> Self {
+        with { $0.supportsAllDrives = value }
+    }
+
+    public func ignoreDefaultVisibility(_ value: Bool) -> Self {
+        with { $0.ignoreDefaultVisibility = value }
+    }
+
+    public func keepRevisionForever(_ value: Bool) -> Self {
+        with { $0.keepRevisionForever = value }
+    }
+
+    public func ocrLanguage(_ value: String) -> Self {
+        with { $0.ocrLanguage = value }
+    }
+
+    public func includeLabels(_ value: String) -> Self {
+        with { $0.includeLabels = value }
+    }
+
+    public func includePermissionsForView(_ value: String) -> Self {
+        with { $0.includePermissionsForView = value }
+    }
 }
 
 // MARK: - Request body

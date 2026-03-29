@@ -9,16 +9,16 @@ public protocol WorkflowState: Sendable, RawRepresentable, CaseIterable where Ra
 }
 
 extension WorkflowState {
-    public var id: StateID {
-        rawValue
-    }
-
     public static var start: StateID {
         "_start"
     }
 
     public static var finish: StateID {
         "_finish"
+    }
+
+    public var id: StateID {
+        rawValue
     }
 }
 

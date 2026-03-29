@@ -11,6 +11,8 @@ import Foundation
 public struct PlainTextBody: DataCodable {
     public let body: String
 
+    public var contentType: String? { "text/plain; charset=utf-8" }
+
     public init(_ body: String) {
         self.body = body
     }
@@ -22,9 +24,7 @@ public struct PlainTextBody: DataCodable {
         self.init(body)
     }
 
-    public func data() throws -> Data? {
+    public func data() -> Data? {
         body.data(using: .utf8)
     }
-
-    public var contentType: String? { "text/plain; charset=utf-8" }
 }

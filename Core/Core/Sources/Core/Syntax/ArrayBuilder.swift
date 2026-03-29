@@ -8,7 +8,7 @@
 @resultBuilder
 public enum ArrayBuilder<Element> {
     public static func buildBlock(_ components: [Element]...) -> [Element] {
-        components.flatMap { $0 }
+        components.flatMap(\.self)
     }
     public static func buildExpression(_ expression: Element) -> [Element] {
         [expression]
@@ -31,7 +31,7 @@ public enum ArrayBuilder<Element> {
     }
 
     public static func buildArray(_ components: [[Element]]) -> [Element] {
-        components.flatMap { $0 }
+        components.flatMap(\.self)
     }
 
     public static func buildLimitedAvailability(_ component: [Element]) -> [Element] {

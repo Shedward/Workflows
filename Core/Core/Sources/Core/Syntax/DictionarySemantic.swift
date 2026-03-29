@@ -21,6 +21,10 @@ extension DictionarySemantic {
 
 extension Modifiers where Self: DictionarySemantic {
 
+    public var isEmpty: Bool {
+        values.isEmpty
+    }
+
     public func set(_ key: Key, to value: Value) -> Self {
         with { $0.values[key] = value }
     }
@@ -32,19 +36,15 @@ extension Modifiers where Self: DictionarySemantic {
     public func merging(_ other: Self) -> Self {
         with { $0.merge(other) }
     }
-
-    public var isEmpty: Bool {
-        values.isEmpty
-    }
 }
 
 extension Modifiers where Self: Defaultable, Self: DictionarySemantic {
 
-    public init(_ key: Key, to value: Value) {
-        self = .init().set(key, to: value)
-    }
-
     public static func set(_ key: Key, to value: Value) -> Self {
         Self().set(key, to: value)
+    }
+
+    public init(_ key: Key, to value: Value) {
+        self = .init().set(key, to: value)
     }
 }
