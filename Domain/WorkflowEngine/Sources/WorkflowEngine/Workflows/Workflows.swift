@@ -20,7 +20,7 @@ public actor Workflows {
     public init(
         storage: WorkflowStorage = InMemoryWorkflowStorage(),
         dependencies: DependenciesContainer,
-        validation: ValidationMode = .lenient,
+        validation: ValidationMode = .strict,
         @ArrayBuilder<any Workflow> workflows: () -> [any Workflow]
     ) async throws {
         self.registry = try WorkflowRegistry(workflows())

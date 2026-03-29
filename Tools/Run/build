@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+WORKSPACE="$ROOT_DIR/Workflow.xcworkspace"
+SCHEME="workflow-server"
+DERIVED_DATA="$ROOT_DIR/.build/DerivedData"
+
+echo "Building $SCHEME..."
+xcodebuild build \
+  -workspace "$WORKSPACE" \
+  -scheme "$SCHEME" \
+  -configuration Debug \
+  -derivedDataPath "$DERIVED_DATA" \
+  -destination "platform=macOS,arch=arm64" \
+  -quiet
+
+EXECUTABLE="$DERIVED_DATA/Build/Products/Debug/$SCHEME"
+
+if [[ ! -x "$EXECUTABLE" ]]; then
+  echo "Build failed: executable not found at $EXECUTABLE" >&2
+  exit 1
+fi
+
+echo "Build succeeded."

@@ -13,25 +13,9 @@ cleanup() {
 trap cleanup EXIT
 
 # Build
-echo "Building workflow-server..."
-xcodebuild build \
-  -workspace "$ROOT_DIR/Workflow.xcworkspace" \
-  -scheme "workflow-server" \
-  -configuration Debug \
-  -derivedDataPath "$ROOT_DIR/.build/DerivedData" \
-  -quiet 2>&1 | grep -v "^$" || XCODE_STATUS="${PIPESTATUS[0]}"
-if [[ "${XCODE_STATUS:-0}" -ne 0 ]]; then
-  echo "Build failed" >&2
-  exit 1
-fi
-
-echo "Build succeeded."
+"$SCRIPT_DIR/build"
 
 EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-server"
-if [[ ! -x "$EXECUTABLE" ]]; then
-  echo "Build failed: executable not found" >&2
-  exit 1
-fi
 
 # Start server
 "$EXECUTABLE" &

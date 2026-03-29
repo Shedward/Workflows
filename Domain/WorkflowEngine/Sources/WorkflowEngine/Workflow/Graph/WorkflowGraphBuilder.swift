@@ -6,12 +6,13 @@
 //
 
 public struct WorkflowGraphBuilder: Sendable {
-    private var cache: [WorkflowID: WorkflowGraph] = [:]
+    private var graphCache: [WorkflowID: WorkflowGraph] = [:]
+    private var analysisCache: [WorkflowID: DataFlowAnalyzer.Analysis] = [:]
 
     public init() {}
 
     public mutating func build(from workflow: AnyWorkflow) -> WorkflowGraph {
-        if let cached = cache[workflow.id] {
+        if let cached = graphCache[workflow.id] {
             return cached
         }
 
@@ -23,8 +24,8 @@ public struct WorkflowGraphBuilder: Sendable {
         let context = DataFlowAnalyzer.Context(
             transitions: transitions,
             states: states,
-            declaredInputKeys: declaredIO.inputKeys,
-            declaredOutputKeys: declaredIO.outputKeys,
+            declaredInputs: declaredIO.inputs,
+            declaredOutputs: declaredIO.outputs,
             startId: workflow.startId,
             finishId: workflow.finishId
         )
@@ -39,8 +40,17 @@ public struct WorkflowGraphBuilder: Sendable {
             producedOutputs: analysis.producedOutputs
         )
 
-        cache[workflow.id] = graph
+        graphCache[workflow.id] = graph
+        analysisCache[workflow.id] = analysis
         return graph
+    }
+
+    func analysis(for workflowId: WorkflowID) -> DataFlowAnalyzer.Analysis? {
+        analysisCache[workflowId]
+    }
+
+    func cachedGraph(for workflowId: WorkflowID) -> WorkflowGraph? {
+        graphCache[workflowId]
     }
 
     private func buildStates(from workflow: AnyWorkflow) -> [WorkflowGraph.State] {
@@ -55,10 +65,10 @@ public struct WorkflowGraphBuilder: Sendable {
 
     private func buildTransitions(from workflow: AnyWorkflow) -> [WorkflowGraph.Transition] {
         workflow.anyTransitions.map { transition in
-            let isSubflow = transition.process is any AnyWorkflow
+            let subworkflow = transition.process as? AnyWorkflow
             let metadata: TransitionMetadata
-            if isSubflow, let subworkflow = transition.process as? any AnyWorkflow & DataBindable & Defaultable {
-                metadata = collectDataBindableMetadata(subworkflow, processId: transition.process.id)
+            if let bindableSubflow = subworkflow as? any AnyWorkflow & DataBindable & Defaultable {
+                metadata = collectDataBindableMetadata(bindableSubflow, processId: transition.process.id)
             } else {
                 metadata = transition.process.collectMetadata()
             }
@@ -70,17 +80,19 @@ public struct WorkflowGraphBuilder: Sendable {
                 processId: transition.process.id,
                 trigger: transition.trigger,
                 metadata: metadata,
-                isSubflow: isSubflow
+                subflowId: subworkflow?.id
             )
         }
     }
 
-    private func collectWorkflowIO(_ workflow: AnyWorkflow) -> (inputKeys: Set<String>, outputKeys: Set<String>) {
+    private func collectWorkflowIO(
+        _ workflow: AnyWorkflow
+    ) -> (inputs: Set<TransitionMetadata.Field>, outputs: Set<TransitionMetadata.Field>) {
         guard let bindable = workflow as? any DataBindable & Defaultable else {
             return ([], [])
         }
         let metadata = collectDataBindableMetadata(bindable, processId: workflow.id)
-        return (metadata.inputKeys, metadata.outputKeys)
+        return (metadata.inputs, metadata.outputs)
     }
 
     private func collectDataBindableMetadata(

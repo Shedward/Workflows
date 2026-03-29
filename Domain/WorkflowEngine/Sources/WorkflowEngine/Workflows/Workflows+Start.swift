@@ -35,7 +35,7 @@ public extension Workflows {
         }
 
         let providedKeys = Set(initialData.data.keys)
-        let missingKeys = graph.requiredInputs.subtracting(providedKeys)
+        let missingKeys = Set(graph.requiredInputs.map(\.key)).subtracting(providedKeys)
 
         if !missingKeys.isEmpty {
             throw WorkflowsError.MissingRequiredInputs(

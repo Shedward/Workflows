@@ -13,9 +13,10 @@ public struct WorkflowValidator: Sendable {
         graphBuilder: inout WorkflowGraphBuilder
     ) -> WorkflowValidationResult {
         let graph = graphBuilder.build(from: workflow)
+        let analysis = graphBuilder.analysis(for: workflow.id)
 
-        var errors: [ValidationError] = []
-        var warnings: [ValidationWarning] = []
+        var errors: [ValidationError] = analysis?.errors ?? []
+        let warnings: [ValidationWarning] = analysis?.warnings ?? []
 
         let registeredKeys = dependencies.keys
         for transition in graph.transitions {
@@ -28,18 +29,12 @@ public struct WorkflowValidator: Sendable {
             }
         }
 
-        let declaredIO = collectWorkflowIO(workflow)
-        let context = DataFlowAnalyzer.Context(
-            transitions: graph.transitions,
-            states: graph.states,
-            declaredInputKeys: declaredIO.inputKeys,
-            declaredOutputKeys: declaredIO.outputKeys,
-            startId: graph.states.first(where: \.isStart)?.id ?? "_start",
-            finishId: graph.states.first(where: \.isFinish)?.id ?? "_finish"
+        validateSubflowInputs(
+            graph: graph,
+            analysis: analysis,
+            graphBuilder: &graphBuilder,
+            errors: &errors
         )
-        let analysis = DataFlowAnalyzer.analyze(context)
-        errors.append(contentsOf: analysis.errors)
-        warnings.append(contentsOf: analysis.warnings)
 
         return WorkflowValidationResult(
             workflowId: workflow.id,
@@ -48,18 +43,32 @@ public struct WorkflowValidator: Sendable {
         )
     }
 
-    private static func collectWorkflowIO(
-        _ workflow: AnyWorkflow
-    ) -> (inputKeys: Set<String>, outputKeys: Set<String>) {
-        guard let bindable = workflow as? any DataBindable & Defaultable else {
-            return ([], [])
+    private static func validateSubflowInputs(
+        graph: WorkflowGraph,
+        analysis: DataFlowAnalyzer.Analysis?,
+        graphBuilder: inout WorkflowGraphBuilder,
+        errors: inout [ValidationError]
+    ) {
+        guard let typeAtState = analysis?.typeAtState else {
+            return
         }
-        var instance = bindable
-        var collector = CollectMetadata()
-        try? instance.bind(&collector)
-        return (
-            Set(collector.inputs.map(\.key)),
-            Set(collector.outputs.map(\.key))
-        )
+
+        for transition in graph.transitions where transition.subflowId != nil {
+            guard let subflowId = transition.subflowId else {
+                continue
+            }
+
+            let parentAvailableKeys = Set((typeAtState[transition.from] ?? [:]).keys)
+            let subflowGraph = graphBuilder.cachedGraph(for: subflowId)
+            let subflowRequiredKeys = subflowGraph?.requiredInputs ?? []
+
+            for field in subflowRequiredKeys where !parentAvailableKeys.contains(field.key) {
+                errors.append(.unsatisfiedSubflowInput(
+                    key: field.key,
+                    subflowId: subflowId,
+                    atState: transition.from
+                ))
+            }
+        }
     }
 }

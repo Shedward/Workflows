@@ -23,6 +23,10 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case conditionallyAvailableInput(key: String, processId: TransitionProcessID, atState: StateID)
     case undeclaredWorkflowInput(key: String, processId: TransitionProcessID)
     case undeclaredWorkflowOutput(key: String)
+    case typeMismatch(key: String, types: [String], atState: StateID)
+    case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
+    case automaticCycleWithoutExit([StateID])
+    case circularSubflow([WorkflowID])
 
     public var description: String {
         switch self {
@@ -40,6 +44,14 @@ public enum ValidationError: Sendable, CustomStringConvertible {
             "Input '\(key)' required by '\(processId)' is not produced by any transition and not declared as workflow input"
         case let .undeclaredWorkflowOutput(key):
             "Declared workflow output '\(key)' is not produced on all paths to finish"
+        case let .typeMismatch(key, types, atState):
+            "Data key '\(key)' has conflicting types \(types.joined(separator: ", ")) at state '\(atState)'"
+        case let .unsatisfiedSubflowInput(key, subflowId, atState):
+            "Subflow '\(subflowId)' requires input '\(key)' which is not available at state '\(atState)'"
+        case let .automaticCycleWithoutExit(states):
+            "Cycle involving states \(states.joined(separator: " → ")) has only automatic transitions and no manual exit"
+        case let .circularSubflow(workflows):
+            "Circular subflow dependency detected: \(workflows.joined(separator: " → "))"
         }
     }
 }
