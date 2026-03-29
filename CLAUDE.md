@@ -9,8 +9,9 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 ## Build & Test Commands
 
 ```bash
-# Build (project uses Xcode workspace, not SPM at the root)
-# xcodebuild is the primary build tool — see Tools/Run/run_server for details
+# Build (ALWAYS use this script — do not call xcodebuild directly)
+./Tools/Run/build
+
 swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
 # Build and run the server
