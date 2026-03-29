@@ -20,3 +20,18 @@ public let workflows: [any Workflow] = [
     SlowWorkflow(),
     AutomaticSlowWorkflow()
 ]
+
+public let invalidWorkflows: [any Workflow] = [
+    UnreachableFinishWorkflow(),
+    UnreachableStateWorkflow(),
+    AutomaticCycleWorkflow(),
+    AmbiguousAutomaticWorkflow(),
+    UndeclaredInputWorkflow(),
+    UndeclaredOutputWorkflow(),
+    ConditionalInputWorkflow(),
+    TypeMismatchWorkflow(),
+    UnusedInputWorkflow(),
+    MissingDependencyWorkflow(),
+    UnsatisfiedSubflowInputWorkflow(),
+    CircularAlpha()
+]
