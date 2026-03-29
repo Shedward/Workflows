@@ -51,6 +51,7 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         let instance = WorkflowInstance(
             id: UUID().uuidString,
             workflowId: workflow.id,
+            workflowVersion: workflow.version,
             state: workflow.startId,
             transitionState: nil,
             data: initialData
