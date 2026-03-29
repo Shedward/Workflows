@@ -29,18 +29,18 @@ public struct App {
                 "http.serverName": "workflow-server"
             ])
         ])
-        let app = try await buildApplication(reader: reader)
+        let app = buildApplication(reader: reader)
         try await app.runService()
     }
 
-    func buildApplication(reader: ConfigReader) throws -> some ApplicationProtocol {
+    func buildApplication(reader: ConfigReader) -> some ApplicationProtocol {
         let logger = {
             var logger = Logger(label: "workflow-server")
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
             return logger
         }()
 
-        let router = try buildRouter(workflows: workflows, authRegistry: authRegistry)
+        let router = buildRouter(workflows: workflows, authRegistry: authRegistry)
 
         return Application(
             router: router,
