@@ -14,13 +14,32 @@ public actor WorkflowRegistry {
     private var graphs: [WorkflowID: WorkflowGraph] = [:]
 
     public init(_ workflows: [AnyWorkflow]) throws {
-        self.workflows = .init(uniqueKeysWithValues: workflows.map { ($0.id, $0) })
+        let allWorkflows = Self.discoverSubflows(in: workflows)
+        self.workflows = .init(uniqueKeysWithValues: allWorkflows.map { ($0.id, $0) })
 
-        if workflows.count != self.workflows.count {
-            let ids = workflows.map(\.id)
+        if allWorkflows.count != self.workflows.count {
+            let ids = allWorkflows.map(\.id)
             let registeredIds = self.workflows.keys
             throw Failure("Failed to register workflows. Expected \(ids), registered: \(registeredIds)")
         }
+    }
+
+    private static func discoverSubflows(in workflows: [AnyWorkflow]) -> [AnyWorkflow] {
+        var discovered: [WorkflowID: AnyWorkflow] = [:]
+        var queue: [AnyWorkflow] = workflows
+
+        while let workflow = queue.popLast() {
+            guard discovered[workflow.id] == nil else { continue }
+            discovered[workflow.id] = workflow
+
+            for transition in workflow.anyTransitions {
+                if let subflow = transition.process as? AnyWorkflow, discovered[subflow.id] == nil {
+                    queue.append(subflow)
+                }
+            }
+        }
+
+        return Array(discovered.values)
     }
 
     public func register(_ workflow: AnyWorkflow) {
