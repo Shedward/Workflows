@@ -67,7 +67,9 @@ public actor WorkflowRegistry {
         var graphBuilder = WorkflowGraphBuilder()
         var results: [WorkflowValidationResult] = []
 
-        for workflow in workflows.values {
+        let orderedWorkflows = topologicalWorkflowOrder()
+
+        for workflow in orderedWorkflows {
             let result = WorkflowValidator.validate(
                 workflow: workflow,
                 dependencies: dependencies,
@@ -101,6 +103,30 @@ public actor WorkflowRegistry {
         if mode == .strict, !results.isEmpty {
             throw WorkflowsError.ValidationFailed(results: results)
         }
+    }
+
+    private func topologicalWorkflowOrder() -> [AnyWorkflow] {
+        var visited: Set<WorkflowID> = []
+        var ordered: [AnyWorkflow] = []
+
+        func visit(_ workflowId: WorkflowID) {
+            guard !visited.contains(workflowId), let workflow = workflows[workflowId] else {
+                return
+            }
+            visited.insert(workflowId)
+            for transition in workflow.anyTransitions {
+                if let subflow = transition.process as? AnyWorkflow {
+                    visit(subflow.id)
+                }
+            }
+            ordered.append(workflow)
+        }
+
+        for workflowId in workflows.keys.sorted() {
+            visit(workflowId)
+        }
+
+        return ordered
     }
 
     private func detectCircularSubflows() -> [[WorkflowID]] {

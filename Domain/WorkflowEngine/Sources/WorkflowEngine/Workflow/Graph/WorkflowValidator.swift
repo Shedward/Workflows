@@ -16,7 +16,7 @@ public struct WorkflowValidator: Sendable {
         let analysis = graphBuilder.analysis(for: workflow.id)
 
         var errors: [ValidationError] = analysis?.errors ?? []
-        var warnings: [ValidationWarning] = analysis?.warnings ?? []
+        let warnings: [ValidationWarning] = analysis?.warnings ?? []
 
         let registeredKeys = dependencies.keys
         for transition in graph.transitions {
@@ -49,16 +49,16 @@ public struct WorkflowValidator: Sendable {
         graphBuilder: inout WorkflowGraphBuilder,
         errors: inout [ValidationError]
     ) {
-        guard let availableAtState = analysis?.availableAtState else {
+        guard let typeAtState = analysis?.typeAtState else {
             return
         }
 
-        for transition in graph.transitions where transition.isSubflow {
+        for transition in graph.transitions where transition.subflowId != nil {
             guard let subflowId = transition.subflowId else {
                 continue
             }
 
-            let parentAvailableKeys = availableAtState[transition.from] ?? []
+            let parentAvailableKeys = Set((typeAtState[transition.from] ?? [:]).keys)
             let subflowGraph = graphBuilder.cachedGraph(for: subflowId)
             let subflowRequiredKeys = subflowGraph?.requiredInputs ?? []
 

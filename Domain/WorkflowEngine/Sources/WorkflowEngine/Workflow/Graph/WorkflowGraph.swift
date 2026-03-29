@@ -19,7 +19,6 @@ public struct WorkflowGraph: Sendable, Codable, Equatable {
         public let processId: TransitionProcessID
         public let trigger: TransitionTrigger
         public let metadata: TransitionMetadata
-        public let isSubflow: Bool
         public let subflowId: WorkflowID?
     }
 

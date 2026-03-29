@@ -66,7 +66,6 @@ public struct WorkflowGraphBuilder: Sendable {
     private func buildTransitions(from workflow: AnyWorkflow) -> [WorkflowGraph.Transition] {
         workflow.anyTransitions.map { transition in
             let subworkflow = transition.process as? AnyWorkflow
-            let isSubflow = subworkflow != nil
             let metadata: TransitionMetadata
             if let bindableSubflow = subworkflow as? any AnyWorkflow & DataBindable & Defaultable {
                 metadata = collectDataBindableMetadata(bindableSubflow, processId: transition.process.id)
@@ -81,7 +80,6 @@ public struct WorkflowGraphBuilder: Sendable {
                 processId: transition.process.id,
                 trigger: transition.trigger,
                 metadata: metadata,
-                isSubflow: isSubflow,
                 subflowId: subworkflow?.id
             )
         }
