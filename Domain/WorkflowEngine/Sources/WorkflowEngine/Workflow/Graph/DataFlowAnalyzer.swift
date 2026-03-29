@@ -118,6 +118,14 @@ private extension DataFlowAnalyzer {
         if !backEdges.isEmpty {
             let cycleStates = Array(Set(backEdges.flatMap { [$0.from, $0.to] }))
             warnings.append(.cycleDetected(cycleStates))
+
+            let cycleStateSet = Set(cycleStates)
+            let hasManualExit = cycleStates.contains { stateId in
+                (outgoing[stateId] ?? []).contains { $0.trigger == .manual }
+            }
+            if !hasManualExit {
+                errors.append(.automaticCycleWithoutExit(cycleStateSet.sorted()))
+            }
         }
 
         let reachableStates = Set(order)

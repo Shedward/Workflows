@@ -25,6 +25,7 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case undeclaredWorkflowOutput(key: String)
     case typeMismatch(key: String, types: [String], atState: StateID)
     case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
+    case automaticCycleWithoutExit([StateID])
 
     public var description: String {
         switch self {
@@ -46,6 +47,8 @@ public enum ValidationError: Sendable, CustomStringConvertible {
             "Data key '\(key)' has conflicting types \(types.joined(separator: ", ")) at state '\(atState)'"
         case let .unsatisfiedSubflowInput(key, subflowId, atState):
             "Subflow '\(subflowId)' requires input '\(key)' which is not available at state '\(atState)'"
+        case let .automaticCycleWithoutExit(states):
+            "Cycle involving states \(states.joined(separator: " → ")) has only automatic transitions and no manual exit"
         }
     }
 }
