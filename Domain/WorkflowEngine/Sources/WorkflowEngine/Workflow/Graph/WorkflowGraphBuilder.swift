@@ -6,12 +6,13 @@
 //
 
 public struct WorkflowGraphBuilder: Sendable {
-    private var cache: [WorkflowID: WorkflowGraph] = [:]
+    private var graphCache: [WorkflowID: WorkflowGraph] = [:]
+    private var analysisCache: [WorkflowID: DataFlowAnalyzer.Analysis] = [:]
 
     public init() {}
 
     public mutating func build(from workflow: AnyWorkflow) -> WorkflowGraph {
-        if let cached = cache[workflow.id] {
+        if let cached = graphCache[workflow.id] {
             return cached
         }
 
@@ -39,8 +40,13 @@ public struct WorkflowGraphBuilder: Sendable {
             producedOutputs: analysis.producedOutputs
         )
 
-        cache[workflow.id] = graph
+        graphCache[workflow.id] = graph
+        analysisCache[workflow.id] = analysis
         return graph
+    }
+
+    func analysis(for workflowId: WorkflowID) -> DataFlowAnalyzer.Analysis? {
+        analysisCache[workflowId]
     }
 
     private func buildStates(from workflow: AnyWorkflow) -> [WorkflowGraph.State] {

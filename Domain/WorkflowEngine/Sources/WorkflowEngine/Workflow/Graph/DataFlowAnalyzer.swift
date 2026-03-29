@@ -17,7 +17,7 @@ struct DataFlowAnalyzer {
         let finishId: StateID
     }
 
-    struct Analysis {
+    struct Analysis: Sendable {
         let requiredInputs: Set<String>
         let producedOutputs: Set<String>
         let errors: [ValidationError]

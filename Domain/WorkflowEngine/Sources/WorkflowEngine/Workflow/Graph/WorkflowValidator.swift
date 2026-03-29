@@ -13,9 +13,10 @@ public struct WorkflowValidator: Sendable {
         graphBuilder: inout WorkflowGraphBuilder
     ) -> WorkflowValidationResult {
         let graph = graphBuilder.build(from: workflow)
+        let analysis = graphBuilder.analysis(for: workflow.id)
 
-        var errors: [ValidationError] = []
-        var warnings: [ValidationWarning] = []
+        var errors: [ValidationError] = analysis?.errors ?? []
+        var warnings: [ValidationWarning] = analysis?.warnings ?? []
 
         let registeredKeys = dependencies.keys
         for transition in graph.transitions {
@@ -28,38 +29,10 @@ public struct WorkflowValidator: Sendable {
             }
         }
 
-        let declaredIO = collectWorkflowIO(workflow)
-        let context = DataFlowAnalyzer.Context(
-            transitions: graph.transitions,
-            states: graph.states,
-            declaredInputKeys: declaredIO.inputKeys,
-            declaredOutputKeys: declaredIO.outputKeys,
-            startId: graph.states.first(where: \.isStart)?.id ?? "_start",
-            finishId: graph.states.first(where: \.isFinish)?.id ?? "_finish"
-        )
-        let analysis = DataFlowAnalyzer.analyze(context)
-        errors.append(contentsOf: analysis.errors)
-        warnings.append(contentsOf: analysis.warnings)
-
         return WorkflowValidationResult(
             workflowId: workflow.id,
             errors: errors,
             warnings: warnings
-        )
-    }
-
-    private static func collectWorkflowIO(
-        _ workflow: AnyWorkflow
-    ) -> (inputKeys: Set<String>, outputKeys: Set<String>) {
-        guard let bindable = workflow as? any DataBindable & Defaultable else {
-            return ([], [])
-        }
-        var instance = bindable
-        var collector = CollectMetadata()
-        try? instance.bind(&collector)
-        return (
-            Set(collector.inputs.map(\.key)),
-            Set(collector.outputs.map(\.key))
         )
     }
 }
