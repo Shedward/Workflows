@@ -2,6 +2,7 @@ excluded:
   - .build
   - .claude
   - Tools
+  - "**/.build"
 
 opt_in_rules:
   - array_init
