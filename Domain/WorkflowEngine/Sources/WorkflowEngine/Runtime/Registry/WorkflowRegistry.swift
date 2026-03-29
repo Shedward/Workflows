@@ -10,20 +10,6 @@ import Foundation
 import os
 
 public actor WorkflowRegistry {
-    private var workflows: [WorkflowID: AnyWorkflow] = [:]
-    private var graphs: [WorkflowID: WorkflowGraph] = [:]
-
-    public init(_ workflows: [AnyWorkflow]) throws {
-        let allWorkflows = Self.discoverSubflows(in: workflows)
-        self.workflows = .init(uniqueKeysWithValues: allWorkflows.map { ($0.id, $0) })
-
-        if allWorkflows.count != self.workflows.count {
-            let ids = allWorkflows.map(\.id)
-            let registeredIds = self.workflows.keys
-            throw Failure("Failed to register workflows. Expected \(ids), registered: \(registeredIds)")
-        }
-    }
-
     private static func discoverSubflows(in workflows: [AnyWorkflow]) -> [AnyWorkflow] {
         var discovered: [WorkflowID: AnyWorkflow] = [:]
         var queue: [AnyWorkflow] = workflows
@@ -40,6 +26,20 @@ public actor WorkflowRegistry {
         }
 
         return Array(discovered.values)
+    }
+
+    private var workflows: [WorkflowID: AnyWorkflow] = [:]
+    private var graphs: [WorkflowID: WorkflowGraph] = [:]
+
+    public init(_ workflows: [AnyWorkflow]) throws {
+        let allWorkflows = Self.discoverSubflows(in: workflows)
+        self.workflows = .init(uniqueKeysWithValues: allWorkflows.map { ($0.id, $0) })
+
+        if allWorkflows.count != self.workflows.count {
+            let ids = allWorkflows.map(\.id)
+            let registeredIds = self.workflows.keys
+            throw Failure("Failed to register workflows. Expected \(ids), registered: \(registeredIds)")
+        }
     }
 
     public func register(_ workflow: AnyWorkflow) {
