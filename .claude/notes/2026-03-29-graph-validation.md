@@ -79,3 +79,33 @@ Implemented static graph validation and introspection for the workflow engine. A
 ### Verification
 - All 20 integration tests pass (`./Tools/Run/full_check`)
 - swiftlint: 0 violations
+
+---
+
+## 2026-03-29 Session 3: Validation Test Workflows & Build Script
+
+### What was done
+
+1. **`./Tools/Run/build` script** — Extracted build logic into a standalone script. `run_server` and `full_check` now delegate to it. Added `-destination "platform=macOS,arch=arm64"` to suppress xcodebuild ambiguous destination warnings.
+
+2. **Validation test workflows** — Created 12 faulty workflows across 5 files in `Workflows/TestingWorkflows/Sources/TestingWorkflows/ValidationTestWorkflows/` to verify all 14 detections fire on startup:
+   - `StructuralErrorWorkflows.swift` — `UnreachableFinishWorkflow`, `UnreachableStateWorkflow`
+   - `CycleErrorWorkflows.swift` — `AutomaticCycleWorkflow`, `AmbiguousAutomaticWorkflow`
+   - `DataFlowErrorWorkflows.swift` — `UndeclaredInputWorkflow`, `UndeclaredOutputWorkflow`, `ConditionalInputWorkflow`, `TypeMismatchWorkflow`, `UnusedInputWorkflow` (+ helper actions)
+   - `DependencyErrorWorkflows.swift` — `MissingDependencyWorkflow`
+   - `SubflowErrorWorkflows.swift` — `NeedySubflow`, `UnsatisfiedSubflowInputWorkflow`, `CircularAlpha`, `CircularBeta`
+
+3. **`invalidWorkflows` array** — Added `public let invalidWorkflows: [any Workflow]` in `TestingWorkflows.swift`, separate from the valid `workflows` array. Server can opt-in by adding it to the `Workflows` init block.
+
+### Finding: `unsatisfiedInput` is dead code
+`ValidationError.unsatisfiedInput` is defined but never emitted. `undeclaredWorkflowInput` covers the same case. Only 10 of 11 error enum cases are reachable.
+
+### Verification
+All 14 detections confirmed via `log stream` on server startup:
+- 10 errors: `unreachableFinish`, `deadEndState`, `automaticCycleWithoutExit`, `undeclaredWorkflowInput`, `undeclaredWorkflowOutput`, `conditionallyAvailableInput`, `typeMismatch`, `missingDependency`, `unsatisfiedSubflowInput`, `circularSubflow`
+- 4 warnings: `unreachableState`, `cycleDetected`, `ambiguousAutomaticTransitions`, `unusedWorkflowInput`
+
+### Remaining work
+- Remove dead `unsatisfiedInput` case or find a distinct trigger for it
+- Graph API endpoint for UI rendering
+- Subflow output isolation (merge child @Output back to parent)
