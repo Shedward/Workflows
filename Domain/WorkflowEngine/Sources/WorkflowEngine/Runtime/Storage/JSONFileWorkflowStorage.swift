@@ -8,6 +8,21 @@
 import Foundation
 
 public actor JSONFileWorkflowStorage: WorkflowStorage {
+    private static func load(from directory: URL) throws -> [WorkflowInstance] {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let files = try FileManager.default.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil
+        ).filter { $0.pathExtension == "json" }
+        return files.compactMap { url in
+            guard let data = try? Data(contentsOf: url) else {
+                return nil
+            }
+            return try? decoder.decode(WorkflowInstance.self, from: data)
+        }
+    }
+
     private let directory: URL
     private let retentionInterval: TimeInterval
     private var instances: [WorkflowInstance] = []
@@ -58,12 +73,12 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         cleanupExpired()
     }
 
-    public func all() throws -> [WorkflowInstance] {
+    public func all() -> [WorkflowInstance] {
         cleanupExpired()
         return instances.filter { $0.finishedAt == nil }
     }
 
-    public func instance(id: WorkflowInstanceID) throws -> WorkflowInstance? {
+    public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
         cleanupExpired()
         return instances.first { $0.id == id }
     }
@@ -71,8 +86,12 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
     private func cleanupExpired() {
         let now = Date()
         instances.removeAll { instance in
-            guard let finishedAt = instance.finishedAt else { return false }
-            guard now.timeIntervalSince(finishedAt) > retentionInterval else { return false }
+            guard let finishedAt = instance.finishedAt else {
+                return false
+            }
+            guard now.timeIntervalSince(finishedAt) > retentionInterval else {
+                return false
+            }
             try? FileManager.default.removeItem(at: filePath(for: instance.id))
             return true
         }
@@ -85,18 +104,5 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
 
     private func filePath(for id: WorkflowInstanceID) -> URL {
         directory.appendingPathComponent("\(id).json")
-    }
-
-    private static func load(from directory: URL) throws -> [WorkflowInstance] {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let files = try FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil
-        ).filter { $0.pathExtension == "json" }
-        return files.compactMap { url in
-            guard let data = try? Data(contentsOf: url) else { return nil }
-            return try? decoder.decode(WorkflowInstance.self, from: data)
-        }
     }
 }
