@@ -17,10 +17,13 @@ struct ReadInitialData: Action {
     }
 }
 
+@DataBindable
 struct InitialDataWorkflow: Workflow {
     enum State: String, WorkflowState {
         case processed
     }
+
+    @Input var greeting: String
 
     var transitions: Transitions {
         onStart {

@@ -9,6 +9,7 @@ import WorkflowEngine
 
 struct GoNextStep: Pass { }
 
+@DataBindable
 struct SubflowX: Workflow {
     enum State: String, WorkflowState {
         case stepOne = "x1"
@@ -24,6 +25,7 @@ struct SubflowX: Workflow {
     }
 }
 
+@DataBindable
 struct SubflowY: Workflow {
     enum State: String, WorkflowState {
         case stepOne = "y1"
@@ -41,6 +43,7 @@ struct SubflowY: Workflow {
     }
 }
 
+@DataBindable
 struct AutomaticSubflowsWorkflow: Workflow {
     enum State: String, WorkflowState {
         case stepOne = "s1"

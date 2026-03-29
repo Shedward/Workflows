@@ -15,6 +15,7 @@ struct FailAction: Action {
     }
 }
 
+@DataBindable
 struct FailingWorkflow: Workflow {
     enum State: String, WorkflowState {
         case shouldFail

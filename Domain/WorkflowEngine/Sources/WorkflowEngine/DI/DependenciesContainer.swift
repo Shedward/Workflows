@@ -11,6 +11,12 @@ public final class DependenciesContainer: @unchecked Sendable {
     private var dependencies: [String: Sendable] = [:]
     private let queue = DispatchQueue(label: "DependenciesContainer")
 
+    public var keys: Set<String> {
+        queue.sync {
+            Set(dependencies.keys)
+        }
+    }
+
     public init() {
     }
 

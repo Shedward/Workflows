@@ -7,11 +7,14 @@
 
 import WorkflowEngine
 
+@DataBindable
 struct Создать_таблицу_для_декомпозиции: Workflow {
     enum State: String, WorkflowState {
         case шаблон_скопирован
-        case можно_добавить_дефолтные_поля
     }
+
+    @Input
+    var portfolioKey: String
 
     var transitions: Transitions {
         chainedAfterStart {

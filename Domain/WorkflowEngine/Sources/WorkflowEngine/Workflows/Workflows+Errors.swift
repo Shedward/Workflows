@@ -38,4 +38,13 @@ public enum WorkflowsError {
         public let instanceVersion: WorkflowVersion
         public let workflowVersion: WorkflowVersion
     }
+
+    public struct ValidationFailed: Swift.Error {
+        public let results: [WorkflowValidationResult]
+    }
+
+    public struct MissingRequiredInputs: Swift.Error {
+        public let workflowId: WorkflowID
+        public let missingKeys: Set<String>
+    }
 }

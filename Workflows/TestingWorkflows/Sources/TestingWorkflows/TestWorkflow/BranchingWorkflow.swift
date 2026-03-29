@@ -10,6 +10,7 @@ import WorkflowEngine
 struct GoLeft: Pass { }
 struct GoRight: Pass { }
 
+@DataBindable
 struct BranchingWorkflow: Workflow {
     enum State: String, WorkflowState {
         case fork

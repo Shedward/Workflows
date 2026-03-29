@@ -7,6 +7,7 @@
 
 import WorkflowEngine
 
+@DataBindable
 struct AutomaticSimpleGitWorkflow: Workflow {
     enum State: String, WorkflowState {
         case workingDirectoryCreated

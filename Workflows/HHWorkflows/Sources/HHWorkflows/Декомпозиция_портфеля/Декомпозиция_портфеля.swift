@@ -7,11 +7,15 @@
 
 import WorkflowEngine
 
+@DataBindable
 struct Декомпозиция_портфеля: Workflow {
     enum State: String, WorkflowState {
         case нужно_заполнить_таблицу
         case нужно_провести_декомпозицию
     }
+
+    @Input
+    var portfolioKey: String
 
     var transitions: Transitions {
         onStart {

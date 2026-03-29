@@ -7,6 +7,11 @@
 
 import Core
 
+public enum ValidationMode: Sendable {
+    case strict
+    case lenient
+}
+
 public actor Workflows {
     let registry: WorkflowRegistry
     let storage: WorkflowStorage
@@ -15,6 +20,7 @@ public actor Workflows {
     public init(
         storage: WorkflowStorage = InMemoryWorkflowStorage(),
         dependencies: DependenciesContainer,
+        validation: ValidationMode = .lenient,
         @ArrayBuilder<any Workflow> workflows: () -> [any Workflow]
     ) async throws {
         self.registry = try WorkflowRegistry(workflows())
@@ -24,9 +30,15 @@ public actor Workflows {
             registry: registry,
             dependencies: dependencies
         )
+
+        try await registry.validateAll(dependencies: dependencies, mode: validation)
     }
 
     public func run() async throws {
         try await runner.resume()
+    }
+
+    public func graph(for workflowId: WorkflowID) async -> WorkflowGraph? {
+        await registry.graph(for: workflowId)
     }
 }
