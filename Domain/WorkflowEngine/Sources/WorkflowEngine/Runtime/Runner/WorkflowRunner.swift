@@ -112,7 +112,7 @@ actor WorkflowRunner {
     func finish(_ instance: WorkflowInstance) async throws {
         logger?.trace("Finish \(instance.id, privacy: .public)")
         try await storage.finish(instance)
-        await scheduler.notifyFinished(instance.id)
+        await scheduler.notifyFinished(instance.id, data: instance.data)
     }
 
     // MARK: - Automatic transitions

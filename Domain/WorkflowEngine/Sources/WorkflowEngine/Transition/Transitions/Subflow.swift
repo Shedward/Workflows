@@ -10,7 +10,8 @@ import os
 
 public extension Workflow where Self: TransitionProcess {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
-        if context.resume == .workflowFinished {
+        if case .workflowFinished(let childData) = context.resume {
+            mergeOutputs(from: childData, into: &context)
             return .completed
         }
 
@@ -19,10 +20,22 @@ public extension Workflow where Self: TransitionProcess {
         // If child already finished (all automatic transitions completed inline),
         // skip waiting and complete immediately
         if subflowInstance.state == self.finishId {
+            mergeOutputs(from: subflowInstance.data, into: &context)
             return .completed
         }
 
         return .waiting(.workflowFinished(.init(id: subflowInstance.id)))
+    }
+
+    private func mergeOutputs(from childData: WorkflowData, into context: inout WorkflowContext) {
+        let declaredOutputKeys = self.collectMetadata().outputKeys
+        guard !declaredOutputKeys.isEmpty else { return }
+
+        var parentData = context.instance.data
+        for (key, value) in childData.data where declaredOutputKeys.contains(key) {
+            parentData.data[key] = value
+        }
+        context.instance = context.instance.data(parentData)
     }
 
     private func filteredData(from parentData: WorkflowData) -> WorkflowData {

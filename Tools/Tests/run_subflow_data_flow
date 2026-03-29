@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Start parent with inputValue (plus an extra key the subflow should NOT see)
+  start_workflow_with_data "SubflowDataFlowWorkflow" '{"inputValue":"\"hello\"","extraKey":"\"secret\""}'
+
+  # Move to beforeSubflow
+  take_transition "GoNextStep"
+  assert_state "beforeSubflow"
+
+  # Parent should have both keys before subflow
+  assert_data "inputValue" '"hello"'
+  assert_data "extraKey" '"secret"'
+
+  # Take the subflow transition — DataProducingSubflow runs automatically
+  # and produces outputValue = inputValue + "_from_subflow"
+  take_transition "DataProducingSubflow"
+  assert_state "afterSubflow"
+
+  # Parent should now have the subflow's declared @Output merged back
+  assert_data "outputValue" '"hello_from_subflow"'
+
+  # Parent's original data should still be intact
+  assert_data "inputValue" '"hello"'
+  assert_data "extraKey" '"secret"'
+
+  # Finish parent
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"
