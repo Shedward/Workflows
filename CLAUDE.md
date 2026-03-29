@@ -77,11 +77,19 @@ var transitions: Transitions {
 }
 ```
 
-**Data Flow** — `@Input<T>` and `@Output<T>` property wrappers for type-safe data binding between transitions. `@DataBindable` macro auto-generates binding conformance. Data stored in `WorkflowData` (JSON-serializable key-value store).
+**Data Flow** — `@Input<T>` and `@Output<T>` property wrappers for type-safe data binding between transitions. `@Dependency<T>` for injected services from `DependenciesContainer`. `@DataBindable` macro auto-generates binding conformance. Data stored in `WorkflowData` (JSON-serializable key-value store). Workflows themselves can declare `@Input`/`@Output` to define their data contract (required initial data and produced outputs).
 
-**Runtime** — `Workflows` actor is the main facade. `WorkflowRunner` actor executes transitions and handles automatic transitions. `WorkflowRegistry` maps definitions to instances. `WorkflowStorage` persists state — `InMemoryWorkflowStorage` (default) or `JSONFileWorkflowStorage` (one JSON file per instance in a directory). `WaitScheduler` handles delayed resumption.
+**Graph Validation** — At startup, `WorkflowRegistry.validateAll` builds a `WorkflowGraph` for each workflow and runs static analysis:
+- `CollectMetadata` (a `DataBinding` implementation) introspects `@Input`/`@Output`/`@Dependency` metadata from transitions and workflows without executing them
+- `DataFlowAnalyzer` performs forward data propagation (topological sort, intersection at merge points) to detect unsatisfied inputs, unreachable states, dead ends, and missing dependencies
+- `WorkflowValidator` orchestrates all checks and returns `WorkflowValidationResult` with errors/warnings
+- `ValidationMode.strict` throws on errors (blocking startup); `.lenient` logs them (default)
+- Graphs are cached in the registry and accessible via `Workflows.graph(for:)` for UI introspection
+- At workflow start time, `requiredInputs` from the graph are checked against provided `initialData`
 
-`Workflows.init` accepts an optional `storage:` parameter (defaults to `InMemoryWorkflowStorage()`). The server passes `JSONFileWorkflowStorage(directory:)` pointing at `~/.workflows/instances/`.
+**Runtime** — `Workflows` actor is the main facade. `WorkflowRunner` actor executes transitions and handles automatic transitions. `WorkflowRegistry` maps definitions to instances and stores `WorkflowGraph` per workflow. `WorkflowStorage` persists state — `InMemoryWorkflowStorage` (default) or `JSONFileWorkflowStorage` (one JSON file per instance in a directory). `WaitScheduler` handles delayed resumption.
+
+`Workflows.init` accepts `storage:`, `dependencies:`, and `validation:` parameters. Validation runs automatically during init. The server passes `JSONFileWorkflowStorage(directory:)` pointing at `~/.workflows/instances/`.
 
 ### Concurrency Model
 
@@ -122,11 +130,12 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 - **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
-- **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — could crash the server in production.
+- **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
 - **Manual vs automatic failure asymmetry**: Manual transition failures propagate as HTTP 500 but do NOT set `transitionState.failed`. Only automatic transition failures persist the error in `transitionState`. Consider unifying.
 - **No migration mechanism** — if a workflow's `version` is bumped, persisted instances with the old version will cause `WorkflowVersionMismatch` on startup; they must be deleted manually.
 - **No retry mechanism** for failed transitions.
 - **No timeout** for wait transitions.
+- **Subflow data isolation not enforced** — subflows receive full parent `WorkflowData` and nothing flows back. Phase 2 of graph validation will filter I/O based on declared `@Input`/`@Output` on subflow workflows.
 
 ### Documentation
 

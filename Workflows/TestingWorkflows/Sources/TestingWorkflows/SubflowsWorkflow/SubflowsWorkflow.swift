@@ -15,7 +15,6 @@ struct SubflowsWorkflow: Workflow {
     enum State: String, WorkflowState {
         case beforeSubflow
         case subflowFinished
-        case afterSubflow
     }
 
     var transitions: Transitions {

@@ -7,6 +7,7 @@
 
 import WorkflowEngine
 
+@DataBindable
 struct SlowWorkflow: Workflow {
     enum State: String, WorkflowState {
         case processing
@@ -24,6 +25,7 @@ struct SlowWorkflow: Workflow {
 }
 
 /// An automatic variant where the slow action runs inline on start.
+@DataBindable
 struct AutomaticSlowWorkflow: Workflow {
     enum State: String, WorkflowState {
         case done

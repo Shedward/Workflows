@@ -7,6 +7,7 @@
 
 import WorkflowEngine
 
+@DataBindable
 struct WaitingWorkflow: Workflow {
     enum State: String, WorkflowState {
         case templateCreated

@@ -9,6 +9,7 @@ import WorkflowEngine
 
 struct Finalize: Pass { }
 
+@DataBindable
 struct SimpleWorkflow: Workflow {
     enum State: String, WorkflowState {
         case stateA = "a"
