@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		632D71162F4B8FEF0016E924 /* TestingWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = 632D71152F4B8FEF0016E924 /* TestingWorkflows */; };
 		632D71182F4B90580016E924 /* WorkflowServer in Frameworks */ = {isa = PBXBuildFile; productRef = 632D71172F4B90580016E924 /* WorkflowServer */; };
-		632D711A2F4B90580016E924 /* GoogleServices in Frameworks */ = {isa = PBXBuildFile; productRef = 632D71192F4B90580016E924 /* GoogleServices */; };
-		632D711C2F4B90580016E924 /* HHWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = 632D711B2F4B90580016E924 /* HHWorkflows */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,8 +42,6 @@
 			files = (
 				632D71182F4B90580016E924 /* WorkflowServer in Frameworks */,
 				632D71162F4B8FEF0016E924 /* TestingWorkflows in Frameworks */,
-				632D711A2F4B90580016E924 /* GoogleServices in Frameworks */,
-				632D711C2F4B90580016E924 /* HHWorkflows in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,8 +94,6 @@
 			packageProductDependencies = (
 				632D71152F4B8FEF0016E924 /* TestingWorkflows */,
 				632D71172F4B90580016E924 /* WorkflowServer */,
-				632D71192F4B90580016E924 /* GoogleServices */,
-				632D711B2F4B90580016E924 /* HHWorkflows */,
 			);
 			productName = "workflow-server";
 			productReference = 63ACFED42F10185800C6956F /* workflow-server */;
@@ -335,14 +329,6 @@
 		632D71172F4B90580016E924 /* WorkflowServer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WorkflowServer;
-		};
-		632D71192F4B90580016E924 /* GoogleServices */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = GoogleServices;
-		};
-		632D711B2F4B90580016E924 /* HHWorkflows */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HHWorkflows;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
