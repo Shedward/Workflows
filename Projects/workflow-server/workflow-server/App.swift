@@ -45,7 +45,11 @@ enum App {
         dependencies.set(driveClient, forKey: "googleDrive")
         dependencies.set(sheetsClient, forKey: "googleSheets")
 
-        let workflows = try await Workflows(dependencies: dependencies) {
+        let storage = try await JSONFileWorkflowStorage(
+            directory: workflowsConfigDir.appending(path: "instances")
+        )
+
+        let workflows = try await Workflows(storage: storage, dependencies: dependencies) {
             TestingWorkflows.workflows
             HHWorkflows.workflows
         }

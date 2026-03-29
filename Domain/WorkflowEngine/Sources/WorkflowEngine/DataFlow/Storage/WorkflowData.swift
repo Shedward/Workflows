@@ -8,11 +8,21 @@
 import Core
 import Foundation
 
-public struct WorkflowData: Sendable {
+public struct WorkflowData: Sendable, Codable {
     internal var data: [String: String]
 
     public init(data: [String: String] = [:]) {
         self.data = data
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        data = try container.decode([String: String].self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(data)
     }
 
     public func get<Value: WorkflowValue>(_ key: String) throws -> Value? {

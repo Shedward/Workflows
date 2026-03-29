@@ -8,7 +8,7 @@
 import Core
 import Foundation
 
-public struct WorkflowInstance: Sendable {
+public struct WorkflowInstance: Sendable, Codable {
     public var id: WorkflowInstanceID
     public var workflowId: WorkflowID
     public var state: StateID

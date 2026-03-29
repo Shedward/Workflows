@@ -12,9 +12,13 @@ public actor Workflows {
     let storage: WorkflowStorage
     let runner: WorkflowRunner
 
-    public init(dependencies: DependenciesContainer, @ArrayBuilder<any Workflow> workflows: () -> [any Workflow]) async throws {
+    public init(
+        storage: WorkflowStorage = InMemoryWorkflowStorage(),
+        dependencies: DependenciesContainer,
+        @ArrayBuilder<any Workflow> workflows: () -> [any Workflow]
+    ) async throws {
         self.registry = try WorkflowRegistry(workflows())
-        self.storage = InMemoryWorkflowStorage()
+        self.storage = storage
         self.runner = WorkflowRunner(
             storage: storage,
             registry: registry,
