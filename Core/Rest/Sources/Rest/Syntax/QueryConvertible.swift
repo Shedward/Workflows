@@ -44,7 +44,7 @@ extension Set: QueryConvertible where Element: QueryConvertible {
 
 extension Optional: QueryConvertible where Wrapped: QueryConvertible {
     public var queryValue: String? {
-        map(\.queryValue)
+        flatMap(\.queryValue)
     }
 }
 
