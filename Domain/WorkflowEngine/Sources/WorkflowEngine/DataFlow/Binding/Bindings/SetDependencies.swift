@@ -8,7 +8,7 @@
 struct SetDependencies: DataBinding {
     let container: DependenciesContainer
 
-    func dependency<Value>(for key: String, at dependency: inout Dependency<Value>) throws where Value : Sendable {
+    func dependency<Value>(for key: String, at dependency: inout Dependency<Value>) throws where Value: Sendable {
         guard let dependencyValue = container.dependency(forKey: key) else {
             throw Failure("No dependency \(String(describing: Value.self)) for key \(key)")
         }

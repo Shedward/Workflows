@@ -11,11 +11,11 @@ import Hummingbird
 extension Method {
     var httpRequestMethod: HTTPRequest.Method {
         switch self {
-            case .get: return .get
-            case .post: return .post
-            case .put: return .put
-            case .delete: return .delete
-            case .patch: return .patch
+        case .get: return .get
+        case .post: return .post
+        case .put: return .put
+        case .delete: return .delete
+        case .patch: return .patch
         }
     }
 }

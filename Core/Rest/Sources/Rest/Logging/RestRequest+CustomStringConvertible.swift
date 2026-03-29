@@ -76,7 +76,7 @@ extension Headers: CustomStringConvertible {
         )
         """
     }
-    
+
     private func redactHeaderIfNeeded(_ key: String, value: String) -> String {
         if shouldRedactHeader(key) {
             return String(repeating: "█", count: value.count)
@@ -84,7 +84,7 @@ extension Headers: CustomStringConvertible {
             return value
         }
     }
-    
+
     private func shouldRedactHeader(_ key: String) -> Bool {
         switch key {
         case "Authorization":
@@ -94,4 +94,3 @@ extension Headers: CustomStringConvertible {
         }
     }
 }
-

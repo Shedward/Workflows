@@ -13,7 +13,7 @@ extension WorkflowState {
         rawValue
     }
 
-    public static var start: StateID  {
+    public static var start: StateID {
         "_start"
     }
 

@@ -16,7 +16,7 @@ public extension Workflows {
         guard let instance = try await storage.instance(id: id) else {
             throw WorkflowsError.WorkflowInstanceNotFound(instanceId: id)
         }
-        
+
         return instance
     }
 }

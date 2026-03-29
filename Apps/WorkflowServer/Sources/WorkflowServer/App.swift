@@ -56,7 +56,7 @@ public struct App {
             LogRequestsMiddleware(.info)
         }
 
-        router.get("/health") { _,_ in
+        router.get("/health") { _, _ in
             HTTPResponse.Status.ok
         }
 

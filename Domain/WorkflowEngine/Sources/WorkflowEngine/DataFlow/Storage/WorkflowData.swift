@@ -28,7 +28,6 @@ public struct WorkflowData: Sendable {
         return value
     }
 
-
     public mutating func set<Value: WorkflowValue>(_ key: String, _ value: Value) throws {
         let valueData = try JSONEncoder().encode(value)
         guard let string = String(data: valueData, encoding: .utf8) else {

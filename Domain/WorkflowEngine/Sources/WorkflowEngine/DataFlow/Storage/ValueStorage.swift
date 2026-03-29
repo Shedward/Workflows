@@ -18,9 +18,9 @@ final class ValueStorage: @unchecked Sendable {
     var value: Sendable? {
         get {
             os_unfair_lock_lock(&lock)
-            let v = _value
+            let value = _value
             os_unfair_lock_unlock(&lock)
-            return v
+            return value
         }
         set {
             os_unfair_lock_lock(&lock)

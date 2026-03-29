@@ -29,7 +29,11 @@ public actor NetworkRestClient: RestClient {
         self.responseValidators = responseValidators
     }
 
-    public func fetch<RequestBody, ResponseBody>(_ request: Request<RequestBody, ResponseBody>) async throws -> ResponseBody where RequestBody : DataEncodable, ResponseBody : DataDecodable {
+    // swiftlint:disable:next function_body_length
+    public func fetch<RequestBody, ResponseBody>(
+        _ request: Request<RequestBody, ResponseBody>
+    ) async throws -> ResponseBody
+    where RequestBody: DataEncodable, ResponseBody: DataDecodable {
 
         logger?.trace("→ Begin \(request.shortDescription, privacy: .public)")
 

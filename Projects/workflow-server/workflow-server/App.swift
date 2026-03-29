@@ -31,7 +31,7 @@ struct App {
             credentials: oauthCredentials,
             scopes: [
                 "https://www.googleapis.com/auth/drive",
-                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/spreadsheets"
             ],
             redirectURI: "http://localhost:8080/auth/google/callback"
         )

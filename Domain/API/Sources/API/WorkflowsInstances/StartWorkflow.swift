@@ -25,10 +25,5 @@ extension StartWorkflow {
     public struct RequestBody: JSONBody {
         public let workflowId: String
         public let initialData: WorkflowData?
-
-        init(workflowId: String, initialData: WorkflowData?) {
-            self.workflowId = workflowId
-            self.initialData = initialData
-        }
     }
 }

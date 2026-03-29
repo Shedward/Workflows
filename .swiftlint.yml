@@ -1,0 +1,12 @@
+excluded:
+  - .build
+  - .claude
+  - Tools
+
+identifier_name:
+  allowed_symbols: ["_"]
+  excluded: ["to", "id"]
+
+line_length:
+  warning: 150
+  error: 200

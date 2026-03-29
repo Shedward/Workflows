@@ -11,14 +11,14 @@ struct GoNextStep: Pass { }
 
 struct SubflowX: Workflow {
     enum State: String, WorkflowState {
-        case x1
-        case x2
+        case stepOne = "x1"
+        case stepTwo = "x2"
     }
 
     var transitions: Transitions {
         chainedAfterStart {
-            GoNextStep.to(.x1)
-            GoNextStep.to(.x2)
+            GoNextStep.to(.stepOne)
+            GoNextStep.to(.stepTwo)
             GoNextStep.toFinish()
         }
     }
@@ -26,16 +26,16 @@ struct SubflowX: Workflow {
 
 struct SubflowY: Workflow {
     enum State: String, WorkflowState {
-        case y1
-        case y2
-        case y3
+        case stepOne = "y1"
+        case stepTwo = "y2"
+        case stepThree = "y3"
     }
 
     var transitions: Transitions {
         chainedAfterStart {
-            GoNextStep.to(.y1)
-            GoNextStep.to(.y2)
-            GoNextStep.to(.y3)
+            GoNextStep.to(.stepOne)
+            GoNextStep.to(.stepTwo)
+            GoNextStep.to(.stepThree)
             GoNextStep.toFinish()
         }
     }
@@ -43,16 +43,16 @@ struct SubflowY: Workflow {
 
 struct AutomaticSubflowsWorkflow: Workflow {
     enum State: String, WorkflowState {
-        case s1
-        case s2
-        case s3
+        case stepOne = "s1"
+        case stepTwo = "s2"
+        case stepThree = "s3"
     }
 
     var transitions: Transitions {
         chainedAfterStart {
-            GoNextStep.to(.s1)
-            SubflowX.to(.s2)
-            SubflowY.to(.s3)
+            GoNextStep.to(.stepOne)
+            SubflowX.to(.stepTwo)
+            SubflowY.to(.stepThree)
             GoNextStep.toFinish()
         }
     }

@@ -13,8 +13,8 @@ public protocol WorkflowApi: Api, Sendable {
     static var path: String { get }
 }
 
-public extension WorkflowApi where RequestBody: Defaultable  {
-    func request(_ pathElements: PathElements = .init()) ->  Request<RequestBody, ResponseBody> {
+public extension WorkflowApi where RequestBody: Defaultable {
+    func request(_ pathElements: PathElements = .init()) -> Request<RequestBody, ResponseBody> {
         Request(method: Self.method, path: pathElements.apply(to: Self.path), body: .init())
     }
 

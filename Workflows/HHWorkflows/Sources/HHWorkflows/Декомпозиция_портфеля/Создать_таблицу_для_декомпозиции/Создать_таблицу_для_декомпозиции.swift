@@ -5,7 +5,6 @@
 //  Created by Мальцев Владислав on 26.03.2026.
 //
 
-
 import WorkflowEngine
 
 struct Создать_таблицу_для_декомпозиции: Workflow {

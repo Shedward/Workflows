@@ -16,9 +16,9 @@ public struct KeychainStorage: Sendable {
 
     private func baseQuery(key: String) -> [CFString: Any] {
         [
-            kSecClass:       kSecClassGenericPassword,
+            kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
-            kSecAttrAccount: key,
+            kSecAttrAccount: key
         ]
     }
 

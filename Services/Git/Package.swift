@@ -12,13 +12,13 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.3.0"),
+        .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.3.0")
     ],
     targets: [
         .target(
             name: "Git",
             dependencies: [
-                .product(name: "Subprocess", package: "swift-subprocess"),
+                .product(name: "Subprocess", package: "swift-subprocess")
             ]
         )
     ]

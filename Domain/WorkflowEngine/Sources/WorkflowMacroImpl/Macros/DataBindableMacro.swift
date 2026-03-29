@@ -25,8 +25,8 @@ private enum WrapperKind {
 
     var key: String {
         switch self {
-        case .input(let k), .output(let k), .dependency(let k):
-            return k
+        case .input(let key), .output(let key), .dependency(let key):
+            return key
         }
     }
 }
@@ -133,4 +133,3 @@ public struct DataBindableMacro: MemberMacro {
         """
     }
 }
-

@@ -126,8 +126,12 @@ actor WorkflowRunner {
 
         let automatic = workflow.anyTransitions.filter { $0.from == instance.state && $0.trigger == .automatic }
         guard let transition = automatic.first, automatic.count == 1 else {
-            if automatic.isEmpty { logger?.trace("No automatic transitions from \(instance.state, privacy: .public)") }
-            else { logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)") }
+            if automatic.isEmpty {
+                logger?.trace("No automatic transitions from \(instance.state, privacy: .public)")
+            } else {
+                // swiftlint:disable:next line_length
+                logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)")
+            }
             return nil
         }
 
@@ -163,4 +167,3 @@ actor WorkflowRunner {
         }
     }
 }
-

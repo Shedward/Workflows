@@ -42,4 +42,3 @@ public enum ArrayBuilder<Element> {
         component
     }
 }
-

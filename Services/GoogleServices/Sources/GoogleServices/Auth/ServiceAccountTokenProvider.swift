@@ -40,14 +40,14 @@ public actor ServiceAccountTokenProvider: AccessTokenAuthorizer {
 
         let body = formEncode([
             "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-            "assertion":  jwt,
+            "assertion": jwt
         ])
         let urlRequest: URLRequest = {
-            var r = URLRequest(url: url)
-            r.httpMethod = "POST"
-            r.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            r.httpBody = body.data(using: .utf8)
-            return r
+            var req = URLRequest(url: url)
+            req.httpMethod = "POST"
+            req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            req.httpBody = body.data(using: .utf8)
+            return req
         }()
 
         let (data, urlResponse) = try await Failure.wrap("Failed to exchange JWT for access token") {

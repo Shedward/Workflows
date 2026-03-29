@@ -30,10 +30,10 @@ public struct GoogleOAuthCredentials: Sendable {
             try JSONDecoder().decode(RawFile.self, from: data)
         }
         return GoogleOAuthCredentials(
-            clientID:     raw.installed.client_id,
+            clientID: raw.installed.client_id,
             clientSecret: raw.installed.client_secret,
-            authURI:      raw.installed.auth_uri,
-            tokenURI:     raw.installed.token_uri
+            authURI: raw.installed.auth_uri,
+            tokenURI: raw.installed.token_uri
         )
     }
 }
@@ -43,11 +43,12 @@ public struct GoogleOAuthCredentials: Sendable {
 private extension GoogleOAuthCredentials {
     struct RawFile: Decodable {
         let installed: Entry
-        struct Entry: Decodable {
-            let client_id: String
-            let client_secret: String
-            let auth_uri: String
-            let token_uri: String
-        }
+    }
+
+    struct Entry: Decodable {
+        let client_id: String
+        let client_secret: String
+        let auth_uri: String
+        let token_uri: String
     }
 }

@@ -19,7 +19,7 @@ public final class DependenciesContainer: @unchecked Sendable {
             dependencies[key] = dependency
         }
     }
-    
+
     public func dependency(forKey key: String) -> Sendable? {
         queue.sync {
             dependencies[key]

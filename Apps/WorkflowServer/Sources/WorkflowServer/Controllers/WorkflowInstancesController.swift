@@ -79,7 +79,11 @@ struct WorkflowInstancesController: Controller {
         }
     }
 
-    private func availableTransitions(request: Request, body: AvailableTransitions.RequestBody, context: Context) async throws -> ListBody<API.Transition> {
+    private func availableTransitions(
+        request: Request,
+        body: AvailableTransitions.RequestBody,
+        context: Context
+    ) async throws -> ListBody<API.Transition> {
         let workflowId = try context.parameters.require("id")
         let transitions = try await workflows.transitions(for: workflowId)
         let apiTransitions = transitions.map { transition in

@@ -122,10 +122,10 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
     private func refreshAccessToken(using refreshToken: String) async throws -> String {
         let body = formEncode([
-            "client_id":     credentials.clientID,
+            "client_id": credentials.clientID,
             "client_secret": credentials.clientSecret,
             "refresh_token": refreshToken,
-            "grant_type":    "refresh_token",
+            "grant_type": "refresh_token"
         ])
 
         let request = try urlRequest(tokenURI: credentials.tokenURI, body: body)
@@ -143,12 +143,12 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
 
     private func exchangeCodeForTokens(code: String, codeVerifier: String) async throws -> TokenResponse {
         let body = formEncode([
-            "code":          code,
-            "client_id":     credentials.clientID,
+            "code": code,
+            "client_id": credentials.clientID,
             "client_secret": credentials.clientSecret,
-            "redirect_uri":  redirectURI,
-            "grant_type":    "authorization_code",
-            "code_verifier": codeVerifier,
+            "redirect_uri": redirectURI,
+            "grant_type": "authorization_code",
+            "code_verifier": codeVerifier
         ])
 
         let request = try urlRequest(tokenURI: credentials.tokenURI, body: body)
@@ -191,15 +191,15 @@ public actor UserOAuthTokenProvider: AccessTokenAuthorizer, OAuthProvider {
             throw Failure("Invalid auth URI: \(credentials.authURI)")
         }
         components.queryItems = [
-            URLQueryItem(name: "client_id",             value: credentials.clientID),
-            URLQueryItem(name: "redirect_uri",          value: redirectURI),
-            URLQueryItem(name: "response_type",         value: "code"),
-            URLQueryItem(name: "scope",                 value: scopes.joined(separator: " ")),
-            URLQueryItem(name: "code_challenge",        value: codeChallenge),
+            URLQueryItem(name: "client_id", value: credentials.clientID),
+            URLQueryItem(name: "redirect_uri", value: redirectURI),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: scopes.joined(separator: " ")),
+            URLQueryItem(name: "code_challenge", value: codeChallenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
-            URLQueryItem(name: "state",                 value: state),
-            URLQueryItem(name: "access_type",           value: "offline"),
-            URLQueryItem(name: "prompt",                value: "consent"),
+            URLQueryItem(name: "state", value: state),
+            URLQueryItem(name: "access_type", value: "offline"),
+            URLQueryItem(name: "prompt", value: "consent")
         ]
         guard let url = components.url else {
             throw Failure("Failed to construct OAuth authorization URL")
