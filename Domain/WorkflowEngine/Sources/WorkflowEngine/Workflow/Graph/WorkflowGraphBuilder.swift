@@ -24,8 +24,8 @@ public struct WorkflowGraphBuilder: Sendable {
         let context = DataFlowAnalyzer.Context(
             transitions: transitions,
             states: states,
-            declaredInputKeys: declaredIO.inputKeys,
-            declaredOutputKeys: declaredIO.outputKeys,
+            declaredInputs: declaredIO.inputs,
+            declaredOutputs: declaredIO.outputs,
             startId: workflow.startId,
             finishId: workflow.finishId
         )
@@ -81,12 +81,14 @@ public struct WorkflowGraphBuilder: Sendable {
         }
     }
 
-    private func collectWorkflowIO(_ workflow: AnyWorkflow) -> (inputKeys: Set<String>, outputKeys: Set<String>) {
+    private func collectWorkflowIO(
+        _ workflow: AnyWorkflow
+    ) -> (inputs: Set<TransitionMetadata.Field>, outputs: Set<TransitionMetadata.Field>) {
         guard let bindable = workflow as? any DataBindable & Defaultable else {
             return ([], [])
         }
         let metadata = collectDataBindableMetadata(bindable, processId: workflow.id)
-        return (metadata.inputKeys, metadata.outputKeys)
+        return (metadata.inputs, metadata.outputs)
     }
 
     private func collectDataBindableMetadata(

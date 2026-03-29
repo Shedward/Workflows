@@ -11,15 +11,16 @@ struct DataFlowAnalyzer {
     struct Context {
         let transitions: [WorkflowGraph.Transition]
         let states: [WorkflowGraph.State]
-        let declaredInputKeys: Set<String>
-        let declaredOutputKeys: Set<String>
+        let declaredInputs: Set<TransitionMetadata.Field>
+        let declaredOutputs: Set<TransitionMetadata.Field>
         let startId: StateID
         let finishId: StateID
     }
 
     struct Analysis: Sendable {
-        let requiredInputs: Set<String>
-        let producedOutputs: Set<String>
+        let requiredInputs: Set<TransitionMetadata.Field>
+        let producedOutputs: Set<TransitionMetadata.Field>
+        let availableAtState: [StateID: Set<String>]
         let errors: [ValidationError]
         let warnings: [ValidationWarning]
     }
@@ -44,7 +45,7 @@ struct DataFlowAnalyzer {
         )
 
         let reachableStates = Set(order)
-        let available = propagateDataFlow(
+        let (available, availableTypes) = propagateDataFlow(
             context: context,
             order: order,
             adjacency: adjacency,
@@ -55,14 +56,21 @@ struct DataFlowAnalyzer {
         validateInputs(
             context: context,
             available: available,
+            availableTypes: availableTypes,
             reachableStates: reachableStates,
             errors: &errors,
             warnings: &warnings
         )
 
+        let finishTypes = availableTypes[context.finishId] ?? [:]
+        let producedOutputs = Set(
+            finishTypes.map { TransitionMetadata.Field(key: $0.key, valueType: $0.value) }
+        )
+
         return Analysis(
-            requiredInputs: context.declaredInputKeys,
-            producedOutputs: available[context.finishId] ?? [],
+            requiredInputs: context.declaredInputs,
+            producedOutputs: producedOutputs,
+            availableAtState: available,
             errors: errors,
             warnings: warnings
         )
@@ -142,15 +150,24 @@ private extension DataFlowAnalyzer {
 // MARK: - Data Flow Propagation
 
 private extension DataFlowAnalyzer {
+    typealias TypeMap = [String: String]
+
     static func propagateDataFlow(
         context: Context,
         order: [StateID],
         adjacency: Adjacency,
         backEdges: [WorkflowGraph.Transition],
         errors: inout [ValidationError]
-    ) -> [StateID: Set<String>] {
+    ) -> (available: [StateID: Set<String>], types: [StateID: TypeMap]) {
         var available: [StateID: Set<String>] = [:]
-        available[context.startId] = context.declaredInputKeys
+        var types: [StateID: TypeMap] = [:]
+
+        let declaredInputKeys = Set(context.declaredInputs.map(\.key))
+        available[context.startId] = declaredInputKeys
+        types[context.startId] = TypeMap(
+            context.declaredInputs.map { ($0.key, $0.valueType) },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         let backEdgeSet = Set(
             backEdges.map { BackEdgeKey(from: $0.from, to: $0.to, processId: $0.processId) }
@@ -161,31 +178,85 @@ private extension DataFlowAnalyzer {
                 !backEdgeSet.contains(BackEdgeKey(from: edge.from, to: edge.to, processId: edge.processId))
             }
 
-            guard !incomingEdges.isEmpty else {
-                available[stateId] = []
-                continue
-            }
-
-            let contributions = incomingEdges.map { edge in
-                (available[edge.from] ?? []).union(edge.metadata.outputKeys)
-            }
-
-            var intersection = contributions[0]
-            for contribution in contributions.dropFirst() {
-                intersection.formIntersection(contribution)
-            }
-            available[stateId] = intersection
-
-            checkConditionalInputs(
+            propagateState(
                 stateId: stateId,
-                contributions: contributions,
-                intersection: intersection,
+                incomingEdges: incomingEdges,
+                available: &available,
+                types: &types,
                 outgoing: adjacency.outgoing,
                 errors: &errors
             )
         }
 
-        return available
+        return (available, types)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    static func propagateState(
+        stateId: StateID,
+        incomingEdges: [WorkflowGraph.Transition],
+        available: inout [StateID: Set<String>],
+        types: inout [StateID: TypeMap],
+        outgoing: [StateID: [WorkflowGraph.Transition]],
+        errors: inout [ValidationError]
+    ) {
+        guard !incomingEdges.isEmpty else {
+            available[stateId] = []
+            types[stateId] = [:]
+            return
+        }
+
+        let contributions = incomingEdges.map { edge in
+            (available[edge.from] ?? []).union(edge.metadata.outputKeys)
+        }
+
+        let typeContributions = incomingEdges.map { edge -> TypeMap in
+            var edgeTypes = types[edge.from] ?? [:]
+            for output in edge.metadata.outputs {
+                edgeTypes[output.key] = output.valueType
+            }
+            return edgeTypes
+        }
+
+        var intersection = contributions[0]
+        for contribution in contributions.dropFirst() {
+            intersection.formIntersection(contribution)
+        }
+        available[stateId] = intersection
+
+        types[stateId] = mergeTypes(
+            keys: intersection,
+            typeContributions: typeContributions,
+            stateId: stateId,
+            errors: &errors
+        )
+
+        checkConditionalInputs(
+            stateId: stateId,
+            contributions: contributions,
+            intersection: intersection,
+            outgoing: outgoing,
+            errors: &errors
+        )
+    }
+
+    static func mergeTypes(
+        keys: Set<String>,
+        typeContributions: [TypeMap],
+        stateId: StateID,
+        errors: inout [ValidationError]
+    ) -> TypeMap {
+        var mergedTypes: TypeMap = [:]
+        for key in keys {
+            let keyTypes = Set(typeContributions.compactMap { $0[key] })
+            if let singleType = keyTypes.first, keyTypes.count == 1 {
+                mergedTypes[key] = singleType
+            } else if keyTypes.count > 1 {
+                mergedTypes[key] = keyTypes.first ?? ""
+                errors.append(.typeMismatch(key: key, types: keyTypes.sorted(), atState: stateId))
+            }
+        }
+        return mergedTypes
     }
 
     static func checkConditionalInputs(
@@ -217,13 +288,16 @@ private extension DataFlowAnalyzer {
 // MARK: - Input Validation
 
 private extension DataFlowAnalyzer {
+    // swiftlint:disable:next function_parameter_count
     static func validateInputs(
         context: Context,
         available: [StateID: Set<String>],
+        availableTypes: [StateID: TypeMap],
         reachableStates: Set<StateID>,
         errors: inout [ValidationError],
         warnings: inout [ValidationWarning]
     ) {
+        let declaredInputKeys = Set(context.declaredInputs.map(\.key))
         let allConsumedKeys = context.transitions.reduce(into: Set<String>()) {
             $0.formUnion($1.metadata.inputKeys)
         }
@@ -233,20 +307,30 @@ private extension DataFlowAnalyzer {
                 continue
             }
             let stateAvailable = available[transition.from] ?? []
+            let stateTypes = availableTypes[transition.from] ?? [:]
 
-            for inputKey in transition.metadata.inputKeys where !stateAvailable.contains(inputKey) {
-                if !context.declaredInputKeys.contains(inputKey) {
-                    errors.append(.undeclaredWorkflowInput(key: inputKey, processId: transition.processId))
+            for input in transition.metadata.inputs {
+                if !stateAvailable.contains(input.key) {
+                    if !declaredInputKeys.contains(input.key) {
+                        errors.append(.undeclaredWorkflowInput(key: input.key, processId: transition.processId))
+                    }
+                } else if let availableType = stateTypes[input.key], availableType != input.valueType {
+                    errors.append(.typeMismatch(
+                        key: input.key,
+                        types: [availableType, input.valueType],
+                        atState: transition.from
+                    ))
                 }
             }
         }
 
+        let declaredOutputKeys = Set(context.declaredOutputs.map(\.key))
         let producedOutputs = available[context.finishId] ?? []
-        for outputKey in context.declaredOutputKeys where !producedOutputs.contains(outputKey) {
+        for outputKey in declaredOutputKeys where !producedOutputs.contains(outputKey) {
             errors.append(.undeclaredWorkflowOutput(key: outputKey))
         }
 
-        for inputKey in context.declaredInputKeys where !allConsumedKeys.contains(inputKey) {
+        for inputKey in declaredInputKeys where !allConsumedKeys.contains(inputKey) {
             warnings.append(.unusedWorkflowInput(key: inputKey))
         }
     }
