@@ -22,7 +22,17 @@ swift test --package-path Core/Core            # Unit tests (Core module, Swift 
 # Integration tests (require running server on :8080)
 ./Tools/Tests/run_all                          # Run all integration tests
 ./Tools/Tests/run_simple_workflow              # Run a single test
+
+# Lint
+swiftlint                                      # Run from project root (uses .swiftlint.yml)
+swiftlint --fix                                # Auto-fix formatting violations
 ```
+
+## SwiftLint
+
+- Config: `.swiftlint.yml` at project root. Stricter opt-in rules enabled (see file).
+- Xcode integration: Run Script phase calls `Tools/Run/swiftlint` (adds Homebrew to PATH).
+- Module override: `Workflows/HHWorkflows/.swiftlint.yml` disables `type_name` and `identifier_name` to allow Cyrillic identifiers.
 
 ## Architecture
 
