@@ -86,8 +86,12 @@ actor WorkflowRunner {
         do {
             result = try await transition.process.start(context: &context)
         } catch {
-            let restored = instance.transitionEnded()
-            try? await storage.update(restored)
+            let failed = instance.transitionFailed(error, at: transition)
+            do {
+                try await storage.update(failed)
+            } catch {
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
+            }
             throw error
         }
 
@@ -160,7 +164,11 @@ actor WorkflowRunner {
         } catch {
             let failed = instance.transitionFailed(error, at: transition)
             logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
-            try? await storage.update(failed)
+            do {
+                try await storage.update(failed)
+            } catch {
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
+            }
             return failed
         }
     }
@@ -170,8 +178,16 @@ actor WorkflowRunner {
     private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
+        let instance: WorkflowInstance?
+        do {
+            instance = try await storage.instance(id: instanceId)
+        } catch {
+            logger?.error("Failed to load instance \(instanceId, privacy: .public) from storage: \(error, privacy: .public)")
+            return
+        }
+
         guard
-            let instance = try? await storage.instance(id: instanceId),
+            let instance,
             let transitionState = instance.transitionState,
             let workflow = await registry.workflow(id: instance.workflowId),
             let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
@@ -183,7 +199,11 @@ actor WorkflowRunner {
         do {
             try await takeTransition(transition, on: instance, of: workflow, resumeReason: reason)
         } catch {
-            try? await storage.update(instance.transitionFailed(error, at: transition))
+            do {
+                try await storage.update(instance.transitionFailed(error, at: transition))
+            } catch {
+                logger?.error("Failed to persist failure state for \(instanceId, privacy: .public): \(error, privacy: .public)")
+            }
             logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
         }
     }

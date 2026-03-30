@@ -6,14 +6,14 @@ Collected during full codebase review.
 
 ## High Priority — Bugs & Safety
 
-### 1. Silent storage errors in WorkflowRunner
-`WorkflowRunner.swift` lines 90, 163, 174, 186 use `try?` to silently discard storage failures. If persistence fails, the server continues with stale state and nobody knows.
+### 1. ~~Silent storage errors in WorkflowRunner~~ (RESOLVED)
+Replaced all 4 `try?` calls with `do/catch` blocks that log storage errors via `Logger`. Storage failures are no longer silent.
 
-### 2. `fatalError` in property wrappers
-8 `fatalError`s across `Input.swift`, `Output.swift`, `Dependency.swift`. Server defaults to `.lenient` validation, so graph checks don't fully prevent runtime crashes.
+### 2. ~~`fatalError` in property wrappers~~ (WON'T FIX)
+Intentional by design. `fatalError` in `@Input`, `@Output`, `@Dependency` is the correct behavior — misuse of these wrappers is a programmer error that should crash loudly. Graph validation catches most cases at startup.
 
-### 3. Manual vs automatic transition failure asymmetry
-Manual transition failures return HTTP 500 but don't persist `transitionState.failed`. Automatic failures do. Inconsistent for API clients trying to observe failure state.
+### 3. ~~Manual vs automatic transition failure asymmetry~~ (RESOLVED)
+Manual transition failures now persist `transitionState.failed` before throwing, consistent with automatic failures. Client gets both HTTP 500 and queryable failure state. Updated `run_failed_transition` test.
 
 ### 4. GithubClient placeholder token
 `GithubClient.swift:17` — `StaticTokenAuthorizer("<Token>")`. Known bug #3.
@@ -50,8 +50,8 @@ All 49 occurrences are on compile-time-known string literals — these can never
 ### 11. ~~`print` instead of Logger~~ (UNNECESSARY)
 `SendMessage.swift` is in `TestingWorkflows` — test-only code. Using `print()` in test fixtures is acceptable.
 
-### 12. Silent failures in JSONFileWorkflowStorage
-`JSONFileWorkflowStorage.swift` lines 19, 22, 96 — `try?` when reading/decoding/deleting instance files. A corrupted file silently vanishes.
+### 12. ~~Silent failures in JSONFileWorkflowStorage~~ (RESOLVED)
+Replaced all 3 `try?` calls with `do/catch` blocks that log via `Logger`. Corrupted files, decode failures, and delete errors are now visible in logs.
 
 ### 13. ~~Additional `try?` across codebase~~ (UNNECESSARY)
 All uses are contextually appropriate: existence checks (keychain), optional error body parsing (OAuth), metadata introspection fallbacks (CollectMetadata, GraphBuilder), and Task.sleep.

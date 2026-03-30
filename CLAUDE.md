@@ -132,7 +132,7 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 - **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
 - **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
-- **Manual vs automatic failure asymmetry**: Manual transition failures propagate as HTTP 500 but do NOT set `transitionState.failed`. Only automatic transition failures persist the error in `transitionState`. Consider unifying.
+- **Manual vs automatic failure behavior**: Both manual and automatic transition failures now persist `transitionState.failed`. Manual failures additionally propagate as HTTP 500.
 - **No migration mechanism** — if a workflow's `version` is bumped, persisted instances with the old version will cause `WorkflowVersionMismatch` on startup; they must be deleted manually.
 - **No retry mechanism** for failed transitions.
 - **No timeout** for wait transitions.
