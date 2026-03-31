@@ -28,6 +28,7 @@ enum App {
         )
 
         let plugins = Plugins {
+            WorkflowTransitionUpdatesPlugin()
         }
 
         let workflows = try await Workflows(
