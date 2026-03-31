@@ -16,7 +16,6 @@ public struct WorkflowValidationResult: Sendable {
 }
 
 public enum ValidationError: Sendable, CustomStringConvertible {
-    case unsatisfiedInput(key: String, processId: TransitionProcessID, atState: StateID)
     case missingDependency(key: String, valueType: String, processId: TransitionProcessID)
     case unreachableFinish
     case deadEndState(StateID)
@@ -30,8 +29,6 @@ public enum ValidationError: Sendable, CustomStringConvertible {
 
     public var description: String {
         switch self {
-        case let .unsatisfiedInput(key, processId, atState):
-            "Input '\(key)' required by '\(processId)' at state '\(atState)' is not provided by any prior transition"
         case let .missingDependency(key, valueType, processId):
             "Dependency '\(key)' (\(valueType)) required by '\(processId)' is not registered"
         case .unreachableFinish:

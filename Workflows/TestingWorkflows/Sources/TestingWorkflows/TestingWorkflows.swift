@@ -18,7 +18,8 @@ public let workflows: [any Workflow] = [
     BranchingWorkflow(),
     InitialDataWorkflow(),
     SlowWorkflow(),
-    AutomaticSlowWorkflow()
+    AutomaticSlowWorkflow(),
+    SubflowDataFlowWorkflow()
 ]
 
 public let invalidWorkflows: [any Workflow] = [

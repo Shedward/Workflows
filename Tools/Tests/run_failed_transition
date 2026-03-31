@@ -15,16 +15,9 @@ main() {
   # Instance should still be at shouldFail (state unchanged)
   assert_state "shouldFail"
 
-  # transitionState should be null (manual failures propagate as HTTP errors,
-  # they do NOT set transitionState.failed — that only happens for automatic transitions)
-  local response
-  response="$(request GET "/workflowInstances/$INSTANCE_ID")"
-  local ts
-  ts="$(jq -r '.transitionState' <<<"$response")"
-  if [[ "$ts" != "null" ]]; then
-    echo "Expected transitionState null after manual failure, got '$ts'" >&2
-    exit 1
-  fi
+  # transitionState should be failed (manual failures now persist failure state,
+  # consistent with automatic transitions)
+  assert_transition_failed "FailAction"
 
   # The failing transition should still be available (state didn't change)
   assert_transition_available "FailAction"
@@ -32,6 +25,7 @@ main() {
   # Retry the same transition — should fail again
   assert_fails try_take_transition "FailAction"
   assert_state "shouldFail"
+  assert_transition_failed "FailAction"
 
   echo "Finished Successfully"
 }

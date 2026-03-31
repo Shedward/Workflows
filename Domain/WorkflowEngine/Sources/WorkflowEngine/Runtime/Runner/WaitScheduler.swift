@@ -60,11 +60,11 @@ actor WaitScheduler {
         }
     }
 
-    func notifyFinished(_ instanceId: WorkflowInstanceID) async {
+    func notifyFinished(_ instanceId: WorkflowInstanceID, data: WorkflowData) async {
         logger?.trace("Notify finishing for \(instanceId)")
         if let waiters = finishWaiters.removeValue(forKey: instanceId) {
             for waiterId in waiters {
-                await resume(waiterId, .workflowFinished)
+                await resume(waiterId, .workflowFinished(data: data))
             }
         }
 
@@ -108,6 +108,6 @@ actor WaitScheduler {
 extension WaitScheduler {
     enum ResumeReason {
         case time
-        case workflowFinished
+        case workflowFinished(data: WorkflowData)
     }
 }

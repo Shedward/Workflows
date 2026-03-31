@@ -5,10 +5,12 @@
 //  Created by Vlad Maltsev on 29.03.2026.
 //
 
+import Core
 import Foundation
+import os
 
 public actor JSONFileWorkflowStorage: WorkflowStorage {
-    private static func load(from directory: URL) throws -> [WorkflowInstance] {
+    private static func load(from directory: URL, logger: Logger?) throws -> [WorkflowInstance] {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let files = try FileManager.default.contentsOfDirectory(
@@ -16,15 +18,25 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
             includingPropertiesForKeys: nil
         ).filter { $0.pathExtension == "json" }
         return files.compactMap { url in
-            guard let data = try? Data(contentsOf: url) else {
+            let data: Data
+            do {
+                data = try Data(contentsOf: url)
+            } catch {
+                logger?.error("Failed to read instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
                 return nil
             }
-            return try? decoder.decode(WorkflowInstance.self, from: data)
+            do {
+                return try decoder.decode(WorkflowInstance.self, from: data)
+            } catch {
+                logger?.error("Failed to decode instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
+                return nil
+            }
         }
     }
 
     private let directory: URL
     private let retentionInterval: TimeInterval
+    private let logger = Logger(scope: .workflow)
     private var instances: [WorkflowInstance] = []
 
     private let encoder: JSONEncoder = {
@@ -44,7 +56,7 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         self.directory = directory
         self.retentionInterval = retentionInterval
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.instances = try Self.load(from: directory)
+        self.instances = try Self.load(from: directory, logger: logger)
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) throws -> WorkflowInstance {
@@ -93,7 +105,11 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
             guard now.timeIntervalSince(finishedAt) > retentionInterval else {
                 return false
             }
-            try? FileManager.default.removeItem(at: filePath(for: instance.id))
+            do {
+                try FileManager.default.removeItem(at: filePath(for: instance.id))
+            } catch {
+                logger?.error("Failed to delete expired instance file \(instance.id, privacy: .public): \(error, privacy: .public)")
+            }
             return true
         }
     }
