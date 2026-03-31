@@ -7,10 +7,10 @@
 
 import Hummingbird
 
-protocol Controller: Sendable {
+public protocol Controller: Sendable {
     var endpoints: RouteCollection<AppRequestContext> { get }
 }
 
-extension Controller {
+public extension Controller {
     typealias Context = AppRequestContext
 }
