@@ -8,12 +8,16 @@
 import SwiftUI
 
 public struct App: SwiftUI.App {
+    let config: Config
+
     public var body: some Scene {
         WindowGroup {
             MainScreen()
+                .environment(\.workflowService, config.workflowsService)
         }
     }
 
     public init() {
+        self.config = .debug
     }
 }

@@ -13,9 +13,17 @@ let package = Package(
             targets: ["WorkflowApp"]
         ),
     ],
+    dependencies: [
+        .package(path: "../Core/Rest"),
+        .package(path: "../Domain/API"),
+    ],
     targets: [
         .target(
-            name: "WorkflowApp"
+            name: "WorkflowApp",
+            dependencies: [
+                .product(name: "Rest", package: "Rest"),
+                .product(name: "API", package: "API")
+            ]
         ),
     ]
 )

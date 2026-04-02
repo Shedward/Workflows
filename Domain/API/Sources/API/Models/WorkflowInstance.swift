@@ -8,7 +8,7 @@
 import Foundation
 import Rest
 
-public struct WorkflowInstance: JSONBody {
+public struct WorkflowInstance: JSONBody, Identifiable {
     public let id: String
     public let workflowId: String
     public let state: String
