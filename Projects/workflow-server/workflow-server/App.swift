@@ -27,6 +27,12 @@ enum App {
             directory: workflowsConfigDir.appending(path: "instances")
         )
 
+        let certsPath = workflowsConfigDir.appending(path: "certs")
+        let config = Config(
+            tlsCertificatePath: certsPath.appending(path: "localhost+2.pem").path(),
+            tlsPrivateKeyPath: certsPath.appending(path: "localhost+2-key.pem").path()
+        )
+
         let plugins = Plugins {
             WorkflowTransitionUpdatesPlugin()
         }
@@ -43,6 +49,7 @@ enum App {
         let app = WorkflowServer.App(
             workflows: workflows,
             authRegistry: authRegistry,
+            config: config,
             plugins: plugins
         )
         try await app.main()

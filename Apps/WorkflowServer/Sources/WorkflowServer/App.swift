@@ -6,8 +6,10 @@
 
 import Configuration
 import Hummingbird
+import HummingbirdTLS
 import Logging
 import WorkflowEngine
+import NIOSSL
 
 public typealias AppRequestContext = BasicRequestContext
 
@@ -15,15 +17,18 @@ public struct App {
 
     public let workflows: Workflows
     public let authRegistry: AuthRegistry
+    public let config: Config
     public let plugins: Plugins
 
     public init(
         workflows: Workflows,
         authRegistry: AuthRegistry = AuthRegistry(),
+        config: Config,
         plugins: Plugins = .init()
     ) {
         self.workflows = workflows
         self.authRegistry = authRegistry
+        self.config = config
         self.plugins = plugins
     }
 
@@ -32,7 +37,9 @@ public struct App {
             EnvironmentVariablesProvider(),
             EnvironmentVariablesProvider(environmentFilePath: ".env", allowMissing: true),
             InMemoryProvider(values: [
-                "http.serverName": "workflow-server"
+                "http.hostname": ConfigValue(stringLiteral: config.hostname),
+                "http.port": ConfigValue(integerLiteral: config.port),
+                "http.serverName": "workflow-server",
             ])
         ])
 
@@ -40,14 +47,14 @@ public struct App {
             .all(PluginController.self)
             .compactMap(\.endpoints)
 
-        let app = buildApplication(reader: reader, pluginRoutes: pluginRoutes)
+        let app = try buildApplication(reader: reader, pluginRoutes: pluginRoutes)
         try await app.runService()
     }
 
     func buildApplication(
         reader: ConfigReader,
         pluginRoutes: [RouteCollection<AppRequestContext>]
-    ) -> some ApplicationProtocol {
+    ) throws -> some ApplicationProtocol {
         let logger = {
             var logger = Logger(label: "workflow-server")
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
@@ -60,11 +67,22 @@ public struct App {
             pluginRoutes: pluginRoutes
         )
 
+        let tls = try buildTls()
+
         return Application(
             router: router,
+            server: try .tls(configuration: tls),
             configuration: ApplicationConfiguration(reader: reader.scoped(to: "http")),
             logger: logger
         )
+    }
+
+    func buildTls() throws -> TLSChannelConfiguration {
+        let tlsConfig = try TLSConfiguration.makeServerConfiguration(
+            certificateChain: NIOSSLCertificate.fromPEMFile(config.tlsCertificatePath).map { .certificate($0) },
+            privateKey: .privateKey(.init(file: config.tlsPrivateKeyPath, format: .pem))
+        )
+        return .init(tlsConfiguration: tlsConfig)
     }
 
     func buildRouter(
