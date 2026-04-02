@@ -9,16 +9,22 @@ import Hummingbird
 import Logging
 import WorkflowEngine
 
-typealias AppRequestContext = BasicRequestContext
+public typealias AppRequestContext = BasicRequestContext
 
 public struct App {
 
     public let workflows: Workflows
     public let authRegistry: AuthRegistry
+    public let plugins: Plugins
 
-    public init(workflows: Workflows, authRegistry: AuthRegistry = AuthRegistry()) {
+    public init(
+        workflows: Workflows,
+        authRegistry: AuthRegistry = AuthRegistry(),
+        plugins: Plugins = .init()
+    ) {
         self.workflows = workflows
         self.authRegistry = authRegistry
+        self.plugins = plugins
     }
 
     public func main() async throws {
@@ -29,18 +35,30 @@ public struct App {
                 "http.serverName": "workflow-server"
             ])
         ])
-        let app = buildApplication(reader: reader)
+
+        let pluginRoutes = await plugins
+            .all(PluginController.self)
+            .compactMap(\.endpoints)
+
+        let app = buildApplication(reader: reader, pluginRoutes: pluginRoutes)
         try await app.runService()
     }
 
-    func buildApplication(reader: ConfigReader) -> some ApplicationProtocol {
+    func buildApplication(
+        reader: ConfigReader,
+        pluginRoutes: [RouteCollection<AppRequestContext>]
+    ) -> some ApplicationProtocol {
         let logger = {
             var logger = Logger(label: "workflow-server")
             logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
             return logger
         }()
 
-        let router = buildRouter(workflows: workflows, authRegistry: authRegistry)
+        let router = buildRouter(
+            workflows: workflows,
+            authRegistry: authRegistry,
+            pluginRoutes: pluginRoutes
+        )
 
         return Application(
             router: router,
@@ -49,7 +67,11 @@ public struct App {
         )
     }
 
-    func buildRouter(workflows: Workflows, authRegistry: AuthRegistry) -> Router<AppRequestContext> {
+    func buildRouter(
+        workflows: Workflows,
+        authRegistry: AuthRegistry,
+        pluginRoutes: [RouteCollection<AppRequestContext>]
+    ) -> Router<AppRequestContext> {
         let router = Router(context: AppRequestContext.self)
         router.addMiddleware {
             LogRequestsMiddleware(.info)
@@ -62,6 +84,10 @@ public struct App {
         router.addRoutes(WorkflowInstancesController(workflows: workflows).endpoints)
         router.addRoutes(WorkflowsController(workflows: workflows).endpoints)
         router.addRoutes(AuthController(registry: authRegistry).endpoints)
+
+        for pluginRoute in pluginRoutes {
+            router.addRoutes(pluginRoute)
+        }
 
         return router
     }

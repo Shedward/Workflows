@@ -13,16 +13,18 @@ actor WorkflowRunner {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
     private let dependencies: DependenciesContainer
+    private let plugins: Plugins
 
     private lazy var scheduler = WaitScheduler { [weak self] instanceId, reason in
         await self?.resumeWaiting(instanceId: instanceId, reason: reason)
     }
     private let logger = Logger(scope: .workflow)
 
-    init(storage: WorkflowStorage, registry: WorkflowRegistry, dependencies: DependenciesContainer) {
+    init(storage: WorkflowStorage, registry: WorkflowRegistry, dependencies: DependenciesContainer, plugins: Plugins) {
         self.storage = storage
         self.registry = registry
         self.dependencies = dependencies
+        self.plugins = plugins
     }
 
     func resume() async throws {
@@ -52,6 +54,9 @@ actor WorkflowRunner {
     func start(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         logger?.trace("Start \(workflow.id, privacy: .public)")
         let instance = try await create(workflow, initialData: initialData)
+        await plugins.invoke(WorkflowTransitionListener.self) {
+            $0.workflowDidStart(instance: instance)
+        }
         return await runAutomaticTransitions(from: instance)
     }
 
@@ -71,6 +76,11 @@ actor WorkflowRunner {
                 instanceVersion: instance.workflowVersion,
                 workflowVersion: workflow.version
             )
+        }
+
+        let traceId = UUID()
+        await plugins.invoke(WorkflowTransitionListener.self) {
+            $0.workflowWillTransition(instance: instance, transition: transition.id, traceId: traceId)
         }
 
         let executing = instance.transitionExecuting(transition)
@@ -95,6 +105,10 @@ actor WorkflowRunner {
             throw error
         }
 
+        await plugins.invoke(WorkflowTransitionListener.self) {
+            $0.workflowDidTransition(instance: instance, transition: transition.id, traceId: traceId)
+        }
+
         var next = instance.data(context.instance.data)
         switch result {
         case .completed:
@@ -116,6 +130,9 @@ actor WorkflowRunner {
     func finish(_ instance: WorkflowInstance) async throws {
         logger?.trace("Finish \(instance.id, privacy: .public)")
         try await storage.finish(instance)
+        await plugins.invoke(WorkflowTransitionListener.self) {
+            $0.workflowDidFinish(instance: instance)
+        }
         await scheduler.notifyFinished(instance.id, data: instance.data)
     }
 

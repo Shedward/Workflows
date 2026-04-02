@@ -11,7 +11,8 @@ import Hummingbird
 import Rest
 
 extension RouteCollection where Context == AppRequestContext {
-    @discardableResult func on<Api: WorkflowApi>(
+    @discardableResult
+    public func on<Api: WorkflowApi>(
         _ api: Api.Type,
         use closure: @Sendable @escaping (Request, Api.RequestBody, Context) async throws -> some ResponseGenerator
     ) -> Self
@@ -26,7 +27,8 @@ extension RouteCollection where Context == AppRequestContext {
         return on(.init(Api.path), method: Api.method.httpRequestMethod, responder: responder)
     }
 
-    @discardableResult func on<Api: WorkflowApi>(
+    @discardableResult
+    public func on<Api: WorkflowApi>(
         _ api: Api.Type,
         use closure: @Sendable @escaping (Request, Api.RequestBody, Context) async throws -> Api.ResponseBody
     ) -> Self

@@ -16,11 +16,13 @@ public actor Workflows {
     let registry: WorkflowRegistry
     let storage: WorkflowStorage
     let runner: WorkflowRunner
+    let plugins: Plugins
 
     public init(
         storage: WorkflowStorage = InMemoryWorkflowStorage(),
         dependencies: DependenciesContainer,
         validation: ValidationMode = .strict,
+        plugins: Plugins = .init(),
         @ArrayBuilder<any Workflow> workflows: () -> [any Workflow]
     ) async throws {
         self.registry = try WorkflowRegistry(workflows())
@@ -28,8 +30,10 @@ public actor Workflows {
         self.runner = WorkflowRunner(
             storage: storage,
             registry: registry,
-            dependencies: dependencies
+            dependencies: dependencies,
+            plugins: plugins
         )
+        self.plugins = plugins
 
         try await registry.validateAll(dependencies: dependencies, mode: validation)
     }

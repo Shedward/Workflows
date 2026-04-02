@@ -5,6 +5,7 @@
 //  Created by Vlad Maltsev on 08.01.2026.
 //
 
+import Core
 import Foundation
 import os
 import TestingWorkflows
@@ -26,10 +27,24 @@ enum App {
             directory: workflowsConfigDir.appending(path: "instances")
         )
 
-        let workflows = try await Workflows(storage: storage, dependencies: dependencies, validation: .strict) {
+        let plugins = Plugins {
+            WorkflowTransitionUpdatesPlugin()
+        }
+
+        let workflows = try await Workflows(
+            storage: storage,
+            dependencies: dependencies,
+            validation: .strict,
+            plugins: plugins
+        ) {
             TestingWorkflows.workflows
         }
-        let app = WorkflowServer.App(workflows: workflows, authRegistry: authRegistry)
+
+        let app = WorkflowServer.App(
+            workflows: workflows,
+            authRegistry: authRegistry,
+            plugins: plugins
+        )
         try await app.main()
     }
 }
