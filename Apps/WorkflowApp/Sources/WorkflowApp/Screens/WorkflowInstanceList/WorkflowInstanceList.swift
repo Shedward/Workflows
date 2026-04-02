@@ -1,5 +1,5 @@
 //
-//  WorkflowInstancesScreen.swift
+//  WorkflowInstanceList.swift
 //  WorkflowApp
 //
 //  Created by Мальцев Владислав on 02.04.2026.
@@ -8,7 +8,7 @@
 import SwiftUI
 import API
 
-struct WorkflowInstancesScreen: View {
+struct WorkflowInstanceList: View {
 
     @State
     private var workflowInstances: [WorkflowInstance]?

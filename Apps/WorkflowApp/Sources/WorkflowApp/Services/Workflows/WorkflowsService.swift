@@ -20,6 +20,11 @@ actor WorkflowsService {
         let request = GetWorkflowsInstances()
         return try await rest.fetch(request).items
     }
+
+    func getWorkflows() async throws -> [Workflow] {
+        let request = GetWorkflows()
+        return try await rest.fetch(request).items
+    }
 }
 
 extension EnvironmentValues {
