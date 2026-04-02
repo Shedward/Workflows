@@ -29,7 +29,7 @@
       location = "group:Projects"
       name = "Projects">
       <FileRef
-         location = "group:workflow-server/workflow-server.xcodeproj">
+         location = "group:workflow-server/workflow.xcodeproj">
       </FileRef>
    </Group>
 </Workspace>
