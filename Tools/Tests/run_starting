@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # Test GET /workflows/:id/starting returns candidates for InitialDataWorkflow
+  local response
+  response="$(request GET "/workflows/InitialDataWorkflow/starting")"
+
+  # Should return a list with at least one candidate (ManualProvider)
+  local count
+  count="$(jq 'length' <<<"$response")"
+  if [[ "$count" -lt 1 ]]; then
+    echo "Expected at least 1 starting candidate, got $count" >&2
+    exit 1
+  fi
+
+  # Candidate should have workflowId
+  local workflow_id
+  workflow_id="$(jq -r '.[0].workflowId' <<<"$response")"
+  if [[ "$workflow_id" != "InitialDataWorkflow" ]]; then
+    echo "Expected workflowId 'InitialDataWorkflow', got '$workflow_id'" >&2
+    exit 1
+  fi
+
+  # Candidate should list 'greeting' in inputs
+  local has_greeting
+  has_greeting="$(jq '[.[0].inputs[] | select(.key == "greeting")] | length' <<<"$response")"
+  if [[ "$has_greeting" -lt 1 ]]; then
+    echo "Expected 'greeting' in inputs" >&2
+    exit 1
+  fi
+
+  # Now start a workflow using the candidate's info
+  start_workflow_with_data "InitialDataWorkflow" '{"greeting":"\"hello\""}'
+  assert_exists
+
+  take_transition "ReadInitialData"
+  assert_data "result" "\"hello_processed\""
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

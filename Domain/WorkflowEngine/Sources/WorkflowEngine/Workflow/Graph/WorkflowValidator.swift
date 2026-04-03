@@ -36,11 +36,40 @@ public struct WorkflowValidator: Sendable {
             errors: &errors
         )
 
+        validateProviderDependencies(
+            workflow: workflow,
+            dependencies: dependencies,
+            errors: &errors
+        )
+
         return WorkflowValidationResult(
             workflowId: workflow.id,
             errors: errors,
             warnings: warnings
         )
+    }
+
+    private static func validateProviderDependencies(
+        workflow: AnyWorkflow,
+        dependencies: DependenciesContainer,
+        errors: inout [ValidationError]
+    ) {
+        let registeredKeys = dependencies.keys
+
+        for provider in workflow.providers {
+            var provider = provider
+            var collector = CollectMetadata()
+            try? provider.bind(&collector)
+
+            let providerType = String(describing: type(of: provider))
+            for dep in collector.dependencies where !registeredKeys.contains(dep.key) {
+                errors.append(.missingProviderDependency(
+                    key: dep.key,
+                    valueType: dep.valueType,
+                    providerType: providerType
+                ))
+            }
+        }
     }
 
     private static func validateSubflowInputs(

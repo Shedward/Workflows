@@ -1,5 +1,5 @@
 
-readonly BASE="http://127.0.0.1:8080"
+readonly BASE="https://127.0.0.1:8443"
 
 request() {
   local method="$1"
