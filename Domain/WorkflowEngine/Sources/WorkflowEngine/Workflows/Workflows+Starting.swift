@@ -17,7 +17,9 @@ public extension Workflows {
 
         for provider in workflow.providers {
             let resolved = try resolveProvider(provider)
-            let starts = try await resolved.starting()
+            let starts = try await Failure.wrap("Getting startings") {
+                try await resolved.starting()
+            }
             for start in starts {
                 candidates.append(WorkflowStartCandidate(
                     title: start.title,

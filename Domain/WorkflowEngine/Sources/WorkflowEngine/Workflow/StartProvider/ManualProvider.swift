@@ -6,8 +6,10 @@
 //
 
 @DataBindable
-struct ManualProvider: WorkflowStartProvider {
-    func starting() async -> [WorkflowStart] {
+public struct ManualProvider: WorkflowStartProvider {
+    public init() {}
+
+    public func starting() async -> [WorkflowStart] {
         [.manual]
     }
 }
