@@ -7,19 +7,14 @@
 
 public struct TransitionMetadata: Sendable, Codable, Equatable {
 
-    public struct Field: Sendable, Codable, Hashable {
-        public let key: String
-        public let valueType: String
-    }
-
     public static func empty(processId: TransitionProcessID) -> TransitionMetadata {
         TransitionMetadata(processId: processId, inputs: [], outputs: [], dependencies: [])
     }
 
     public let processId: TransitionProcessID
-    public let inputs: Set<Field>
-    public let outputs: Set<Field>
-    public let dependencies: Set<Field>
+    public let inputs: Set<DataField>
+    public let outputs: Set<DataField>
+    public let dependencies: Set<DataField>
 
     public var inputKeys: Set<String> {
         Set(inputs.map(\.key))
@@ -36,9 +31,9 @@ public struct TransitionMetadata: Sendable, Codable, Equatable {
 
 struct CollectMetadata: DataBinding {
 
-    private(set) var inputs: Set<TransitionMetadata.Field> = []
-    private(set) var outputs: Set<TransitionMetadata.Field> = []
-    private(set) var dependencies: Set<TransitionMetadata.Field> = []
+    private(set) var inputs: Set<DataField> = []
+    private(set) var outputs: Set<DataField> = []
+    private(set) var dependencies: Set<DataField> = []
 
     mutating func input<Value: Sendable>(for key: String, at input: inout Input<Value>) {
         inputs.insert(.init(key: key, valueType: String(describing: Value.self)))
