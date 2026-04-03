@@ -26,6 +26,6 @@ public struct WorkflowGraph: Sendable, Codable, Equatable {
     public let version: WorkflowVersion
     public let states: [State]
     public let transitions: [Transition]
-    public let requiredInputs: Set<TransitionMetadata.Field>
-    public let producedOutputs: Set<TransitionMetadata.Field>
+    public let requiredInputs: Set<DataField>
+    public let producedOutputs: Set<DataField>
 }

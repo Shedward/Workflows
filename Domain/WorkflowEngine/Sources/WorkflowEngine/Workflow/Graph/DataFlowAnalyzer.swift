@@ -12,15 +12,15 @@ struct DataFlowAnalyzer {
     struct Context {
         let transitions: [WorkflowGraph.Transition]
         let states: [WorkflowGraph.State]
-        let declaredInputs: Set<TransitionMetadata.Field>
-        let declaredOutputs: Set<TransitionMetadata.Field>
+        let declaredInputs: Set<DataField>
+        let declaredOutputs: Set<DataField>
         let startId: StateID
         let finishId: StateID
     }
 
     struct Analysis: Sendable {
-        let requiredInputs: Set<TransitionMetadata.Field>
-        let producedOutputs: Set<TransitionMetadata.Field>
+        let requiredInputs: Set<DataField>
+        let producedOutputs: Set<DataField>
         let typeAtState: [StateID: TypeMap]
         let conflictedKeys: [StateID: Set<String>]
         let errors: [ValidationError]
@@ -70,7 +70,7 @@ struct DataFlowAnalyzer {
         let producedOutputs = Set(
             (typeAtState[context.finishId] ?? [:])
                 .filter { declaredOutputKeys.contains($0.key) }
-                .map { TransitionMetadata.Field(key: $0.key, valueType: $0.value) }
+                .map { DataField(key: $0.key, valueType: $0.value) }
         )
 
         return Analysis(
