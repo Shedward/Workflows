@@ -87,7 +87,7 @@ public struct WorkflowGraphBuilder: Sendable {
 
     private func collectWorkflowIO(
         _ workflow: AnyWorkflow
-    ) -> (inputs: Set<TransitionMetadata.Field>, outputs: Set<TransitionMetadata.Field>) {
+    ) -> (inputs: Set<DataField>, outputs: Set<DataField>) {
         guard let bindable = workflow as? any DataBindable & Defaultable else {
             return ([], [])
         }

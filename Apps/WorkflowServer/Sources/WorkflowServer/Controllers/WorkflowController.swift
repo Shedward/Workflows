@@ -16,6 +16,7 @@ struct WorkflowsController: Controller {
     var endpoints: RouteCollection<AppRequestContext> {
         RouteCollection()
             .on(GetWorkflows.self, use: getWorkflowTypes)
+            .on(GetWorkflowGraph.self, use: getWorkflowGraph)
     }
 
     private func getWorkflowTypes(request: Request, body: EmptyBody, context: Context) async -> ListBody<API.Workflow> {
@@ -24,5 +25,13 @@ struct WorkflowsController: Controller {
             API.Workflow(model: workflow)
         }
         return ListBody(items: instances)
+    }
+
+    private func getWorkflowGraph(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowGraph {
+        let workflowId = try context.parameters.require("id")
+        guard let graph = await workflows.graph(for: workflowId) else {
+            throw HTTPError(.notFound, message: "Workflow not found: \(workflowId)")
+        }
+        return API.WorkflowGraph(model: graph)
     }
 }

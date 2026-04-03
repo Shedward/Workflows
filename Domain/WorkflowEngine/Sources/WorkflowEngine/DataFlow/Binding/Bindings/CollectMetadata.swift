@@ -5,7 +5,7 @@
 //  Created by Vlad Maltsev on 29.03.2026.
 //
 
-public struct TransitionMetadata: Sendable, Codable, Equatable {
+public struct TransitionMetadata: Sendable, Equatable {
 
     public static func empty(processId: TransitionProcessID) -> TransitionMetadata {
         TransitionMetadata(processId: processId, inputs: [], outputs: [], dependencies: [])
