@@ -51,4 +51,10 @@ public enum WorkflowsError {
     public struct CircularSubflows: Swift.Error {
         public let cycles: [[WorkflowID]]
     }
+
+    public struct InvalidRouteTarget: Swift.Error {
+        public let transitionId: TransitionID
+        public let requestedTarget: StateID
+        public let allowedTargets: [StateID]
+    }
 }

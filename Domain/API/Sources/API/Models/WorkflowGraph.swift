@@ -38,7 +38,7 @@ public struct WorkflowGraph: JSONBody {
     public struct Transition: JSONBody {
         public let id: TransitionID
         public let from: String
-        public let to: String
+        public let targets: [String]
         public let processId: String
         public let trigger: String
         public let metadata: TransitionMetadata
@@ -47,7 +47,7 @@ public struct WorkflowGraph: JSONBody {
         public init(
             id: TransitionID,
             from: String,
-            to: String,
+            targets: [String],
             processId: String,
             trigger: String,
             metadata: TransitionMetadata,
@@ -55,7 +55,7 @@ public struct WorkflowGraph: JSONBody {
         ) {
             self.id = id
             self.from = from
-            self.to = to
+            self.targets = targets
             self.processId = processId
             self.trigger = trigger
             self.metadata = metadata

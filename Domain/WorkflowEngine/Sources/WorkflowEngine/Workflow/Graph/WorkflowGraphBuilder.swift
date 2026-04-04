@@ -76,7 +76,7 @@ public struct WorkflowGraphBuilder: Sendable {
             return WorkflowGraph.Transition(
                 id: transition.id,
                 from: transition.from,
-                to: transition.to,
+                targets: transition.targets,
                 processId: transition.process.id,
                 trigger: transition.trigger,
                 metadata: metadata,

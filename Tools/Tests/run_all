@@ -26,6 +26,7 @@ readonly TEST_SCRIPTS=(
   run_slow_workflow
   run_subflow_data_flow
   run_starting
+  run_condition_branching
 )
 
 readonly GREEN='\033[0;32m'

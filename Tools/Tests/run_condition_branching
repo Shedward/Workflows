@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # ── ConditionBranchingWorkflow: route to left ──────────────────────────────
+  assert_workflow_registered "ConditionBranchingWorkflow"
+
+  start_workflow_with_data "ConditionBranchingWorkflow" '{"choice":"\"left\""}'
+
+  take_transition "ChooseDirection"
+  assert_state "left"
+
+  take_transition "Finalize"
+  assert_finished
+
+  # ── ConditionBranchingWorkflow: route to right ─────────────────────────────
+  start_workflow_with_data "ConditionBranchingWorkflow" '{"choice":"\"right\""}'
+
+  take_transition "ChooseDirection"
+  assert_state "right"
+
+  take_transition "Finalize"
+  assert_finished
+
+  # ── ConditionOutputWorkflow: condition produces output + routes to left ─────
+  assert_workflow_registered "ConditionOutputWorkflow"
+
+  start_workflow_with_data "ConditionOutputWorkflow" '{"choice":"\"left\""}'
+
+  take_transition "ChooseAndLabel"
+  assert_state "left"
+  assert_data "label" '"went-left"'
+
+  take_transition "Finalize"
+  assert_finished
+
+  # ── ConditionOutputWorkflow: routes to right ───────────────────────────────
+  start_workflow_with_data "ConditionOutputWorkflow" '{"choice":"\"right\""}'
+
+  take_transition "ChooseAndLabel"
+  assert_state "right"
+  assert_data "label" '"went-right"'
+
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

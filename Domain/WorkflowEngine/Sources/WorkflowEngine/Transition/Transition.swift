@@ -8,20 +8,20 @@
 public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendable {
     public let id: TransitionID
     public let from: StateID
-    public let to: StateID
+    public let targets: [StateID]
     public let process: TransitionProcess
     public let trigger: TransitionTrigger
 
     public init(
         from: StateID,
-        to: StateID,
+        targets: [StateID],
         process: TransitionProcess,
         workflow: AnyWorkflow,
         trigger: TransitionTrigger
     ) {
-        self.id = TransitionID(from: from, to: to, processId: process.id, workflow: workflow.id)
+        self.id = TransitionID(from: from, processId: process.id, workflow: workflow.id)
         self.from = from
-        self.to = to
+        self.targets = targets
         self.process = process
         self.trigger = trigger
     }
@@ -29,13 +29,12 @@ public struct Transition<State: WorkflowState>: AnyTransition, @unchecked Sendab
 
 public struct TransitionID: Hashable, Sendable, Codable {
     public let from: StateID
-    public let to: StateID
     public let processId: TransitionProcessID
     public let workflow: WorkflowID
 }
 
 extension TransitionID: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "\(workflow): \(from) -- \(processId) -> \(to)"
+        "\(workflow): \(from) -- \(processId)"
     }
 }

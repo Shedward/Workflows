@@ -11,7 +11,6 @@ import WorkflowApp
 @main
 struct App: SwiftUI.App {
     var body: some Scene {
-        let app = WorkflowApp.App()
-        app.body
+        WorkflowApp.App().body
     }
 }

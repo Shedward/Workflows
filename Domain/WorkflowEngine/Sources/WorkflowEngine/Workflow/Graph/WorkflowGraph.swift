@@ -15,7 +15,7 @@ public struct WorkflowGraph: Sendable, Equatable {
     public struct Transition: Sendable, Equatable {
         public let id: TransitionID
         public let from: StateID
-        public let to: StateID
+        public let targets: [StateID]
         public let processId: TransitionProcessID
         public let trigger: TransitionTrigger
         public let metadata: TransitionMetadata

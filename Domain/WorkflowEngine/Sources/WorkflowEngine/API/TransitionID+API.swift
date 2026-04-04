@@ -12,8 +12,7 @@ extension API.TransitionID {
         self.init(
             workflow: model.workflow,
             processId: model.processId,
-            from: model.from,
-            to: model.to
+            from: model.from
         )
     }
 }

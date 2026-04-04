@@ -92,3 +92,20 @@ extension WorkflowsError.TransitionProcessNotFoundForInstance: @retroactive HTTP
         .internalServerError
     }
 }
+
+extension WorkflowsError.InvalidRouteTarget: @retroactive ResponseGenerator {
+    public func response(from request: Request, context: some RequestContext) throws -> Response {
+        try ErrorResponse(
+            status: status,
+            userDescription: "Transition routed to an undeclared target state",
+            debugDescription: String(describing: self)
+        )
+        .response(from: request, context: context)
+    }
+}
+
+extension WorkflowsError.InvalidRouteTarget: @retroactive HTTPResponseError {
+    public var status: HTTPResponse.Status {
+        .internalServerError
+    }
+}

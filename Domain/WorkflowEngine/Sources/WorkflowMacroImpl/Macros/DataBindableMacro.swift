@@ -57,9 +57,14 @@ public struct DataBindableMacro: MemberMacro {
 
         let body = CodeBlockItemListSyntax(statements)
 
+        let accessKeywords: Set<String> = ["public", "open", "internal", "fileprivate", "private"]
+        let accessLevel = declaration.modifiers
+            .first { accessKeywords.contains($0.name.text) }
+            .map { $0.name.text + " " } ?? ""
+
         let method: DeclSyntax =
         """
-        mutating func bind<Binding: DataBinding>(_ bind: inout Binding) throws {
+        \(raw: accessLevel)mutating func bind<Binding: DataBinding>(_ bind: inout Binding) throws {
             \(body)
         }
         """

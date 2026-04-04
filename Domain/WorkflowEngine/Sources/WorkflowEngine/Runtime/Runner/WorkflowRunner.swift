@@ -112,7 +112,17 @@ actor WorkflowRunner {
         var next = instance.data(context.instance.data)
         switch result {
         case .completed:
-            next = next.transitionEnded().moveToState(transition.to)
+            let target = context.routedTarget ?? transition.targets[0]
+            if let routedTarget = context.routedTarget {
+                guard transition.targets.contains(routedTarget) else {
+                    throw WorkflowsError.InvalidRouteTarget(
+                        transitionId: transition.id,
+                        requestedTarget: routedTarget,
+                        allowedTargets: transition.targets
+                    )
+                }
+            }
+            next = next.transitionEnded().moveToState(target)
         case .waiting(let waiting):
             next = next.transitionWaiting(waiting, of: transition)
             await scheduler.schedule(for: next.id, waiting: waiting)
