@@ -64,4 +64,19 @@ extension Workflows {
 
         return try await runner.takeTransition(transition, on: instance, of: workflow)
     }
+
+    @discardableResult
+    public func answer(to instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
+        let instance = try await self.instance(id: instanceId)
+
+        guard
+            let transitionState = instance.transitionState,
+            case .waiting(let waiting) = transitionState.state,
+            case .asking = waiting
+        else {
+            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+        }
+
+        return try await runner.answerAsk(instanceId: instanceId, data: data)
+    }
 }

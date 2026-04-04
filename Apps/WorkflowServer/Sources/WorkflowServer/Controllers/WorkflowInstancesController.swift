@@ -23,6 +23,7 @@ struct WorkflowInstancesController: Controller {
             .on(GetWorkflowInstance.self, use: getWorkflow)
             .on(TakeTransition.self, use: takeTransition)
             .on(AvailableTransitions.self, use: availableTransitions)
+            .on(AnswerAsk.self, use: answerAsk)
     }
 
     private func getWorkflows(request: Request, body: GetWorkflows.RequestBody, context: Context) async throws -> ListBody<API.WorkflowInstance> {
@@ -65,6 +66,26 @@ struct WorkflowInstancesController: Controller {
 
         let result = await withTimeout(seconds: timeout) { [workflows] in
             try await workflows.takeTransition(processId: transitionProcessId, on: instanceId)
+        }
+
+        switch result {
+        case .completed(.success(let instance)):
+            return API.WorkflowInstance(model: instance)
+        case .completed(.failure(let error)):
+            throw error
+        case .timedOut:
+            let current = try await workflows.instance(id: instanceId)
+            return API.WorkflowInstance(model: current)
+        }
+    }
+
+    private func answerAsk(request: Request, body: AnswerAsk.RequestBody, context: Context) async throws -> API.WorkflowInstance {
+        let instanceId = try context.parameters.require("id")
+        let timeout = self.timeout(from: request)
+        let data = WorkflowData(api: body.data)
+
+        let result = await withTimeout(seconds: timeout) { [workflows] in
+            try await workflows.answer(to: instanceId, data: data)
         }
 
         switch result {

@@ -1,5 +1,7 @@
 # Plan: Conditional Branching & User Input (Prompt)
 
+> **Note:** This was the original plan before implementation. Both features are now complete. The actual implementation diverged significantly — see `2026-04-04-branching-and-ask.md` for what was actually built.
+
 ## Context
 
 The workflow engine currently supports linear state transitions — each transition goes to exactly one target state. Two features are needed:

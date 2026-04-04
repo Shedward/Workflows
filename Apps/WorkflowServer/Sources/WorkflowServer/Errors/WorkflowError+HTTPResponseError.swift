@@ -109,3 +109,20 @@ extension WorkflowsError.InvalidRouteTarget: @retroactive HTTPResponseError {
         .internalServerError
     }
 }
+
+extension WorkflowsError.InstanceNotAsking: @retroactive ResponseGenerator {
+    public func response(from request: Request, context: some RequestContext) throws -> Response {
+        try ErrorResponse(
+            status: status,
+            userDescription: "Workflow instance is not waiting for an answer",
+            debugDescription: String(describing: self)
+        )
+        .response(from: request, context: context)
+    }
+}
+
+extension WorkflowsError.InstanceNotAsking: @retroactive HTTPResponseError {
+    public var status: HTTPResponse.Status {
+        .conflict
+    }
+}

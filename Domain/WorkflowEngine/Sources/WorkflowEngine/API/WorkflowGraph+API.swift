@@ -46,7 +46,8 @@ extension API.WorkflowGraph.TransitionMetadata {
             processId: model.processId,
             inputs: model.inputs.map { API.DataField(model: $0) },
             outputs: model.outputs.map { API.DataField(model: $0) },
-            dependencies: model.dependencies.map { API.DataField(model: $0) }
+            dependencies: model.dependencies.map { API.DataField(model: $0) },
+            asks: model.asks.map { API.DataField(model: $0) }
         )
     }
 }

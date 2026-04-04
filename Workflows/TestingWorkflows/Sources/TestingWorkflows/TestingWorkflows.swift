@@ -22,7 +22,9 @@ public let workflows: [any Workflow] = [
     SubflowDataFlowWorkflow(),
     ProvidedWorkflow(),
     ConditionBranchingWorkflow(),
-    ConditionOutputWorkflow()
+    ConditionOutputWorkflow(),
+    AskNameWorkflow(),
+    AskWithDataWorkflow()
 ]
 
 public let invalidWorkflows: [any Workflow] = [

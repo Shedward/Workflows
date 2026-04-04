@@ -151,6 +151,52 @@ assert_transition_failed() {
   fi
 }
 
+# Answer an asking transition with data
+# Usage: answer_ask '{"key":"value"}' [instance_id]
+answer_ask() {
+  local data="${1:?data required}"
+  local instance="${2:-$INSTANCE_ID}"
+  local body
+  body="$(jq -n --argjson data "$data" '{data: {data: $data}}')"
+  LAST_RESPONSE="$(request POST "/workflowInstances/$instance/answer" "$body")"
+}
+
+# Like answer_ask but propagates HTTP errors (for use with assert_fails)
+try_answer_ask() {
+  local data="${1:?data required}"
+  local instance="${2:-$INSTANCE_ID}"
+  local body
+  body="$(jq -n --argjson data "$data" '{data: {data: $data}}')"
+  request POST "/workflowInstances/$instance/answer" "$body" >/dev/null
+}
+
+# Assert instance is in asking state
+assert_asking() {
+  local instance="${1:-$INSTANCE_ID}"
+  local response state_type
+  response="$(request GET "/workflowInstances/$instance")"
+  state_type="$(jq -r '.transitionState.state | keys[0] // empty' <<<"$response")"
+
+  if [[ "$state_type" != "asking" ]]; then
+    echo "Expected transition state 'asking', got '$state_type'" >&2
+    exit 1
+  fi
+}
+
+# Assert asking prompt message
+assert_asking_prompt() {
+  local expected="${1:?expected prompt required}"
+  local instance="${2:-$INSTANCE_ID}"
+  local response actual
+  response="$(request GET "/workflowInstances/$instance")"
+  actual="$(jq -r '.transitionState.state.asking.prompt // empty' <<<"$response")"
+
+  if [[ "$actual" != "$expected" ]]; then
+    echo "Expected prompt '$expected', got '$actual'" >&2
+    exit 1
+  fi
+}
+
 # Get the number of workflow instances
 instance_count() {
   request GET "/workflowInstances" | jq 'length'

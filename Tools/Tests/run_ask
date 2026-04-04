@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # ── AskNameWorkflow: simple ask ────────────────────────────────────────────
+  assert_workflow_registered "AskNameWorkflow"
+
+  start_workflow "AskNameWorkflow"
+  take_transition "GoToAsk"
+  assert_state "waitingName"
+
+  # Take the ask transition — it should suspend
+  take_transition "AskName"
+  assert_asking
+  assert_asking_prompt "What is your name?"
+
+  # Answer the ask
+  answer_ask '{"name":"\"Alice\""}'
+  assert_state "done"
+  assert_data "name" '"Alice"'
+
+  # Finish
+  take_transition "FinishAfterAsk"
+  assert_finished
+
+  # ── AskWithDataWorkflow: ask with @Input + @Ask + @Output ──────────────────
+  assert_workflow_registered "AskWithDataWorkflow"
+
+  start_workflow "AskWithDataWorkflow"
+  take_transition "SetGreeting"
+  assert_state "setup"
+  assert_data "greeting" '"Hello"'
+
+  # Take the ask transition — suspends
+  take_transition "AskWithContext"
+  assert_asking
+  assert_asking_prompt "Please respond to the greeting"
+
+  # Answer with response
+  answer_ask '{"response":"\"World\""}'
+  assert_state "waitingResponse"
+  assert_data "fullMessage" '"Hello, World!"'
+  assert_data "response" '"World"'
+
+  # Downstream action reads both fullMessage and response (@Ask auto-output)
+  take_transition "ProcessResponse"
+  assert_state "done"
+
+  take_transition "FinishAfterAsk"
+  assert_finished
+
+  # ── Error: answer non-asking instance ─────────────────────────────────────
+  start_workflow "AskNameWorkflow"
+  take_transition "GoToAsk"
+  assert_state "waitingName"
+
+  # Instance is not asking — should fail
+  assert_fails try_answer_ask '{"name":"\"Alice\""}'
+
+  echo "Finished Successfully"
+}
+
+main "$@"

@@ -24,6 +24,17 @@ extension TransitionState {
         case executing
         case waitingTime(date: Date)
         case waitingWorkflow(workflowId: String)
+        case asking(prompt: String?, expectedFields: [AskField])
         case failed(error: ErrorDescription)
+    }
+
+    public struct AskField: JSONBody {
+        public let key: String
+        public let valueType: String
+
+        public init(key: String, valueType: String) {
+            self.key = key
+            self.valueType = valueType
+        }
     }
 }

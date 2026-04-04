@@ -200,6 +200,24 @@ actor WorkflowRunner {
         }
     }
 
+    // MARK: - Ask
+
+    @discardableResult
+    func answerAsk(instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
+        let instance = try await storage.instance(id: instanceId)
+
+        guard
+            let instance,
+            let transitionState = instance.transitionState,
+            let workflow = await registry.workflow(id: instance.workflowId),
+            let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+        else {
+            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+        }
+
+        return try await takeTransition(transition, on: instance, of: workflow, resumeReason: .answered(data: data))
+    }
+
     // MARK: - Waiting
 
     private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {

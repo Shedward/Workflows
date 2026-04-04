@@ -27,6 +27,7 @@ readonly TEST_SCRIPTS=(
   run_subflow_data_flow
   run_starting
   run_condition_branching
+  run_ask
 )
 
 readonly GREEN='\033[0;32m'

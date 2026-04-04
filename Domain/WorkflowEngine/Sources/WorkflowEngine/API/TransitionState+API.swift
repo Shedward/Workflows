@@ -27,6 +27,13 @@ extension API.TransitionState.State {
             self = .waitingTime(date: time.date)
         case .waiting(.workflowFinished(let finished)):
             self = .waitingWorkflow(workflowId: finished.instanceId)
+        case .waiting(.asking(let asking)):
+            self = .asking(
+                prompt: asking.prompt,
+                expectedFields: asking.expectedFields.map {
+                    API.TransitionState.AskField(key: $0.key, valueType: $0.valueType)
+                }
+            )
         }
     }
 }

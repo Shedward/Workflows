@@ -57,4 +57,8 @@ public enum WorkflowsError {
         public let requestedTarget: StateID
         public let allowedTargets: [StateID]
     }
+
+    public struct InstanceNotAsking: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+    }
 }

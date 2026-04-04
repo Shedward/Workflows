@@ -26,12 +26,14 @@ public struct WorkflowGraph: JSONBody {
         public let inputs: [DataField]
         public let outputs: [DataField]
         public let dependencies: [DataField]
+        public let asks: [DataField]
 
-        public init(processId: String, inputs: [DataField], outputs: [DataField], dependencies: [DataField]) {
+        public init(processId: String, inputs: [DataField], outputs: [DataField], dependencies: [DataField], asks: [DataField]) {
             self.processId = processId
             self.inputs = inputs
             self.outputs = outputs
             self.dependencies = dependencies
+            self.asks = asks
         }
     }
 
