@@ -12,15 +12,15 @@ struct DataFlowAnalyzer {
     struct Context {
         let transitions: [WorkflowGraph.Transition]
         let states: [WorkflowGraph.State]
-        let declaredInputs: Set<TransitionMetadata.Field>
-        let declaredOutputs: Set<TransitionMetadata.Field>
+        let declaredInputs: Set<DataField>
+        let declaredOutputs: Set<DataField>
         let startId: StateID
         let finishId: StateID
     }
 
     struct Analysis: Sendable {
-        let requiredInputs: Set<TransitionMetadata.Field>
-        let producedOutputs: Set<TransitionMetadata.Field>
+        let requiredInputs: Set<DataField>
+        let producedOutputs: Set<DataField>
         let typeAtState: [StateID: TypeMap]
         let conflictedKeys: [StateID: Set<String>]
         let errors: [ValidationError]
@@ -70,7 +70,7 @@ struct DataFlowAnalyzer {
         let producedOutputs = Set(
             (typeAtState[context.finishId] ?? [:])
                 .filter { declaredOutputKeys.contains($0.key) }
-                .map { TransitionMetadata.Field(key: $0.key, valueType: $0.value) }
+                .map { DataField(key: $0.key, valueType: $0.value) }
         )
 
         return Analysis(
@@ -96,7 +96,9 @@ private extension DataFlowAnalyzer {
             var incoming: [StateID: [WorkflowGraph.Transition]] = [:]
             for transition in transitions {
                 outgoing[transition.from, default: []].append(transition)
-                incoming[transition.to, default: []].append(transition)
+                for target in transition.targets {
+                    incoming[target, default: []].append(transition)
+                }
             }
             self.outgoing = outgoing
             self.incoming = incoming
@@ -128,7 +130,7 @@ private extension DataFlowAnalyzer {
             warnings.append(.cycleDetected(cyclePath))
 
             let hasExit = cyclePath.contains { stateId in
-                (outgoing[stateId] ?? []).contains { $0.trigger == .manual && !cycleSet.contains($0.to) }
+                (outgoing[stateId] ?? []).contains { $0.trigger == .manual && $0.targets.contains { !cycleSet.contains($0) } }
             }
             if !hasExit {
                 errors.append(.automaticCycleWithoutExit(cyclePath))
@@ -179,13 +181,13 @@ private extension DataFlowAnalyzer {
 
         let backEdgeSet = Set(
             backEdges.map {
-                BackEdgeKey(from: $0.transition.from, to: $0.transition.to, processId: $0.transition.processId)
+                BackEdgeKey(from: $0.transition.from, to: $0.target, processId: $0.transition.processId)
             }
         )
 
         for stateId in order where stateId != context.startId {
             let incomingEdges = (adjacency.incoming[stateId] ?? []).filter { edge in
-                !backEdgeSet.contains(BackEdgeKey(from: edge.from, to: edge.to, processId: edge.processId))
+                !backEdgeSet.contains(BackEdgeKey(from: edge.from, to: stateId, processId: edge.processId))
             }
 
             propagateState(
@@ -341,7 +343,7 @@ private extension DataFlowAnalyzer {
 // MARK: - Topological Sort
 
 private extension DataFlowAnalyzer {
-    typealias BackEdgeInfo = (transition: WorkflowGraph.Transition, cyclePath: [StateID])
+    typealias BackEdgeInfo = (transition: WorkflowGraph.Transition, target: StateID, cyclePath: [StateID])
 
     static func topologicalOrder(
         from start: StateID,
@@ -362,12 +364,14 @@ private extension DataFlowAnalyzer {
             pathStack.append(state)
 
             for transition in outgoing[state] ?? [] {
-                if inStack.contains(transition.to) {
-                    let cycleStart = pathStack.firstIndex(of: transition.to) ?? 0
-                    let cyclePath = Array(pathStack[cycleStart...])
-                    backEdges.append(BackEdgeInfo(transition: transition, cyclePath: cyclePath))
-                } else if !visited.contains(transition.to) {
-                    dfs(transition.to)
+                for target in transition.targets {
+                    if inStack.contains(target) {
+                        let cycleStart = pathStack.firstIndex(of: target) ?? 0
+                        let cyclePath = Array(pathStack[cycleStart...])
+                        backEdges.append(BackEdgeInfo(transition: transition, target: target, cyclePath: cyclePath))
+                    } else if !visited.contains(target) {
+                        dfs(target)
+                    }
                 }
             }
 

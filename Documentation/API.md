@@ -203,6 +203,42 @@ Only transitions whose `fromState` matches the instance's current state are retu
 
 ---
 
+### POST /workflowInstances/:id/answer
+
+Provide data to answer an asking (user-input) transition.
+
+- **Path Parameters**: `id` — instance UUID
+- **Request Body**:
+
+```json
+{
+  "data": {
+    "data": {
+      "name": "\"Alice\"",
+      "approved": "true"
+    }
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `data` | WorkflowData | Yes | User-provided data matching the expected fields |
+
+- **Response**: `200 OK`, WorkflowInstance reflecting the state after the ask completes
+
+The ask transition's `process()` method runs with the provided data. If subsequent automatic transitions exist, they also execute inline.
+
+- **Errors**:
+
+| Status | Condition |
+|--------|-----------|
+| 404 | Instance not found |
+| 409 | Instance is not in an asking state |
+| 500 | Ask processing failed |
+
+---
+
 ## Models
 
 ### WorkflowInstance
@@ -249,6 +285,18 @@ The `state` field is one of:
 **Waiting for subflow:**
 ```json
 { "waitingWorkflow": { "workflowId": "child-instance-uuid" } }
+```
+
+**Asking for user input:**
+```json
+{
+  "asking": {
+    "prompt": "What is your name?",
+    "expectedFields": [
+      { "key": "name", "valueType": "String" }
+    ]
+  }
+}
 ```
 
 **Failed:**
@@ -313,6 +361,7 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 | Transition not found | 404 | "Transition not found" |
 | Transition not available from state | 500 | "Transition process not found for instance" |
 | Instance/workflow mismatch | 500 | "Workflow instance does not match expected workflow" |
+| Instance not asking | 409 | "Workflow instance is not waiting for an answer" |
 
 ---
 
@@ -344,6 +393,17 @@ Wait transitions suspend the instance until a condition is met:
 - The instance enters `waitingTime` state with a target date.
 - The server's internal scheduler resumes the transition when the time arrives.
 - Poll `GET /workflowInstances/:id` to observe state changes.
+
+### Asking (User Input)
+
+Ask transitions suspend the instance waiting for user-provided data:
+
+- The instance enters `asking` state with an optional prompt message and a list of expected fields.
+- The client reads the expected fields from `transitionState.state.asking.expectedFields`.
+- Submit data via `POST /workflowInstances/:id/answer` with a `WorkflowData` body containing the required fields.
+- The ask's `process()` method runs with the provided data, producing outputs.
+- `@Ask` fields are automatically persisted as outputs to the workflow data.
+- Answering a non-asking instance returns 409 Conflict.
 
 ### Finished Instances
 

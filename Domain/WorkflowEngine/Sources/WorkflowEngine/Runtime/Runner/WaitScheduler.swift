@@ -39,6 +39,8 @@ actor WaitScheduler {
         case .workflowFinished(let finished):
             logger?.trace("Schedule waiting for finishing instance \(finished.instanceId, privacy: .public)")
             registerFinishWaiter(waitingId: instanceId, finishedId: finished.instanceId)
+        case .asking:
+            logger?.trace("Asking for user input on \(instanceId, privacy: .public)")
         }
     }
 
@@ -109,5 +111,6 @@ extension WaitScheduler {
     enum ResumeReason {
         case time
         case workflowFinished(data: WorkflowData)
+        case answered(data: WorkflowData)
     }
 }

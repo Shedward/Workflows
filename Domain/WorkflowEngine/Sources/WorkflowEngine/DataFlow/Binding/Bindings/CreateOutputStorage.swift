@@ -9,4 +9,8 @@ struct CreateOutputStorage: DataBinding {
     func output<Value>(for key: String, at output: inout Output<Value>) where Value: Sendable {
         output.storage = .init()
     }
+
+    func ask<Value>(for key: String, at ask: inout Ask<Value>) where Value: Sendable {
+        ask.storage = .init()
+    }
 }

@@ -14,19 +14,21 @@ private enum WrapperKind {
     case input(key: String)
     case output(key: String)
     case dependency(key: String)
+    case ask(key: String)
+
+    var key: String {
+        switch self {
+        case .input(let key), .output(let key), .dependency(let key), .ask(let key):
+            return key
+        }
+    }
 
     var methodName: String {
         switch self {
         case .input: return "input"
         case .output: return "output"
         case .dependency: return "dependency"
-        }
-    }
-
-    var key: String {
-        switch self {
-        case .input(let key), .output(let key), .dependency(let key):
-            return key
+        case .ask: return "ask"
         }
     }
 }
@@ -57,9 +59,14 @@ public struct DataBindableMacro: MemberMacro {
 
         let body = CodeBlockItemListSyntax(statements)
 
+        let accessKeywords: Set<String> = ["public", "open", "internal", "fileprivate", "private"]
+        let accessLevel = declaration.modifiers
+            .first { accessKeywords.contains($0.name.text) }
+            .map { $0.name.text + " " } ?? ""
+
         let method: DeclSyntax =
         """
-        mutating func bind<Binding: DataBinding>(_ bind: inout Binding) throws {
+        \(raw: accessLevel)mutating func bind<Binding: DataBinding>(_ bind: inout Binding) throws {
             \(body)
         }
         """
@@ -100,6 +107,10 @@ public struct DataBindableMacro: MemberMacro {
             case "Dependency":
                 let key = Self.extractKey(from: attribute) ?? propertyName
                 return Field(name: propertyName, type: type, kind: .dependency(key: key))
+
+            case "Ask":
+                let key = Self.extractKey(from: attribute) ?? propertyName
+                return Field(name: propertyName, type: type, kind: .ask(key: key))
 
             default:
                 continue

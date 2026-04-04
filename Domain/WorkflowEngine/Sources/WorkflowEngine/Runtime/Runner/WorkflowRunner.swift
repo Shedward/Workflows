@@ -112,7 +112,17 @@ actor WorkflowRunner {
         var next = instance.data(context.instance.data)
         switch result {
         case .completed:
-            next = next.transitionEnded().moveToState(transition.to)
+            let target = context.routedTarget ?? transition.targets[0]
+            if let routedTarget = context.routedTarget {
+                guard transition.targets.contains(routedTarget) else {
+                    throw WorkflowsError.InvalidRouteTarget(
+                        transitionId: transition.id,
+                        requestedTarget: routedTarget,
+                        allowedTargets: transition.targets
+                    )
+                }
+            }
+            next = next.transitionEnded().moveToState(target)
         case .waiting(let waiting):
             next = next.transitionWaiting(waiting, of: transition)
             await scheduler.schedule(for: next.id, waiting: waiting)
@@ -188,6 +198,24 @@ actor WorkflowRunner {
             }
             return failed
         }
+    }
+
+    // MARK: - Ask
+
+    @discardableResult
+    func answerAsk(instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
+        let instance = try await storage.instance(id: instanceId)
+
+        guard
+            let instance,
+            let transitionState = instance.transitionState,
+            let workflow = await registry.workflow(id: instance.workflowId),
+            let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+        else {
+            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+        }
+
+        return try await takeTransition(transition, on: instance, of: workflow, resumeReason: .answered(data: data))
     }
 
     // MARK: - Waiting

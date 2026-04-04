@@ -7,6 +7,7 @@
 
 public struct WorkflowContext: Sendable {
     var instance: WorkflowInstance
+    var routedTarget: StateID?
     let resume: WaitScheduler.ResumeReason?
     let dependancyContainer: DependenciesContainer
     let start: @Sendable (_ workflow: AnyWorkflow, _ initialData: WorkflowData) async throws -> WorkflowInstance

@@ -17,7 +17,7 @@ main() {
 
   # transitionState should be failed (manual failures now persist failure state,
   # consistent with automatic transitions)
-  assert_transition_failed "FailAction"
+  assert_transition_failed
 
   # The failing transition should still be available (state didn't change)
   assert_transition_available "FailAction"
@@ -25,7 +25,7 @@ main() {
   # Retry the same transition — should fail again
   assert_fails try_take_transition "FailAction"
   assert_state "shouldFail"
-  assert_transition_failed "FailAction"
+  assert_transition_failed
 
   echo "Finished Successfully"
 }

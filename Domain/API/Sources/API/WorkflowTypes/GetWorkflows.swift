@@ -12,4 +12,7 @@ public struct GetWorkflows: WorkflowApi {
 
     public static let method = Method.get
     public static let path = "/workflows"
+
+    public init() {
+    }
 }

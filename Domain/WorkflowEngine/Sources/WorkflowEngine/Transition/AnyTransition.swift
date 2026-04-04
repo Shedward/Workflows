@@ -10,7 +10,7 @@ public protocol AnyTransition: Sendable {
     var process: TransitionProcess { get }
 
     var from: StateID { get }
-    var to: StateID { get }
+    var targets: [StateID] { get }
 
     var trigger: TransitionTrigger { get }
 }

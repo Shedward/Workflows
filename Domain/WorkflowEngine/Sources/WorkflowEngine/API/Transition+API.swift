@@ -12,7 +12,7 @@ extension API.Transition {
         self.init(
             processId: model.id.processId,
             fromState: model.id.from,
-            toState: model.id.to,
+            targets: model.targets,
             trigger: model.trigger.rawValue
         )
     }

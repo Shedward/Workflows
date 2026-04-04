@@ -26,6 +26,7 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
     case automaticCycleWithoutExit([StateID])
     case circularSubflow([WorkflowID])
+    case missingProviderDependency(key: String, valueType: String, providerType: String)
 
     public var description: String {
         switch self {
@@ -49,6 +50,8 @@ public enum ValidationError: Sendable, CustomStringConvertible {
             "Cycle involving states \(states.joined(separator: " → ")) has only automatic transitions and no manual exit"
         case let .circularSubflow(workflows):
             "Circular subflow dependency detected: \(workflows.joined(separator: " → "))"
+        case let .missingProviderDependency(key, valueType, providerType):
+            "Dependency '\(key)' (\(valueType)) required by provider '\(providerType)' is not registered"
         }
     }
 }

@@ -9,6 +9,7 @@ public protocol AnyWorkflow: Sendable {
     var id: WorkflowID { get }
     var version: WorkflowVersion { get }
     var anyTransitions: [AnyTransition] { get }
+    var providers: [any WorkflowStartProvider] { get }
 
     var states: [StateID] { get }
     var startId: StateID { get }

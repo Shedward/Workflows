@@ -15,6 +15,9 @@ public protocol Workflow: AnyWorkflow, TransitionProcess, DataBindable, Defaulta
 
     @ArrayBuilder<Transition<State>>
     var transitions: Transitions { get }
+
+    @ArrayBuilder<any WorkflowStartProvider>
+    var providers: [any WorkflowStartProvider] { get }
 }
 
 extension Workflow {
@@ -39,6 +42,10 @@ extension Workflow {
 
     public var version: WorkflowVersion {
         1
+    }
+
+    public var providers: [any WorkflowStartProvider] {
+        [ManualProvider()]
     }
 }
 

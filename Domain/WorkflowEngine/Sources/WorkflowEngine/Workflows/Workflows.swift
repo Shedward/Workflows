@@ -16,6 +16,7 @@ public actor Workflows {
     let registry: WorkflowRegistry
     let storage: WorkflowStorage
     let runner: WorkflowRunner
+    let dependencies: DependenciesContainer
     let plugins: Plugins
 
     public init(
@@ -27,6 +28,7 @@ public actor Workflows {
     ) async throws {
         self.registry = try WorkflowRegistry(workflows())
         self.storage = storage
+        self.dependencies = dependencies
         self.runner = WorkflowRunner(
             storage: storage,
             registry: registry,

@@ -10,6 +10,7 @@ import Foundation
 public enum Waiting: Codable, Sendable {
     case time(Time)
     case workflowFinished(WorkflowFinished)
+    case asking(Asking)
 }
 
 extension Waiting {
@@ -46,6 +47,26 @@ extension Waiting {
 
         public init(id: WorkflowInstanceID) {
             self.instanceId = id
+        }
+    }
+
+    public struct Asking: Codable, Sendable {
+        public let prompt: Prompt?
+        public let expectedFields: [AskField]
+
+        public init(prompt: Prompt?, expectedFields: [AskField]) {
+            self.prompt = prompt
+            self.expectedFields = expectedFields
+        }
+    }
+
+    public struct AskField: Codable, Sendable {
+        public let key: String
+        public let valueType: String
+
+        public init(key: String, valueType: String) {
+            self.key = key
+            self.valueType = valueType
         }
     }
 }

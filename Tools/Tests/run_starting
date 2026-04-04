@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+test_manual_provider() {
+  # InitialDataWorkflow has no custom providers — only ManualProvider
+  local response
+  response="$(request GET "/workflows/InitialDataWorkflow/starting")"
+
+  local count
+  count="$(jq 'length' <<<"$response")"
+  if [[ "$count" -ne 1 ]]; then
+    echo "Expected 1 starting candidate, got $count" >&2
+    exit 1
+  fi
+
+  # Should have no title (ManualProvider returns .manual)
+  local title
+  title="$(jq -r '.[0].title' <<<"$response")"
+  if [[ "$title" != "null" ]]; then
+    echo "Expected null title for manual provider, got '$title'" >&2
+    exit 1
+  fi
+
+  # Should list 'greeting' in inputs
+  local has_greeting
+  has_greeting="$(jq '[.[0].inputs[] | select(.key == "greeting")] | length' <<<"$response")"
+  if [[ "$has_greeting" -lt 1 ]]; then
+    echo "Expected 'greeting' in inputs" >&2
+    exit 1
+  fi
+}
+
+test_custom_providers() {
+  # ProvidedWorkflow has TestProvider (2 candidates) + ManualProvider (1 candidate) = 3 total
+  local response
+  response="$(request GET "/workflows/ProvidedWorkflow/starting")"
+
+  local count
+  count="$(jq 'length' <<<"$response")"
+  if [[ "$count" -ne 3 ]]; then
+    echo "Expected 3 starting candidates, got $count" >&2
+    exit 1
+  fi
+
+  # First candidate should have title "First item" and pre-filled greeting
+  local title
+  title="$(jq -r '.[0].title' <<<"$response")"
+  if [[ "$title" != "First item" ]]; then
+    echo "Expected title 'First item', got '$title'" >&2
+    exit 1
+  fi
+
+  local greeting
+  greeting="$(jq -r '.[0].data.data.greeting' <<<"$response")"
+  if [[ "$greeting" != '"hello"' ]]; then
+    echo "Expected greeting '\"hello\"', got '$greeting'" >&2
+    exit 1
+  fi
+
+  # Second candidate should have title "Second item"
+  title="$(jq -r '.[1].title' <<<"$response")"
+  if [[ "$title" != "Second item" ]]; then
+    echo "Expected title 'Second item', got '$title'" >&2
+    exit 1
+  fi
+
+  # Third candidate is from ManualProvider — no title, empty data
+  title="$(jq -r '.[2].title' <<<"$response")"
+  if [[ "$title" != "null" ]]; then
+    echo "Expected null title for manual provider candidate, got '$title'" >&2
+    exit 1
+  fi
+
+  # All candidates should have 'greeting' in inputs
+  local all_have_greeting
+  all_have_greeting="$(jq '[.[] | .inputs[] | select(.key == "greeting")] | length' <<<"$response")"
+  if [[ "$all_have_greeting" -ne 3 ]]; then
+    echo "Expected all 3 candidates to have 'greeting' in inputs" >&2
+    exit 1
+  fi
+}
+
+test_start_from_candidate() {
+  # Start ProvidedWorkflow using pre-filled data from first candidate
+  start_workflow_with_data "ProvidedWorkflow" '{"greeting":"\"hello\""}'
+  assert_exists
+
+  take_transition "ReadInitialData"
+  assert_data "result" "\"hello_processed\""
+
+  take_transition "Finalize"
+  assert_finished
+}
+
+main() {
+  test_manual_provider
+  test_custom_providers
+  test_start_from_candidate
+  echo "Finished Successfully"
+}
+
+main "$@"
