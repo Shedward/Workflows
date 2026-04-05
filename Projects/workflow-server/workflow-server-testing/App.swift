@@ -8,9 +8,9 @@
 import Core
 import Foundation
 import os
+import TestingWorkflows
 import WorkflowEngine
 import WorkflowServer
-import HHWorkflows
 
 @main
 enum App {
@@ -23,9 +23,7 @@ enum App {
 
         let authRegistry = AuthRegistry()
 
-        let storage = try await JSONFileWorkflowStorage(
-            directory: workflowsConfigDir.appending(path: "instances")
-        )
+        let storage = InMemoryWorkflowStorage()
 
         let certsPath = workflowsConfigDir.appending(path: "certs")
         let config = Config(
@@ -33,18 +31,24 @@ enum App {
             tlsPrivateKeyPath: certsPath.appending(path: "localhost+2-key.pem").path()
         )
 
+        let plugins = Plugins {
+            WorkflowTransitionUpdatesPlugin()
+        }
+
         let workflows = try await Workflows(
             storage: storage,
             dependencies: dependencies,
-            validation: .strict
+            validation: .strict,
+            plugins: plugins
         ) {
-            HHWorkflows.workflows
+            TestingWorkflows.workflows
         }
 
         let app = WorkflowServer.App(
             workflows: workflows,
             authRegistry: authRegistry,
-            config: config
+            config: config,
+            plugins: plugins
         )
         try await app.main()
     }

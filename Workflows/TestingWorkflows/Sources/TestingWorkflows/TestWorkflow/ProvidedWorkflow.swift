@@ -11,9 +11,9 @@ import WorkflowEngine
 struct TestProvider: WorkflowStartProvider {
     func starting() async throws -> [WorkflowStart] {
         [
-            try WorkflowStart(title: "First item")
+            WorkflowStart(title: "First item")
                 .input("greeting", to: "hello"),
-            try WorkflowStart(title: "Second item")
+            WorkflowStart(title: "Second item")
                 .input("greeting", to: "world"),
         ]
     }

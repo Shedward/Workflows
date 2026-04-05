@@ -7,13 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		632D71162F4B8FEF0016E924 /* TestingWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = 632D71152F4B8FEF0016E924 /* TestingWorkflows */; };
 		632D71182F4B90580016E924 /* WorkflowServer in Frameworks */ = {isa = PBXBuildFile; productRef = 632D71172F4B90580016E924 /* WorkflowServer */; };
 		E1847B6C2F7EE7C500E598F1 /* WorkflowApp in Frameworks */ = {isa = PBXBuildFile; productRef = E1847B6B2F7EE7C500E598F1 /* WorkflowApp */; };
+		E19C10732F82DDC900A3ABF5 /* HHWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = E19C10722F82DDC900A3ABF5 /* HHWorkflows */; };
+		E19C10802F82E05E00A3ABF5 /* TestingWorkflows in Frameworks */ = {isa = PBXBuildFile; productRef = E19C107F2F82E05E00A3ABF5 /* TestingWorkflows */; };
+		E19C10822F82E07400A3ABF5 /* WorkflowEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E19C10812F82E07400A3ABF5 /* WorkflowEngine */; };
+		E19C108A2F82E0D100A3ABF5 /* WorkflowServer in Frameworks */ = {isa = PBXBuildFile; productRef = E19C10892F82E0D100A3ABF5 /* WorkflowServer */; };
+		E19C108C2F82E0E200A3ABF5 /* WorkflowEngine in Frameworks */ = {isa = PBXBuildFile; productRef = E19C108B2F82E0E200A3ABF5 /* WorkflowEngine */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		63ACFED22F10185800C6956F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		E19C10762F82E02B00A3ABF5 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -27,6 +40,7 @@
 /* Begin PBXFileReference section */
 		63ACFED42F10185800C6956F /* workflow-server */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "workflow-server"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1847B602F7EE7A700E598F1 /* workflow-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "workflow-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E19C10782F82E02B00A3ABF5 /* workflow-server-testing */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "workflow-server-testing"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,6 +54,11 @@
 			path = "workflow-app";
 			sourceTree = "<group>";
 		};
+		E19C10792F82E02B00A3ABF5 /* workflow-server-testing */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "workflow-server-testing";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +67,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				632D71182F4B90580016E924 /* WorkflowServer in Frameworks */,
-				632D71162F4B8FEF0016E924 /* TestingWorkflows in Frameworks */,
+				E19C10732F82DDC900A3ABF5 /* HHWorkflows in Frameworks */,
+				E19C108C2F82E0E200A3ABF5 /* WorkflowEngine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +80,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E19C10752F82E02B00A3ABF5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E19C10802F82E05E00A3ABF5 /* TestingWorkflows in Frameworks */,
+				E19C108A2F82E0D100A3ABF5 /* WorkflowServer in Frameworks */,
+				E19C10822F82E07400A3ABF5 /* WorkflowEngine in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -68,6 +98,7 @@
 			children = (
 				63ACFED62F10185800C6956F /* workflow-server */,
 				E1847B612F7EE7A700E598F1 /* workflow-app */,
+				E19C10792F82E02B00A3ABF5 /* workflow-server-testing */,
 				63ACFEE12F101B0100C6956F /* Frameworks */,
 				63ACFED52F10185800C6956F /* Products */,
 			);
@@ -78,6 +109,7 @@
 			children = (
 				63ACFED42F10185800C6956F /* workflow-server */,
 				E1847B602F7EE7A700E598F1 /* workflow-app.app */,
+				E19C10782F82E02B00A3ABF5 /* workflow-server-testing */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,8 +141,9 @@
 			);
 			name = "workflow-server";
 			packageProductDependencies = (
-				632D71152F4B8FEF0016E924 /* TestingWorkflows */,
 				632D71172F4B90580016E924 /* WorkflowServer */,
+				E19C10722F82DDC900A3ABF5 /* HHWorkflows */,
+				E19C108B2F82E0E200A3ABF5 /* WorkflowEngine */,
 			);
 			productName = "workflow-server";
 			productReference = 63ACFED42F10185800C6956F /* workflow-server */;
@@ -139,6 +172,31 @@
 			productReference = E1847B602F7EE7A700E598F1 /* workflow-app.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E19C10772F82E02B00A3ABF5 /* workflow-server-testing */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E19C107C2F82E02B00A3ABF5 /* Build configuration list for PBXNativeTarget "workflow-server-testing" */;
+			buildPhases = (
+				E19C10742F82E02B00A3ABF5 /* Sources */,
+				E19C10752F82E02B00A3ABF5 /* Frameworks */,
+				E19C10762F82E02B00A3ABF5 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E19C10792F82E02B00A3ABF5 /* workflow-server-testing */,
+			);
+			name = "workflow-server-testing";
+			packageProductDependencies = (
+				E19C107F2F82E05E00A3ABF5 /* TestingWorkflows */,
+				E19C10812F82E07400A3ABF5 /* WorkflowEngine */,
+				E19C10892F82E0D100A3ABF5 /* WorkflowServer */,
+			);
+			productName = "worflow-server-testing";
+			productReference = E19C10782F82E02B00A3ABF5 /* workflow-server-testing */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -153,6 +211,9 @@
 						CreatedOnToolsVersion = 26.2;
 					};
 					E1847B5F2F7EE7A700E598F1 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					E19C10772F82E02B00A3ABF5 = {
 						CreatedOnToolsVersion = 26.3;
 					};
 				};
@@ -173,6 +234,7 @@
 			targets = (
 				63ACFED32F10185800C6956F /* workflow-server */,
 				E1847B5F2F7EE7A700E598F1 /* workflow-app */,
+				E19C10772F82E02B00A3ABF5 /* workflow-server-testing */,
 			);
 		};
 /* End PBXProject section */
@@ -196,6 +258,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E1847B5C2F7EE7A700E598F1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E19C10742F82E02B00A3ABF5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -443,6 +512,32 @@
 			};
 			name = Release;
 		};
+		E19C107D2F82E02B00A3ABF5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SKRU67QKG5;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E19C107E2F82E02B00A3ABF5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = SKRU67QKG5;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -473,13 +568,18 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E19C107C2F82E02B00A3ABF5 /* Build configuration list for PBXNativeTarget "workflow-server-testing" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E19C107D2F82E02B00A3ABF5 /* Debug */,
+				E19C107E2F82E02B00A3ABF5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		632D71152F4B8FEF0016E924 /* TestingWorkflows */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = TestingWorkflows;
-		};
 		632D71172F4B90580016E924 /* WorkflowServer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WorkflowServer;
@@ -487,6 +587,26 @@
 		E1847B6B2F7EE7C500E598F1 /* WorkflowApp */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WorkflowApp;
+		};
+		E19C10722F82DDC900A3ABF5 /* HHWorkflows */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HHWorkflows;
+		};
+		E19C107F2F82E05E00A3ABF5 /* TestingWorkflows */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TestingWorkflows;
+		};
+		E19C10812F82E07400A3ABF5 /* WorkflowEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WorkflowEngine;
+		};
+		E19C10892F82E0D100A3ABF5 /* WorkflowServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WorkflowServer;
+		};
+		E19C108B2F82E0E200A3ABF5 /* WorkflowEngine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WorkflowEngine;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -8,7 +8,7 @@
 import Core
 
 public protocol Workflow: AnyWorkflow, TransitionProcess, DataBindable, Defaultable {
-    associatedtype State: WorkflowState
+    associatedtype State: WorkflowState = Never
 
     var id: WorkflowID { get }
     var version: WorkflowVersion { get }
