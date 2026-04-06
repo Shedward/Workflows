@@ -7,4 +7,4 @@
 
 import WorkflowEngine
 
-struct Тестирование_завершено: Pass { }
+struct Начать_аб_тестирование: Pass { }
