@@ -9,12 +9,12 @@ import WorkflowEngine
 
 @DataBindable
 struct TestProvider: WorkflowStartProvider {
-    func starting() async throws -> [WorkflowStart] {
+    func starting() -> [WorkflowStart] {
         [
             WorkflowStart(title: "First item")
                 .input("greeting", to: "hello"),
             WorkflowStart(title: "Second item")
-                .input("greeting", to: "world"),
+                .input("greeting", to: "world")
         ]
     }
 }

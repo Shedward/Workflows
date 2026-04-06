@@ -92,18 +92,7 @@ actor WorkflowRunner {
             dependancyContainer: dependencies,
             start: self.start
         )
-        let result: TransitionResult
-        do {
-            result = try await transition.process.start(context: &context)
-        } catch {
-            let failed = instance.transitionFailed(error, at: transition)
-            do {
-                try await storage.update(failed)
-            } catch {
-                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
-            }
-            throw error
-        }
+        let result = try await executeTransitionProcess(transition, on: instance, context: &context)
 
         await plugins.invoke(WorkflowTransitionListener.self) {
             $0.workflowDidTransition(instance: instance, transition: transition.id, traceId: traceId)
@@ -135,6 +124,24 @@ actor WorkflowRunner {
         }
 
         return await runAutomaticTransitions(from: next)
+    }
+
+    private func executeTransitionProcess(
+        _ transition: AnyTransition,
+        on instance: WorkflowInstance,
+        context: inout WorkflowContext
+    ) async throws -> TransitionResult {
+        do {
+            return try await transition.process.start(context: &context)
+        } catch {
+            let failed = instance.transitionFailed(error, at: transition)
+            do {
+                try await storage.update(failed)
+            } catch {
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
+            }
+            throw error
+        }
     }
 
     func finish(_ instance: WorkflowInstance) async throws {

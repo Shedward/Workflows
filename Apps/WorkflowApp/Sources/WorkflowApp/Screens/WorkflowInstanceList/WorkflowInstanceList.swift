@@ -5,8 +5,8 @@
 //  Created by Мальцев Владислав on 02.04.2026.
 //
 
-import SwiftUI
 import API
+import SwiftUI
 
 struct WorkflowInstanceList: View {
 
@@ -25,4 +25,3 @@ struct WorkflowInstanceList: View {
         }
     }
 }
-

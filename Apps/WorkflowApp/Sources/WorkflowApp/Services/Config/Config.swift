@@ -5,8 +5,8 @@
 //  Created by Мальцев Владислав on 02.04.2026.
 //
 
-import Rest
 import Foundation
+import Rest
 
 struct Config {
     let workflowsService: WorkflowsService

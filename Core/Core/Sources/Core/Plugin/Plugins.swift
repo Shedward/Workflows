@@ -18,15 +18,15 @@ public actor Plugins {
         self.init(plugins: builder())
     }
 
-    public func all<D>(_ type: D.Type) -> [D] {
-        objects.compactMap { $0 as? D }
+    public func all<Domain>(_ type: Domain.Type) -> [Domain] {
+        objects.compactMap { $0 as? Domain }
     }
 
     @discardableResult
-    public func invoke<D, Output>(
-        _ type: D.Type, action: (D) throws -> Output
+    public func invoke<Domain, Output>(
+        _ type: Domain.Type, action: (Domain) throws -> Output
     ) rethrows -> [Output] {
-        try all(D.self).map { domain in
+        try all(Domain.self).map { domain in
             try action(domain)
         }
     }

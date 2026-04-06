@@ -36,7 +36,7 @@ final class TransitionTimeProfiler: WorkflowTransitionListener, @unchecked Senda
     func workflowDidFinish(instance: WorkflowInstance) {
         locked {
             let collectedMeasurements = measurements
-                .filter { key, value in
+                .filter { key, _ in
                     key.workflow == instance.workflowId
                 }
             debugPrint("🐠🐠", collectedMeasurements)

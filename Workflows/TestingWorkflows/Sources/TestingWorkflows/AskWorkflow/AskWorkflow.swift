@@ -41,7 +41,7 @@ struct AskName: Asking {
         "What is your name?"
     }
 
-    func process() async throws {
+    func process() {
     }
 }
 
@@ -77,7 +77,7 @@ struct AskWithDataWorkflow: Workflow {
 struct SetGreeting: Action {
     @Output var greeting: String
 
-    func run() async throws {
+    func run() {
         greeting = "Hello"
     }
 }
@@ -92,7 +92,7 @@ struct AskWithContext: Asking {
         "Please respond to the greeting"
     }
 
-    func process() async throws {
+    func process() {
         fullMessage = "\(greeting), \(response)!"
     }
 }
@@ -102,6 +102,6 @@ struct ProcessResponse: Action {
     @Input var fullMessage: String
     @Input var response: String
 
-    func run() async throws {
+    func run() {
     }
 }

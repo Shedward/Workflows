@@ -9,6 +9,8 @@ import Core
 import os
 
 public struct WorkflowStart: Sendable {
+    public static let manual = WorkflowStart()
+
     public var title: String?
     public var data: WorkflowData
 
@@ -16,8 +18,6 @@ public struct WorkflowStart: Sendable {
         self.title = title
         self.data = data
     }
-
-    public static let manual = WorkflowStart()
 }
 
 extension WorkflowStart: Modifiers {

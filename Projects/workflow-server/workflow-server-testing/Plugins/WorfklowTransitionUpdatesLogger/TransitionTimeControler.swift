@@ -5,11 +5,11 @@
 //  Created by Мальцев Владислав on 31.03.2026.
 //
 
-import Rest
 import API
+import Hummingbird
+import Rest
 import WorkflowEngine
 import WorkflowServer
-import Hummingbird
 
 final class TransitionTimeControler: PluginController, @unchecked Sendable {
     private var profiler: TransitionTimeProfiler
@@ -23,7 +23,7 @@ final class TransitionTimeControler: PluginController, @unchecked Sendable {
         self.profiler = profiler
     }
 
-    private func getReport(request: Request, body: EmptyBody, context: Context) async -> ListBody<GetTransitionTimeReport.TimeRecord> {
+    private func getReport(request: Request, body: EmptyBody, context: Context) -> ListBody<GetTransitionTimeReport.TimeRecord> {
         let records = profiler.measurements.map { key, value in
             GetTransitionTimeReport.TimeRecord(
                 transitionId: key,

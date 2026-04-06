@@ -9,7 +9,7 @@
 public struct ManualProvider: WorkflowStartProvider {
     public init() {}
 
-    public func starting() async -> [WorkflowStart] {
+    public func starting() -> [WorkflowStart] {
         [.manual]
     }
 }

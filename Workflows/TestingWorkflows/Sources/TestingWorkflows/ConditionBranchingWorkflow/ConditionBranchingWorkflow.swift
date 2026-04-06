@@ -10,11 +10,11 @@ import WorkflowEngine
 struct ChooseDirection: Condition {
     typealias State = ConditionBranchingWorkflow.State
 
-    @Input var choice: String
-
     static var possibleTargets: [State] { [.left, .right] }
 
-    func check() async throws -> State {
+    @Input var choice: String
+
+    func check() -> State {
         choice == "left" ? .left : .right
     }
 }
@@ -49,12 +49,12 @@ struct ConditionBranchingWorkflow: Workflow {
 struct ChooseAndLabel: Condition {
     typealias State = ConditionOutputWorkflow.State
 
+    static var possibleTargets: [State] { [.left, .right] }
+
     @Input var choice: String
     @Output var label: String
 
-    static var possibleTargets: [State] { [.left, .right] }
-
-    func check() async throws -> State {
+    func check() -> State {
         if choice == "left" {
             label = "went-left"
             return .left
