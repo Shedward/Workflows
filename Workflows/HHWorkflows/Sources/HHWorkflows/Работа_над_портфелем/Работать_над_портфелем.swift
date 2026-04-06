@@ -39,7 +39,6 @@ struct Работать_над_портфелем: Workflow {
             Начать_аб_тестирование.to(.аб_тест)
             Найдены_баги.to(.разработка)
         }
-        
     }
 
     var providers: [any WorkflowStartProvider] {

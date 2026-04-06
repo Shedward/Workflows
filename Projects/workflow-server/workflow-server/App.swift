@@ -7,10 +7,10 @@
 
 import Core
 import Foundation
+import HHWorkflows
 import os
 import WorkflowEngine
 import WorkflowServer
-import HHWorkflows
 
 @main
 enum App {

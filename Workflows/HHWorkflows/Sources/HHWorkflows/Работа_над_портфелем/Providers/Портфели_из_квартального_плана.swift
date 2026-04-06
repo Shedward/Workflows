@@ -9,7 +9,7 @@ import WorkflowEngine
 
 @DataBindable
 struct Портфели_из_квартального_плана: WorkflowStartProvider {
-    func starting() async throws -> [WorkflowStart] {
+    func starting() -> [WorkflowStart] {
         [
             WorkflowStart(title: "PORTFOLIO-23325: navigation bar v9")
                 .input("portfolioId", to: "PORTFOLIO-23325"),

@@ -29,7 +29,9 @@ public extension Workflow where Self: TransitionProcess {
 
     private func mergeOutputs(from childData: WorkflowData, into context: inout WorkflowContext) {
         let declaredOutputKeys = self.collectMetadata().outputKeys
-        guard !declaredOutputKeys.isEmpty else { return }
+        guard !declaredOutputKeys.isEmpty else {
+            return
+        }
 
         var parentData = context.instance.data
         for (key, value) in childData.data where declaredOutputKeys.contains(key) {

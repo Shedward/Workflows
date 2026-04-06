@@ -26,7 +26,9 @@ extension Workflow {
 
     public func afterStart(_ build: () -> ToTransition<State>) -> [Transition<State>] {
         let toTransition = build()
-        return [Transition<State>(from: State.start, targets: toTransition.targets, process: toTransition.process, workflow: self, trigger: .automatic)]
+        return [Transition<State>(
+            from: State.start, targets: toTransition.targets, process: toTransition.process, workflow: self, trigger: .automatic
+        )]
     }
 
     public func after(_ state: State, _ build: () -> ToTransition<State>) -> [Transition<State>] {

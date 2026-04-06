@@ -17,7 +17,7 @@ public protocol Asking: TransitionProcess, DataBindable, Sendable, Defaultable {
 public extension Asking {
     var prompt: Prompt? { nil }
 
-    func process() async throws {
+    func process() {
     }
 }
 

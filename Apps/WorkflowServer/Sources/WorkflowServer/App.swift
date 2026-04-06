@@ -8,8 +8,8 @@ import Configuration
 import Hummingbird
 import HummingbirdTLS
 import Logging
-import WorkflowEngine
 import NIOSSL
+import WorkflowEngine
 
 public typealias AppRequestContext = BasicRequestContext
 
@@ -39,7 +39,7 @@ public struct App {
             InMemoryProvider(values: [
                 "http.hostname": ConfigValue(stringLiteral: config.hostname),
                 "http.port": ConfigValue(integerLiteral: config.port),
-                "http.serverName": "workflow-server",
+                "http.serverName": "workflow-server"
             ])
         ])
 

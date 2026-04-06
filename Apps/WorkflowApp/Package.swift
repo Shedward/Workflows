@@ -11,11 +11,11 @@ let package = Package(
         .library(
             name: "WorkflowApp",
             targets: ["WorkflowApp"]
-        ),
+        )
     ],
     dependencies: [
         .package(path: "../Core/Rest"),
-        .package(path: "../Domain/API"),
+        .package(path: "../Domain/API")
     ],
     targets: [
         .target(
@@ -24,6 +24,6 @@ let package = Package(
                 .product(name: "Rest", package: "Rest"),
                 .product(name: "API", package: "API")
             ]
-        ),
+        )
     ]
 )
