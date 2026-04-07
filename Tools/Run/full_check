@@ -15,7 +15,7 @@ trap cleanup EXIT
 # Build
 "$SCRIPT_DIR/build"
 
-EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-server"
+EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-server-testing"
 
 # Start server
 "$EXECUTABLE" &
