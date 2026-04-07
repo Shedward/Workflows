@@ -137,8 +137,13 @@ actor WorkflowRunner {
             let failed = instance.transitionFailed(error, at: transition)
             do {
                 try await storage.update(failed)
-            } catch {
-                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
+            } catch let persistError {
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(persistError, privacy: .public)")
+                throw Failure(
+                    // swiftlint:disable:next line_length
+                    "Transition \(transition.id.processId) failed and the failure state could not be persisted; instance \(instance.id) is in an unknown state",
+                    underlyingError: persistError
+                )
             }
             throw error
         }
@@ -200,10 +205,12 @@ actor WorkflowRunner {
             logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
             do {
                 try await storage.update(failed)
-            } catch {
-                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(error, privacy: .public)")
+                return failed
+            } catch let persistError {
+                // swiftlint:disable:next line_length
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(persistError, privacy: .public); halting automatic chain")
+                return nil
             }
-            return failed
         }
     }
 
