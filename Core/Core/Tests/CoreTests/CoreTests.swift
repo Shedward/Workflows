@@ -1,4 +1,5 @@
 @testable import Core
+import Foundation
 import Testing
 
 @Test func example() {
@@ -14,31 +15,33 @@ import Testing
     #expect(value == 42)
 }
 
-@Test func withTimeoutCancelsOperationOnTimeout() async {
+@Test func withTimeoutReturnsTimedOutWithoutCancellingOperation() async {
     actor Flag {
-        var observedCancellation = false
-        func markCancelled() {
-            observedCancellation = true
+        var operationFinished = false
+        func markFinished() {
+            operationFinished = true
         }
     }
     let flag = Flag()
 
+    let start = Date()
     let result = await withTimeout(seconds: 0.05) {
-        do {
-            try await Task.sleep(for: .seconds(5))
-            return 1
-        } catch {
-            await flag.markCancelled()
-            throw error
-        }
+        try? await Task.sleep(for: .milliseconds(200))
+        await flag.markFinished()
+        return 1
     }
+    let elapsed = Date().timeIntervalSince(start)
 
     guard case .timedOut = result else {
         Issue.record("expected timedOut, got \(result)")
         return
     }
 
-    // Give the cancelled child task a brief moment to record its catch block.
-    try? await Task.sleep(for: .milliseconds(200))
-    #expect(await flag.observedCancellation)
+    // withTimeout must return promptly — it should not block waiting for
+    // the in-flight operation.
+    #expect(elapsed < 0.15)
+
+    // The operation continues running in the background even after the timeout.
+    try? await Task.sleep(for: .milliseconds(300))
+    #expect(await flag.operationFinished)
 }
