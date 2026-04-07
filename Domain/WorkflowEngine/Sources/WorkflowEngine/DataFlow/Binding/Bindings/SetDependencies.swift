@@ -10,11 +10,17 @@ struct SetDependencies: DataBinding {
 
     func dependency<Value>(for key: String, at dependency: inout Dependency<Value>) throws where Value: Sendable {
         guard let dependencyValue = container.dependency(forKey: key) else {
-            throw Failure("No dependency \(String(describing: Value.self)) for key \(key)")
+            throw WorkflowsError.DependencyBindingFailed(key: key, reason: .missing)
         }
 
         guard let typedDependency = dependencyValue as? Value else {
-            throw Failure("Dependency \(dependencyValue) can not be casted to \(Value.self)")
+            throw WorkflowsError.DependencyBindingFailed(
+                key: key,
+                reason: .typeMismatch(
+                    expected: String(describing: Value.self),
+                    actual: String(describing: type(of: dependencyValue))
+                )
+            )
         }
 
         dependency.storage = ValueStorage(typedDependency)
