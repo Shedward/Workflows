@@ -5,6 +5,7 @@
 //  Created by Vlad Maltsev on 23.02.2026.
 //
 
+import API
 import Hummingbird
 import WorkflowEngine
 
@@ -124,5 +125,20 @@ extension WorkflowsError.InstanceNotAsking: @retroactive ResponseGenerator {
 extension WorkflowsError.InstanceNotAsking: @retroactive HTTPResponseError {
     public var status: HTTPResponse.Status {
         .conflict
+    }
+}
+
+extension WorkflowsError.WorkflowInstanceFinished: @retroactive ResponseGenerator {
+    public func response(from request: Request, context: some RequestContext) throws -> Response {
+        let body = API.WorkflowInstance(model: instance)
+        var response = try context.responseEncoder.encode(body, from: request, context: context)
+        response.status = status
+        return response
+    }
+}
+
+extension WorkflowsError.WorkflowInstanceFinished: @retroactive HTTPResponseError {
+    public var status: HTTPResponse.Status {
+        .gone
     }
 }

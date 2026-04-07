@@ -49,11 +49,17 @@ main() {
   take_transition "QuickFinish" "$slow_id"
   assert_finished "$slow_id"
 
-  # Finished instance should still be accessible via direct GET (retained)
-  local finished_response
-  finished_response="$(request GET "/workflowInstances/$slow_id")"
+  # Finished instance is retained: direct GET returns 410 Gone with the final body.
+  local finished_raw
+  finished_raw="$(request_raw GET "/workflowInstances/$slow_id")"
+  local finished_status="${finished_raw%%$'\n'*}"
+  local finished_body="${finished_raw#*$'\n'}"
+  if [[ "$finished_status" != "410" ]]; then
+    echo "Expected 410 for finished instance, got $finished_status" >&2
+    exit 1
+  fi
   local finished_at
-  finished_at="$(jq -r '.finishedAt' <<<"$finished_response")"
+  finished_at="$(jq -r '.finishedAt' <<<"$finished_body")"
   if [[ "$finished_at" == "null" || -z "$finished_at" ]]; then
     echo "Expected finishedAt to be set on finished instance" >&2
     exit 1
@@ -71,14 +77,24 @@ main() {
     exit 1
   fi
 
-  # Poll until it finishes
+  # Poll until it finishes. Once finished, GET returns 410 with the final body,
+  # so we use request_raw and check the status.
   attempts=0
   while [[ $attempts -lt $max_attempts ]]; do
     sleep 0.5
-    local auto_response
-    auto_response="$(request GET "/workflowInstances/$auto_id")"
+    local auto_raw
+    auto_raw="$(request_raw GET "/workflowInstances/$auto_id")"
+    local auto_status="${auto_raw%%$'\n'*}"
+    local auto_body="${auto_raw#*$'\n'}"
+    if [[ "$auto_status" == "410" ]]; then
+      break
+    fi
+    if [[ "$auto_status" != "200" ]]; then
+      echo "Unexpected status $auto_status while polling auto workflow" >&2
+      exit 1
+    fi
     local auto_finished
-    auto_finished="$(jq -r '.finishedAt // empty' <<<"$auto_response")"
+    auto_finished="$(jq -r '.finishedAt // empty' <<<"$auto_body")"
     if [[ -n "$auto_finished" && "$auto_finished" != "null" ]]; then
       break
     fi

@@ -35,6 +35,9 @@ struct WorkflowInstancesController: Controller {
     private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowInstance {
         let workflowId = try context.parameters.require("id")
         let workflow = try await workflows.instance(id: workflowId)
+        if workflow.finishedAt != nil {
+            throw WorkflowsError.WorkflowInstanceFinished(instance: workflow)
+        }
         return API.WorkflowInstance(model: workflow)
     }
 

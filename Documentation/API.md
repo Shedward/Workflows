@@ -137,7 +137,8 @@ Get a specific workflow instance.
 
 | Status | Condition |
 |--------|-----------|
-| 404 | Instance not found (nonexistent or already finished) |
+| 404 | Instance has never existed (or has been evicted after the retention window) |
+| 410 | Instance has finished. The body is the final `WorkflowInstance` (with `finishedAt` populated) so callers can read the terminal state and outputs. Finished instances are retained in storage for a server-configured retention window (1 hour by default) before being evicted, after which subsequent GETs return 404. |
 
 ---
 
@@ -409,7 +410,7 @@ Ask transitions suspend the instance waiting for user-provided data:
 
 When an instance reaches `_finish`:
 
-- It is removed from in-memory storage.
-- It no longer appears in `GET /workflowInstances`.
-- `GET /workflowInstances/:id` returns 404.
+- It is retained for a configurable retention window (1 hour by default), with `finishedAt` set on the stored record.
+- It no longer appears in `GET /workflowInstances` (the list endpoint filters out finished instances).
+- `GET /workflowInstances/:id` returns **410 Gone** with the final `WorkflowInstance` body during the retention window, then **404** after eviction.
 - Any parent workflows waiting on it are notified and resumed.

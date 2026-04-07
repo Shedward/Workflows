@@ -33,13 +33,28 @@ main() {
     exit 1
   fi
 
-  # GET finished instance should return it with finishedAt set
-  local finished_response
-  finished_response="$(request GET "/workflowInstances/$finished_id")"
+  # GET finished instance should return 410 Gone with the final instance body
+  local raw
+  raw="$(request_raw GET "/workflowInstances/$finished_id")"
+  local status="${raw%%$'\n'*}"
+  local body="${raw#*$'\n'}"
+  if [[ "$status" != "410" ]]; then
+    echo "Expected status 410 for finished instance, got $status" >&2
+    exit 1
+  fi
   local finished_at
-  finished_at="$(jq -r '.finishedAt' <<<"$finished_response")"
+  finished_at="$(jq -r '.finishedAt' <<<"$body")"
   if [[ "$finished_at" == "null" || -z "$finished_at" ]]; then
-    echo "Expected finishedAt to be set, got null" >&2
+    echo "Expected finishedAt to be set in 410 body, got null" >&2
+    exit 1
+  fi
+
+  # GET on a never-existing instance should still return 404
+  local raw404
+  raw404="$(request_raw GET "/workflowInstances/does-not-exist-$$")"
+  local status404="${raw404%%$'\n'*}"
+  if [[ "$status404" != "404" ]]; then
+    echo "Expected status 404 for unknown instance, got $status404" >&2
     exit 1
   fi
 

@@ -67,4 +67,12 @@ public enum WorkflowsError {
         public let state: StateID
         public let transitionId: TransitionID
     }
+
+    public struct WorkflowInstanceFinished: Swift.Error {
+        public let instance: WorkflowInstance
+
+        public init(instance: WorkflowInstance) {
+            self.instance = instance
+        }
+    }
 }
