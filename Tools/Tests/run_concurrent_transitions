@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+# Verifies per-instance serialization in WorkflowRunner: firing N concurrent
+# `StartA` calls against the same fresh instance should result in exactly one
+# success and N-1 failures (because after the winner advances state, the
+# transition is no longer valid). Without serialization, multiple racers could
+# all read the initial `_start` state and clobber each other's updates.
+
+CONCURRENCY=10
+
+tmpdir=""
+cleanup() {
+  if [[ -n "$tmpdir" && -d "$tmpdir" ]]; then
+    rm -rf "$tmpdir"
+  fi
+}
+trap cleanup EXIT
+
+main() {
+  start_workflow "SimpleWorkflow"
+  local instance="$INSTANCE_ID"
+
+  tmpdir="$(mktemp -d)"
+
+  local i
+  for i in $(seq 1 "$CONCURRENCY"); do
+    (
+      request_raw POST "/workflowInstances/$instance/takeTransition" \
+        '{"transitionProcessId":"StartA"}' \
+        > "$tmpdir/$i.out" 2>/dev/null
+    ) &
+  done
+  wait
+
+  local successes=0
+  local failures=0
+  for i in $(seq 1 "$CONCURRENCY"); do
+    local code
+    code="$(head -n 1 "$tmpdir/$i.out")"
+    if [[ "$code" == "200" ]]; then
+      successes=$((successes + 1))
+    elif [[ "$code" -ge 400 ]]; then
+      failures=$((failures + 1))
+    else
+      echo "Unexpected status code from concurrent take: '$code'" >&2
+      exit 1
+    fi
+  done
+
+  echo "successes=$successes failures=$failures"
+
+  if [[ "$successes" -ne 1 ]]; then
+    echo "Expected exactly 1 successful StartA, got $successes" >&2
+    exit 1
+  fi
+  if [[ "$failures" -ne $((CONCURRENCY - 1)) ]]; then
+    echo "Expected $((CONCURRENCY - 1)) failures, got $failures" >&2
+    exit 1
+  fi
+
+  # The instance should be in stateA, ready for StartB → Finalize.
+  assert_state "a"
+  take_transition "StartB"
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

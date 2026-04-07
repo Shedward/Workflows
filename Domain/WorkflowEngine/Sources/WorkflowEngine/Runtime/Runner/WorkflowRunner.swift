@@ -26,6 +26,9 @@ actor WorkflowRunner {
     }
     private let logger = Logger(scope: .workflow)
 
+    /// Per-instance serialization queue. See `WorkflowRunner+InstanceLock.swift`.
+    var inflight: [WorkflowInstanceID: InflightEntry] = [:]
+
     init(storage: WorkflowStorage, registry: WorkflowRegistry, dependencies: DependenciesContainer, plugins: Plugins) {
         self.storage = storage
         self.registry = registry
@@ -68,6 +71,18 @@ actor WorkflowRunner {
 
     @discardableResult
     func takeTransition(
+        _ transition: AnyTransition,
+        on instance: WorkflowInstance,
+        of workflow: AnyWorkflow,
+        resumeReason: WaitScheduler.ResumeReason? = nil
+    ) async throws -> WorkflowInstance {
+        try await withInstanceLock(instance.id) { [self] in
+            try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
+        }
+    }
+
+    @discardableResult
+    private func takeTransitionLocked(
         _ transition: AnyTransition,
         on instance: WorkflowInstance,
         of workflow: AnyWorkflow,
@@ -129,7 +144,7 @@ actor WorkflowRunner {
             try await storage.update(next)
         }
 
-        return await runAutomaticTransitions(from: next)
+        return await runAutomaticTransitionsLocked(from: next)
     }
 
     private func executeTransitionProcess(
@@ -168,18 +183,25 @@ actor WorkflowRunner {
 
     @discardableResult
     func answerAsk(instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
-        let instance = try await storage.instance(id: instanceId)
+        try await withInstanceLock(instanceId) { [self] in
+            let instance = try await storage.instance(id: instanceId)
 
-        guard
-            let instance,
-            let transitionState = instance.transitionState,
-            let workflow = await registry.workflow(id: instance.workflowId),
-            let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
-        else {
-            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+            guard
+                let instance,
+                let transitionState = instance.transitionState,
+                let workflow = await registry.workflow(id: instance.workflowId),
+                let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+            else {
+                throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+            }
+
+            return try await takeTransitionLocked(
+                transition,
+                on: instance,
+                of: workflow,
+                resumeReason: .answered(data: data)
+            )
         }
-
-        return try await takeTransition(transition, on: instance, of: workflow, resumeReason: .answered(data: data))
     }
 
     // MARK: - Waiting
@@ -187,33 +209,35 @@ actor WorkflowRunner {
     private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
-        let instance: WorkflowInstance?
-        do {
-            instance = try await storage.instance(id: instanceId)
-        } catch {
-            logger?.error("Failed to load instance \(instanceId, privacy: .public) from storage: \(error, privacy: .public)")
-            return
-        }
-
-        guard
-            let instance,
-            let transitionState = instance.transitionState,
-            let workflow = await registry.workflow(id: instance.workflowId),
-            let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
-        else {
-            logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
-            return
-        }
-
-        do {
-            try await takeTransition(transition, on: instance, of: workflow, resumeReason: reason)
-        } catch {
+        await withInstanceLock(instanceId) { [self] in
+            let instance: WorkflowInstance?
             do {
-                try await storage.update(instance.transitionFailed(error, at: transition))
+                instance = try await storage.instance(id: instanceId)
             } catch {
-                logger?.error("Failed to persist failure state for \(instanceId, privacy: .public): \(error, privacy: .public)")
+                logger?.error("Failed to load instance \(instanceId, privacy: .public) from storage: \(error, privacy: .public)")
+                return
             }
-            logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
+
+            guard
+                let instance,
+                let transitionState = instance.transitionState,
+                let workflow = await registry.workflow(id: instance.workflowId),
+                let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+            else {
+                logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
+                return
+            }
+
+            do {
+                try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: reason)
+            } catch {
+                do {
+                    try await storage.update(instance.transitionFailed(error, at: transition))
+                } catch {
+                    logger?.error("Failed to persist failure state for \(instanceId, privacy: .public): \(error, privacy: .public)")
+                }
+                logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
+            }
         }
     }
 }
@@ -223,6 +247,13 @@ actor WorkflowRunner {
 extension WorkflowRunner {
     @discardableResult
     func runAutomaticTransitions(from start: WorkflowInstance) async -> WorkflowInstance {
+        await withInstanceLock(start.id) { [self] in
+            await runAutomaticTransitionsLocked(from: start)
+        }
+    }
+
+    @discardableResult
+    private func runAutomaticTransitionsLocked(from start: WorkflowInstance) async -> WorkflowInstance {
         var current = start
         var steps = 0
         var seen: Set<AutomaticStepSignature> = []
@@ -297,7 +328,7 @@ extension WorkflowRunner {
     ) async -> WorkflowInstance? {
         logger?.trace("Auto transition \(transition.id.processId, privacy: .public)")
         do {
-            return try await takeTransition(transition, on: instance, of: workflow)
+            return try await takeTransitionLocked(transition, on: instance, of: workflow)
         } catch {
             let failed = instance.transitionFailed(error, at: transition)
             logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
