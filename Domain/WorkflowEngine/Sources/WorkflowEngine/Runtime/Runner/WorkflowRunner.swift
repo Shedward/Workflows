@@ -9,6 +9,12 @@ import Core
 import Foundation
 import os
 
+private struct AutomaticStepSignature: Hashable {
+    let state: StateID
+    let transitionId: TransitionID
+    let data: WorkflowData
+}
+
 actor WorkflowRunner {
     private let storage: WorkflowStorage
     private let registry: WorkflowRegistry
@@ -158,62 +164,6 @@ actor WorkflowRunner {
         await scheduler.notifyFinished(instance.id, data: instance.data)
     }
 
-    // MARK: - Automatic transitions
-
-    @discardableResult
-    func runAutomaticTransitions(from start: WorkflowInstance) async -> WorkflowInstance {
-        var current = start
-        var steps = 0
-        let maxSteps = 1000
-        while let next = await nextAutomaticTransitionInstance(from: current) {
-            current = next
-            steps += 1
-            if steps >= maxSteps {
-                logger?.error("Automatic transition limit (\(maxSteps)) reached for \(current.id)")
-                break
-            }
-        }
-        return current
-    }
-
-    private func nextAutomaticTransitionInstance(from instance: WorkflowInstance) async -> WorkflowInstance? {
-        guard instance.transitionState == nil else {
-            return nil
-        }
-
-        guard let workflow = await registry.workflow(instance: instance) else {
-            logger?.error("Workflow for instance \(instance.id) of type \(instance.workflowId) not found")
-            return nil
-        }
-
-        let automatic = workflow.anyTransitions.filter { $0.from == instance.state && $0.trigger == .automatic }
-        guard let transition = automatic.first, automatic.count == 1 else {
-            if automatic.isEmpty {
-                logger?.trace("No automatic transitions from \(instance.state, privacy: .public)")
-            } else {
-                // swiftlint:disable:next line_length
-                logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)")
-            }
-            return nil
-        }
-
-        logger?.trace("Auto transition \(transition.id.processId, privacy: .public)")
-        do {
-            return try await takeTransition(transition, on: instance, of: workflow)
-        } catch {
-            let failed = instance.transitionFailed(error, at: transition)
-            logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
-            do {
-                try await storage.update(failed)
-                return failed
-            } catch let persistError {
-                // swiftlint:disable:next line_length
-                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(persistError, privacy: .public); halting automatic chain")
-                return nil
-            }
-        }
-    }
-
     // MARK: - Ask
 
     @discardableResult
@@ -264,6 +214,101 @@ actor WorkflowRunner {
                 logger?.error("Failed to persist failure state for \(instanceId, privacy: .public): \(error, privacy: .public)")
             }
             logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
+        }
+    }
+}
+
+// MARK: - Automatic transitions
+
+extension WorkflowRunner {
+    @discardableResult
+    func runAutomaticTransitions(from start: WorkflowInstance) async -> WorkflowInstance {
+        var current = start
+        var steps = 0
+        var seen: Set<AutomaticStepSignature> = []
+        let maxSteps = 1000
+
+        while let (transition, workflow) = await findAutomaticTransition(from: current) {
+            let signature = AutomaticStepSignature(
+                state: current.state,
+                transitionId: transition.id,
+                data: current.data
+            )
+            if !seen.insert(signature).inserted {
+                // swiftlint:disable:next line_length
+                logger?.error("Automatic loop detected on \(current.id, privacy: .public) at state \(current.state, privacy: .public) via \(transition.id.processId, privacy: .public)")
+                let loopError = WorkflowsError.AutomaticLoopDetected(
+                    instanceId: current.id,
+                    state: current.state,
+                    transitionId: transition.id
+                )
+                let failed = current.transitionFailed(loopError, at: transition)
+                do {
+                    try await storage.update(failed)
+                } catch let persistError {
+                    logger?.error("Failed to persist loop-detection failure: \(persistError, privacy: .public)")
+                }
+                return failed
+            }
+
+            guard let next = await executeAutomatic(transition: transition, on: current, of: workflow) else {
+                break
+            }
+            current = next
+            steps += 1
+            if steps >= maxSteps {
+                logger?.error("Automatic transition limit (\(maxSteps)) reached for \(current.id)")
+                break
+            }
+        }
+        return current
+    }
+
+    private func findAutomaticTransition(
+        from instance: WorkflowInstance
+    ) async -> (AnyTransition, AnyWorkflow)? {
+        guard instance.transitionState == nil else {
+            return nil
+        }
+
+        guard let workflow = await registry.workflow(instance: instance) else {
+            logger?.error("Workflow for instance \(instance.id) of type \(instance.workflowId) not found")
+            return nil
+        }
+
+        let automatic = workflow.anyTransitions.filter { $0.from == instance.state && $0.trigger == .automatic }
+        guard let transition = automatic.first, automatic.count == 1 else {
+            if automatic.isEmpty {
+                logger?.trace("No automatic transitions from \(instance.state, privacy: .public)")
+            } else {
+                // swiftlint:disable:next line_length
+                logger?.error("Multiple automatic transitions from state \(instance.state, privacy: .public): \(automatic.map(\.id), privacy: .public)")
+            }
+            return nil
+        }
+
+        return (transition, workflow)
+    }
+
+    private func executeAutomatic(
+        transition: AnyTransition,
+        on instance: WorkflowInstance,
+        of workflow: AnyWorkflow
+    ) async -> WorkflowInstance? {
+        logger?.trace("Auto transition \(transition.id.processId, privacy: .public)")
+        do {
+            return try await takeTransition(transition, on: instance, of: workflow)
+        } catch {
+            let failed = instance.transitionFailed(error, at: transition)
+            logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
+            do {
+                try await storage.update(failed)
+                return failed
+            } catch let persistError {
+                // swiftlint:disable:next line_length
+                logger?.error("Failed to persist failure state for \(instance.id, privacy: .public): \(persistError, privacy: .public); halting automatic chain")
+                return nil
+            }
         }
     }
 }

@@ -8,7 +8,7 @@
 import Core
 import Foundation
 
-public struct WorkflowData: Sendable, Codable {
+public struct WorkflowData: Sendable, Codable, Hashable {
     internal var data: [String: String]
 
     public init(data: [String: String] = [:]) {

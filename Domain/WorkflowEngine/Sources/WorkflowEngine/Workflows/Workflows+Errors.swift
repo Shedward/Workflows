@@ -61,4 +61,10 @@ public enum WorkflowsError {
     public struct InstanceNotAsking: Swift.Error {
         public let instanceId: WorkflowInstanceID
     }
+
+    public struct AutomaticLoopDetected: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let state: StateID
+        public let transitionId: TransitionID
+    }
 }
