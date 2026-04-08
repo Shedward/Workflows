@@ -72,12 +72,28 @@ actor WorkflowRunner {
     @discardableResult
     func takeTransition(
         _ transition: AnyTransition,
-        on instance: WorkflowInstance,
+        on instanceId: WorkflowInstanceID,
         of workflow: AnyWorkflow,
         resumeReason: WaitScheduler.ResumeReason? = nil
     ) async throws -> WorkflowInstance {
-        try await withInstanceLock(instance.id) { [self] in
-            try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
+        try await withInstanceLock(instanceId) { [self] in
+            // Re-load the instance under the lock; the snapshot the caller saw
+            // before queueing may have been advanced by an earlier serialized
+            // operation on this id.
+            guard let instance = try await storage.instance(id: instanceId) else {
+                throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
+            }
+            guard instance.state == transition.from else {
+                throw WorkflowsError.TransitionProcessNotFoundForInstance(
+                    instance: instanceId,
+                    workflow: workflow.id,
+                    transitionId: transition.id.processId,
+                    availableTransitions: workflow.anyTransitions
+                        .filter { $0.from == instance.state }
+                        .map(\.id)
+                )
+            }
+            return try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
         }
     }
 

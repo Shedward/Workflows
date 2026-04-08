@@ -40,7 +40,7 @@ extension Workflows {
             )
         }
 
-        return try await runner.takeTransition(transition, on: instance, of: workflow)
+        return try await runner.takeTransition(transition, on: instance.id, of: workflow)
     }
 
     @discardableResult
@@ -62,7 +62,7 @@ extension Workflows {
         }
         let transition = possibleTransitions[0]
 
-        return try await runner.takeTransition(transition, on: instance, of: workflow)
+        return try await runner.takeTransition(transition, on: instance.id, of: workflow)
     }
 
     @discardableResult
