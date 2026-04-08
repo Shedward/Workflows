@@ -5,6 +5,7 @@
 //  Created by Vlad Maltsev on 23.02.2026.
 //
 
+import API
 import Hummingbird
 import WorkflowEngine
 

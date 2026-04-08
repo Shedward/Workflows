@@ -25,3 +25,24 @@ request() {
 
   echo "$body"
 }
+
+# Like request, but never fails on HTTP status. Prints status on the first
+# line and the body on the rest.
+request_raw() {
+  local method="$1"
+  local path="$2"
+  local data="${3:-}"
+
+  echo "$@" >&2
+
+  local response
+  response=$(curl -sS -X "$method" "$BASE$path" \
+    ${data:+-H "Content-Type: application/json" -d "$data"} \
+    -w "\n%{http_code}")
+
+  local http_code="${response##*$'\n'}"
+  local body="${response%$'\n'*}"
+
+  echo "$http_code"
+  echo "$body"
+}

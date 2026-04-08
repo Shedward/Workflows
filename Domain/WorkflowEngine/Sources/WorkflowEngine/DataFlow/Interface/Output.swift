@@ -10,15 +10,17 @@ public struct Output<Value: WorkflowValue>: Sendable {
     var storage: ValueStorage?
 
     public var wrappedValue: Value {
-        @available(*, unavailable)
+        @available(*, unavailable, message: "Output values are write-only")
         get {
-            fatalError("Tried to read Output value")
+            preconditionFailure("Output values are write-only")
         }
         nonmutating set {
+            // CreateOutputStorage attaches a ValueStorage to every declared
+            // Output before the transition runs. A nil storage here means
+            // the binding step was skipped — i.e. an engine bug.
             guard let storage else {
-                fatalError("Tried to use Output before setting storage")
+                preconditionFailure("Output<\(Value.self)> written before CreateOutputStorage ran (engine bug)")
             }
-
             storage.value = newValue
         }
     }

@@ -61,4 +61,41 @@ public enum WorkflowsError {
     public struct InstanceNotAsking: Swift.Error {
         public let instanceId: WorkflowInstanceID
     }
+
+    public struct AutomaticLoopDetected: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let state: StateID
+        public let transitionId: TransitionID
+    }
+
+    public struct InputBindingFailed: Swift.Error {
+        public enum Reason: Sendable {
+            case missing
+            case typeMismatch(expected: String)
+            case decodingFailed(any Swift.Error)
+        }
+
+        public let key: String
+        public let reason: Reason
+
+        public init(key: String, reason: Reason) {
+            self.key = key
+            self.reason = reason
+        }
+    }
+
+    public struct DependencyBindingFailed: Swift.Error {
+        public enum Reason: Sendable {
+            case missing
+            case typeMismatch(expected: String, actual: String)
+        }
+
+        public let key: String
+        public let reason: Reason
+
+        public init(key: String, reason: Reason) {
+            self.key = key
+            self.reason = reason
+        }
+    }
 }

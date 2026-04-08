@@ -32,10 +32,15 @@ struct WorkflowInstancesController: Controller {
         return ListBody(items: instances)
     }
 
-    private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowInstance {
+    private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> Response {
         let workflowId = try context.parameters.require("id")
         let workflow = try await workflows.instance(id: workflowId)
-        return API.WorkflowInstance(model: workflow)
+        let apiInstance = API.WorkflowInstance(model: workflow)
+        var response = try context.responseEncoder.encode(apiInstance, from: request, context: context)
+        if workflow.finishedAt != nil {
+            response.status = .gone
+        }
+        return response
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
