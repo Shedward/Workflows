@@ -231,11 +231,6 @@ actor WorkflowRunner {
             do {
                 try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: reason)
             } catch {
-                do {
-                    try await storage.update(instance.transitionFailed(error, at: transition))
-                } catch {
-                    logger?.error("Failed to persist failure state for \(instanceId, privacy: .public): \(error, privacy: .public)")
-                }
                 logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
             }
         }
