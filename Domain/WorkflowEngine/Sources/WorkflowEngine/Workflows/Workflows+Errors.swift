@@ -68,14 +68,6 @@ public enum WorkflowsError {
         public let transitionId: TransitionID
     }
 
-    public struct WorkflowInstanceFinished: Swift.Error {
-        public let instance: WorkflowInstance
-
-        public init(instance: WorkflowInstance) {
-            self.instance = instance
-        }
-    }
-
     public struct InputBindingFailed: Swift.Error {
         public enum Reason: Sendable {
             case missing
