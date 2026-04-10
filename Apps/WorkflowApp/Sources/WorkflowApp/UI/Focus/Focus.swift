@@ -14,12 +14,15 @@ struct Focus: View {
     var body: some View {
         VStack {
             Text("Focus")
+                .themeFont(\.title)
+                .themeColor(\.content.primary)
             Button {
                 withAnimation {
                     isExpanded.toggle()
                 }
             } label: {
                 Text("Button")
+                    .themeFont(\.body)
             }
 
             if isExpanded {
@@ -28,7 +31,7 @@ struct Focus: View {
                     .frame(width: 100, height: 100)
             }
         }
-        .padding()
+        .themePadding(\.m)
         .background(.regularMaterial, in: .rect(corners: .concentric(minimum: 8)))
         .shadow(radius: 12)
     }
