@@ -8,36 +8,31 @@
 import SwiftUI
 
 struct Focus: View {
-    @State
-    private var isExpanded: Bool = false
+    @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack {
-            Text("Focus")
-                .themeFont(\.title)
-                .themeColor(\.content.primary)
-            Button {
-                withAnimation {
-                    isExpanded.toggle()
-                }
-            } label: {
-                Text("Button")
-                    .themeFont(\.body)
-            }
+        Card(tint: theme.colors.warning) {
+            HStack(alignment: .top, spacing: theme.spacing.xl) {
+                Circle()
+                    .fill(theme.colors.warning)
+                    .frame(width: 8, height: 8)
 
-            if isExpanded {
-                Rectangle()
-                    .fill(.primary)
-                    .frame(width: 100, height: 100)
+                VStack(alignment: .leading, spacing: theme.spacing.s) {
+                    Text("Deploy Pipeline")
+                        .themeFont(\.title)
+                        .themeColor(\.content.primary)
+
+                    Text("waiting-approval")
+                        .themeFont(\.mono)
+                        .themeColor(\.content.secondary)
+                }
+
+                Spacer(minLength: 0)
             }
         }
-        .themePadding(\.m)
-        .background(.regularMaterial, in: .rect(corners: .concentric(minimum: 8)))
-        .shadow(radius: 12)
     }
 }
 
 #Preview {
-    Focus()
-        .padding()
+    FocusHUD()
 }
