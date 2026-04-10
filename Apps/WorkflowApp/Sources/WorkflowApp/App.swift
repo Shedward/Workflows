@@ -5,7 +5,6 @@
 //  Created by Vlad Maltsev on 20.04.2026.
 //
 
-import AppKit
 import Carbon.HIToolbox
 import SwiftUI
 
@@ -34,9 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             keyCode: UInt32(kVK_Space),
             modifiers: UInt32(optionKey)
         ) {
-            Task { @MainActor in
-                FocusPresenter.shared.toggle()
-            }
+            FocusPresenter.shared.toggle()
         }
     }
 }

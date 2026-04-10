@@ -9,8 +9,8 @@ import API
 import Rest
 import SwiftUI
 
-actor WorkflowsService {
-    let rest: RestClient
+struct WorkflowsService: Sendable {
+    let rest: any RestClient
 
     init(endpoint: NetworkRestClient.Endpoint) {
         self.rest = NetworkRestClient(endpoint: endpoint)

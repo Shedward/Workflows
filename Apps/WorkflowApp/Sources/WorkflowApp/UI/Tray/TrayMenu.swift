@@ -5,7 +5,6 @@
 //  Created by Vlad Maltsev on 09.04.2026.
 //
 
-import AppKit
 import SwiftUI
 
 struct TrayMenu: View {

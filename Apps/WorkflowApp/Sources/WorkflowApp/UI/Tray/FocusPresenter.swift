@@ -5,7 +5,6 @@
 //  Created by Vlad Maltsev on 09.04.2026.
 //
 
-import AppKit
 import SwiftUI
 
 /// Owns the Spotlight-style focus HUD panel and centralises show/hide/toggle so
@@ -60,7 +59,7 @@ final class FocusPresenter {
         // tray label stays in sync however the panel was hidden. The KVO
         // closure is `Sendable`, so it can't touch main-actor state directly.
         visibilityObserver = panel.observe(\.isVisible, options: [.initial, .new]) { _, _ in
-            Task { @MainActor in
+            MainActor.assumeIsolated {
                 FocusPresenter.shared.refreshVisibility()
             }
         }
@@ -110,8 +109,21 @@ final class FocusPresenter {
 }
 
 /// `NSPanel` subclass that overrides `canBecomeKey` so the borderless HUD can
-/// receive keyboard events.
+/// receive keyboard events, and rewrites frame changes so the panel resizes
+/// around its top-center anchor instead of `NSWindow`'s default top-left.
 private final class FocusPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    override func setFrame(_ frameRect: NSRect, display flag: Bool) {
+        var adjusted = frameRect
+        let old = frame
+        let sizeChanged = old.width != frameRect.width || old.height != frameRect.height
+        if sizeChanged && !old.isEmpty {
+            // Keep (midX, maxY) — the top-center point — fixed.
+            adjusted.origin.x = old.midX - frameRect.width / 2
+            adjusted.origin.y = old.maxY - frameRect.height
+        }
+        super.setFrame(adjusted, display: flag)
+    }
 }

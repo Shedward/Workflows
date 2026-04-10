@@ -16,7 +16,8 @@ struct FocusHUD: View {
     var body: some View {
         Focus()
             .padding()
-            .background(.ultraThinMaterial, in: .rect(cornerRadius: 14))
+            .glassEffect(.clear.tint(.black.opacity(0.25)), in: .rect(cornerSize: CGSize(width: 24, height: 24)))
+            .transition(.blurReplace)
             .focusable()
             .focusEffectDisabled()
             .focused($isFocused)
