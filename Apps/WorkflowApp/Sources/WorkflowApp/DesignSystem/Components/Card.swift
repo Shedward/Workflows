@@ -20,7 +20,7 @@ struct Card<Content: View>: View {
         if let tint {
             tint.opacity(0.3)
         } else {
-            theme.colors.background.primary.opacity(0.3)
+            theme.colors.content.tertiary.opacity(0.5)
         }
     }
 

@@ -18,6 +18,7 @@ struct Colors {
     let positive: Color
     let negative: Color
     let warning: Color
+    let dimmed: Color
 }
 
 extension Colors {
@@ -35,6 +36,7 @@ extension Colors {
         accent: Color(.controlAccentColor),
         positive: Color(.systemGreen),
         negative: Color(.systemRed),
-        warning: Color(.systemOrange)
+        warning: Color(.systemOrange),
+        dimmed: Color(.windowBackgroundColor)
     )
 }
