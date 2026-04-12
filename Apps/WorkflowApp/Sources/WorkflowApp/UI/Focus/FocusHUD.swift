@@ -15,18 +15,25 @@ struct FocusHUD: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        Focus(tint: .green)
-            .padding()
-            .glassEffect(.clear.tint(theme.colors.dimmed), in: .rect(cornerSize: CGSize(width: 24, height: 24)))
-            .transition(.blurReplace)
-            .focusable()
-            .focusEffectDisabled()
-            .focused($isFocused)
-            .onAppear { isFocused = true }
-            .onKeyPress(.escape) {
-                FocusPresenter.shared.hide()
-                return .handled
-            }
+        ZStack(alignment: .center) {
+            let shape = RoundedRectangle(cornerSize: CGSize(width: 24, height: 24))
+            Focus(tint: .green)
+                .padding()
+                .glassEffect(.clear.tint(theme.colors.dimmed), in: shape)
+                .floatingShadow(in: shape)
+                .transition(.blurReplace)
+                .focusable()
+                .focusEffectDisabled()
+                .focused($isFocused)
+                .onAppear { isFocused = true }
+                .onKeyPress(.escape) {
+                    FocusPresenter.shared.hide()
+                    return .handled
+                }
+                .fixedSize()
+                .movable()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

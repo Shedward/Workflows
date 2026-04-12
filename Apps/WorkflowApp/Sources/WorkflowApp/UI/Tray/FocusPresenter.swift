@@ -22,6 +22,7 @@ final class FocusPresenter {
 
     @ObservationIgnored private var panel: FocusPanel?
     @ObservationIgnored private var visibilityObserver: NSKeyValueObservation?
+    @ObservationIgnored private var screenObserver: NSObjectProtocol?
 
     private init() {}
 
@@ -30,27 +31,22 @@ final class FocusPresenter {
         let hosting = NSHostingController(rootView: FocusHUD())
 
         let panel = FocusPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 80),
+            contentRect: NSRect(x: 0, y: 0, width: 100, height: 100),
             styleMask: [.nonactivatingPanel, .borderless],
             backing: .buffered,
             defer: false
         )
         panel.contentViewController = hosting
-        // Re-assert the size: assigning `contentViewController` resizes the
-        // panel to the controller's view, which is 0×0 before SwiftUI lays
-        // out. NB: do NOT use `sizingOptions = [.preferredContentSize]` —
-        // it triggers an infinite `windowDidLayout`/resize loop in NSPanel.
-        panel.setContentSize(NSSize(width: 320, height: 80))
 
         panel.initialFirstResponder = hosting.view
         panel.isFloatingPanel = true
         panel.level = .floating
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = true
+        panel.hasShadow = false
         panel.hidesOnDeactivate = true
-        panel.isMovableByWindowBackground = true
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+        panel.isMovableByWindowBackground = false
+        panel.collectionBehavior = [.fullScreenAuxiliary, .transient, .moveToActiveSpace]
         // Restoration can leave the panel off-screen or in a "hidden" state
         // that no-ops `makeKeyAndOrderFront` on subsequent shows.
         panel.isRestorable = false
@@ -64,12 +60,24 @@ final class FocusPresenter {
             }
         }
 
+        // Re-fit the panel to its new monitor whenever the system relocates it
+        // (e.g. display reconfiguration). Manual dragging is disabled.
+        screenObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didChangeScreenNotification,
+            object: panel,
+            queue: .main
+        ) { _ in
+            MainActor.assumeIsolated {
+                FocusPresenter.shared.fitToPanelScreen()
+            }
+        }
+
         self.panel = panel
     }
 
     func show() {
         guard let panel else { return }
-        centerOnActiveScreen(panel)
+        fitToActiveScreen(panel)
         // An `.accessory` app whose previous window was hidden via
         // `hidesOnDeactivate` will silently no-op `makeKeyAndOrderFront`
         // unless the app is reactivated first.
@@ -95,35 +103,22 @@ final class FocusPresenter {
         isVisible = panel?.isVisible ?? false
     }
 
-    private func centerOnActiveScreen(_ panel: NSPanel) {
+    fileprivate func fitToPanelScreen() {
+        guard let panel, let frame = panel.screen?.visibleFrame else { return }
+        panel.setFrame(frame, display: true)
+    }
+
+    private func fitToActiveScreen(_ panel: NSPanel) {
         let mouse = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
-        guard let visible = screen?.visibleFrame else { return }
-        let size = panel.frame.size
-        let origin = NSPoint(
-            x: visible.midX - size.width / 2,
-            y: visible.midY - size.height / 2
-        )
-        panel.setFrameOrigin(origin)
+        guard let frame = screen?.visibleFrame else { return }
+        panel.setFrame(frame, display: true)
     }
 }
 
 /// `NSPanel` subclass that overrides `canBecomeKey` so the borderless HUD can
-/// receive keyboard events, and rewrites frame changes so the panel resizes
-/// around its top-center anchor instead of `NSWindow`'s default top-left.
+/// receive keyboard events.
 private final class FocusPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
-
-    override func setFrame(_ frameRect: NSRect, display flag: Bool) {
-        var adjusted = frameRect
-        let old = frame
-        let sizeChanged = old.width != frameRect.width || old.height != frameRect.height
-        if sizeChanged && !old.isEmpty {
-            // Keep (midX, maxY) — the top-center point — fixed.
-            adjusted.origin.x = old.midX - frameRect.width / 2
-            adjusted.origin.y = old.maxY - frameRect.height
-        }
-        super.setFrame(adjusted, display: flag)
-    }
 }
