@@ -30,3 +30,9 @@ extension Identifiable {
         Color(hash: id)
     }
 }
+
+extension Hashable {
+    var tint: Color {
+        Color(hash: self)
+    }
+}

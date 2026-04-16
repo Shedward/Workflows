@@ -18,7 +18,7 @@ struct Card<Content: View>: View {
 
     private var borderHighlight: Color {
         if let tint {
-            tint.opacity(0.3)
+            tint.opacity(0.2)
         } else {
             theme.colors.content.tertiary.opacity(0.5)
         }
