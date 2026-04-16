@@ -2,19 +2,26 @@
 //  EmptyFocus.swift
 //  WorkflowApp
 //
-//  Created by Мальцев Владислав on 16.04.2026.
-//
 
 import SwiftUI
 
-
 struct EmptyFocus: View {
+    var onStart: () -> Void
+
     var body: some View {
-        Label("Start", systemImage: "play")
+        Button(action: onStart) {
+            Label("Start", systemImage: "play")
+        }
+        .buttonStyle(.plain)
     }
 }
 
 #Preview {
-    FocusHUD(content: AnyView(EmptyFocus()))
+    FocusHUD {
+        EmptyView()
+    } content: {
+        EmptyFocus {}
+    } drawer: {
+        EmptyView()
+    }
 }
-
