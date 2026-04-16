@@ -20,7 +20,7 @@ struct FocusRoot: View {
             }
         } drawer: {
             if case .selectingWorkflow(let workflows) = viewModel.state {
-                WorkflowList(workflows: workflows) { workflow in
+                WorkflowPicker(workflows: workflows) { workflow in
                     viewModel.select(workflow: workflow)
                 }
             }

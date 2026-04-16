@@ -1,12 +1,12 @@
 //
-//  WorkflowList.swift
+//  WorkflowPicker.swift
 //  WorkflowApp
 //
 
 import API
 import SwiftUI
 
-struct WorkflowList: View {
+struct WorkflowPicker: View {
     let workflows: [Workflow]
     let onSelect: (Workflow) -> Void
 
@@ -37,6 +37,6 @@ struct WorkflowList: View {
     } content: {
         EmptyFocus {}
     } drawer: {
-        WorkflowList(workflows: Workflow.Mock.all) { _ in }
+        WorkflowPicker(workflows: Workflow.Mock.all) { _ in }
     }
 }
