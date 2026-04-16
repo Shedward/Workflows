@@ -28,13 +28,8 @@ final class FocusPresenter {
 
     /// Builds the panel. Call once at launch.
     func install() {
-        let hosting = NSHostingController(rootView: FocusHUD {
-            EmptyView()
-        } content: {
-            EmptyFocus {}
-        } drawer: {
-            EmptyView()
-        })
+        let viewModel = FocusViewModel(service: Config.debug.workflowsService)
+        let hosting = NSHostingController(rootView: FocusRoot(viewModel: viewModel))
 
         let panel = FocusPanel(
             contentRect: NSRect(x: 0, y: 0, width: 100, height: 100),
