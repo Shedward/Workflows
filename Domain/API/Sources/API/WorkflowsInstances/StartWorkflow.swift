@@ -13,8 +13,13 @@ public struct StartWorkflow: WorkflowApi {
     public static let method = Method.post
     public static let path = "/workflowInstances"
 
-    let workflowId: String
-    let initialData: WorkflowData?
+    public let workflowId: String
+    public let initialData: WorkflowData?
+
+    public init(workflowId: String, initialData: WorkflowData? = nil) {
+        self.workflowId = workflowId
+        self.initialData = initialData
+    }
 
     public var request: RouteRequest {
         request(body: RequestBody(workflowId: workflowId, initialData: initialData))
