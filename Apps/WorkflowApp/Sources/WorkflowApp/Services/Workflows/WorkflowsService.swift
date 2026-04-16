@@ -25,6 +25,11 @@ struct WorkflowsService: Sendable {
         let request = GetWorkflows()
         return try await rest.fetch(request).items
     }
+
+    func startWorkflow(id: String) async throws -> WorkflowInstance {
+        let request = StartWorkflow(workflowId: id)
+        return try await rest.fetch(request)
+    }
 }
 
 extension EnvironmentValues {
