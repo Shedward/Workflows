@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+APP_BUNDLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-app.app"
+
+"$ROOT_DIR/Tools/Run/build_app"
+
+# Kill any previous instance so the freshly built binary owns the global
+# Option+Space hotkey (Carbon's RegisterEventHotKey is per-process).
+pkill -x workflow-app 2>/dev/null || true
+
+echo "Launching workflow-app..."
+exec "$APP_BUNDLE/Contents/MacOS/workflow-app"

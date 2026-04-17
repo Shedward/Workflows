@@ -23,12 +23,6 @@ struct WorkflowInstanceCell: View {
 
 #Preview {
     WorkflowInstanceCell(
-        instance: WorkflowInstance(
-            id: "test-id",
-            workflowId: "Workflow_id",
-            state: "some_state",
-            transitionState: nil,
-            data: WorkflowData()
-        )
+        instance: .Mock.decomposition
     )
 }
