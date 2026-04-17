@@ -22,13 +22,16 @@ struct FocusHUD<Roof: View, Content: View, Drawer: View>: View {
             VStack(spacing: theme.spacing.m) {
                 roof
                 content
+                    .onPreferableTintChange { tint = $0 }
+                    .padding()
+                    .glassEffect(.clear.tint((tint ?? .clear).opacity(0.10)), in: shape)
+                    .floatingShadow(in: shape)
+                    .transition(.blurReplace)
                 drawer
+                    .clipped()
+                    .floatingShadow(in: shape)
+                    .padding(.bottom, 120)
             }
-            .onPreferableTintChange { tint = $0 }
-            .padding()
-            .glassEffect(.clear.tint((tint ?? .clear).opacity(0.10)), in: shape)
-            .floatingShadow(in: shape)
-            .transition(.blurReplace)
             .focusable()
             .focusEffectDisabled()
             .focused($isFocused)
@@ -50,7 +53,11 @@ struct FocusHUD<Roof: View, Content: View, Drawer: View>: View {
     } content: {
         WorkflowCard(workflowInstance: .Mock.decomposition)
     } drawer: {
-        EmptyView()
+        VStack {
+            Button("One") {}
+            Text("Two")
+        }
+        .padding()
     }
 }
 

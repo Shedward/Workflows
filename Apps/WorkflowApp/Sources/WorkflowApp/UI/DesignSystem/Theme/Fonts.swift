@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct Fonts {
+    let large: Font
     let title: Font
     let subtitle: Font
     let body: Font
@@ -15,6 +16,7 @@ struct Fonts {
 
 extension Fonts {
     static let system = Fonts(
+        large: .largeTitle,
         title: .headline,
         subtitle: .subheadline,
         body: .body,

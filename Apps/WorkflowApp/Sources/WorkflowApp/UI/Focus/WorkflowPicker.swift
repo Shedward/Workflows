@@ -13,12 +13,12 @@ struct WorkflowPicker: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack(spacing: theme.spacing.s) {
+        ScrollView {
             ForEach(workflows) { workflow in
                 Button {
                     onSelect(workflow)
                 } label: {
-                    Card {
+                    Card(tint: workflow.tint) {
                         Text(workflow.id)
                             .themeFont(\.body)
                             .themeColor(\.content.primary)
@@ -28,6 +28,8 @@ struct WorkflowPicker: View {
                 .buttonStyle(.plain)
             }
         }
+        .frame(maxHeight: 400)
+        .contentMargins(theme.spacing.xl, for: .scrollContent)
     }
 }
 

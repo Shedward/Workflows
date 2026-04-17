@@ -18,7 +18,7 @@ struct WorkflowCard: View {
             HStack(alignment: .firstTextBaseline, spacing: theme.spacing.xl) {
                 Circle()
                     .fill(workflowInstance.tint)
-                    .frame(width: 8, height: 8)
+                    .frame(width: theme.spacing.m, height: theme.spacing.m)
 
                 VStack(alignment: .leading, spacing: theme.spacing.s) {
                     HStack {
@@ -31,8 +31,7 @@ struct WorkflowCard: View {
                         .themeFont(\.mono)
                         .themeColor(\.content.secondary)
                 }
-
-                Spacer(minLength: 0)
+                .padding(.trailing, theme.spacing.xl)
             }
         }
         .preferableTint(workflowInstance.tint)
