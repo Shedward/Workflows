@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct FocusRoot: View {
-    @State var viewModel: FocusViewModel
+    let viewModel: FocusViewModel
 
     var body: some View {
         FocusHUD {
@@ -17,6 +17,12 @@ struct FocusRoot: View {
                 EmptyFocus(onStart: viewModel.startSelection)
             case .active(let instance):
                 WorkflowCard(workflowInstance: instance)
+            case .failed(let message):
+                EmptyFocus(
+                    title: "Couldn't reach server",
+                    subtitle: message,
+                    onStart: viewModel.startSelection
+                )
             }
         } drawer: {
             if case .selectingWorkflow(let workflows) = viewModel.state {

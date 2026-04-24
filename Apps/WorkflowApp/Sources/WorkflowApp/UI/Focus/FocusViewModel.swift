@@ -13,6 +13,7 @@ final class FocusViewModel {
         case empty
         case selectingWorkflow([Workflow])
         case active(WorkflowInstance)
+        case failed(String)
     }
 
     private(set) var state: State = .empty
@@ -31,7 +32,9 @@ final class FocusViewModel {
                     state = .selectingWorkflow(workflows)
                 }
             } catch {
-                // Minimal iteration: stay in current state on failure
+                withAnimation(.snappy) {
+                    state = .failed(error.localizedDescription)
+                }
             }
         }
     }
@@ -44,7 +47,9 @@ final class FocusViewModel {
                     state = .active(instance)
                 }
             } catch {
-                // Minimal iteration: stay in current state on failure
+                withAnimation(.snappy) {
+                    state = .failed(error.localizedDescription)
+                }
             }
         }
     }

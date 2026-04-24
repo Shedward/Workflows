@@ -23,7 +23,7 @@ struct WorkflowCard: View {
                 VStack(alignment: .leading, spacing: theme.spacing.s) {
                     HStack {
                         Text(workflowInstance.workflowId)
-                            .themeFont(\.title)
+                            .themeFont(\.headline)
                             .themeColor(\.content.primary)
                     }
 

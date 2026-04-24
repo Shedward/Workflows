@@ -11,6 +11,7 @@ struct FocusHUD<Roof: View, Content: View, Drawer: View>: View {
     @Environment(\.theme) private var theme
     @FocusState private var isFocused: Bool
     @State private var tint: Color?
+    private let presenter = FocusPresenter.shared
 
     @ViewBuilder var roof: Roof
     @ViewBuilder var content: Content
@@ -30,14 +31,15 @@ struct FocusHUD<Roof: View, Content: View, Drawer: View>: View {
                 drawer
                     .clipped()
                     .floatingShadow(in: shape)
-                    .padding(.bottom, 120)
             }
             .focusable()
             .focusEffectDisabled()
             .focused($isFocused)
-            .onAppear { isFocused = true }
+            .onChange(of: presenter.isVisible) { _, isVisible in
+                if isVisible { isFocused = true }
+            }
             .onKeyPress(.escape) {
-                FocusPresenter.shared.hide()
+                presenter.hide()
                 return .handled
             }
             .fixedSize()

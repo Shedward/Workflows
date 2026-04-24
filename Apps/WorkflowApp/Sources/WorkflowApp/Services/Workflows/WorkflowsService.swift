@@ -31,7 +31,3 @@ struct WorkflowsService: Sendable {
         return try await rest.fetch(request)
     }
 }
-
-extension EnvironmentValues {
-    @Entry var workflowService: WorkflowsService?
-}
