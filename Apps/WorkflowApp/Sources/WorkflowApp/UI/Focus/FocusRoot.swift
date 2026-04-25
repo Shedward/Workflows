@@ -13,16 +13,10 @@ struct FocusRoot: View {
             EmptyView()
         } content: {
             switch viewModel.state {
-            case .empty, .selectingWorkflow:
+            case .empty, .selectingWorkflow, .failed:
                 EmptyFocus(onStart: viewModel.startSelection)
             case .active(let instance):
                 WorkflowCard(workflowInstance: instance)
-            case .failed(let message):
-                EmptyFocus(
-                    title: "Couldn't reach server",
-                    subtitle: message,
-                    onStart: viewModel.startSelection
-                )
             }
         } drawer: {
             if case .selectingWorkflow(let starts) = viewModel.state {

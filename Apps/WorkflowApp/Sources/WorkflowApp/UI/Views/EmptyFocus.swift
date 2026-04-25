@@ -6,19 +6,13 @@
 import SwiftUI
 
 struct EmptyFocus: View {
-    let title: String
-    let subtitle: String
     let onStart: () -> Void
 
     @Environment(\.theme) private var theme
 
     init(
-        title: String = "No active workflows",
-        subtitle: String = "Press to start",
         onStart: @escaping () -> Void
     ) {
-        self.title = title
-        self.subtitle = subtitle
         self.onStart = onStart
     }
 
@@ -31,13 +25,11 @@ struct EmptyFocus: View {
                     Image(systemName: "zzz")
                         .themeFont(\.large)
                     VStack(alignment: .leading, spacing: theme.spacing.s) {
-                        HStack {
-                            Text(title)
-                                .themeFont(\.headline)
-                                .themeColor(\.content.primary)
-                        }
+                        Text("No active workflows")
+                            .themeFont(\.headline)
+                            .themeColor(\.content.primary)
 
-                        Text(subtitle)
+                        Text("Press to start")
                             .themeFont(\.caption)
                             .themeColor(\.content.secondary)
                     }
@@ -46,13 +38,12 @@ struct EmptyFocus: View {
             }
         }
         .buttonStyle(.plain)
-        .keyboardShortcut("N")
     }
 }
 
 #Preview {
     FocusHUD {
-        Text("⌥ N")
+        EmptyView()
     } content: {
         EmptyFocus {}
     } drawer: {
