@@ -21,13 +21,13 @@ struct WorkflowsService: Sendable {
         return try await rest.fetch(request).items
     }
 
-    func getWorkflows() async throws -> [Workflow] {
-        let request = GetWorkflows()
+    func getStartingWorkflows() async throws -> [WorkflowStart] {
+        let request = GetStartingWorkflows()
         return try await rest.fetch(request).items
     }
 
-    func startWorkflow(id: String) async throws -> WorkflowInstance {
-        let request = StartWorkflow(workflowId: id)
+    func startWorkflow(_ start: WorkflowStart) async throws -> WorkflowInstance {
+        let request = StartWorkflow(workflowId: start.workflowId, initialData: start.data)
         return try await rest.fetch(request)
     }
 }

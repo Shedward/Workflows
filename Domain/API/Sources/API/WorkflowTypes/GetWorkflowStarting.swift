@@ -2,13 +2,11 @@
 //  GetWorkflowStarting.swift
 //  API
 //
-//  Created by Claude on 03.04.2026.
-//
 
 import Rest
 
 public struct GetWorkflowStarting: WorkflowApi {
-    public typealias ResponseBody = ListBody<WorkflowStartCandidate>
+    public typealias ResponseBody = ListBody<WorkflowStart>
 
     public static let method = Method.get
     public static let path = "/workflows/:id/starting"

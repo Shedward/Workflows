@@ -5,12 +5,13 @@
 
 import API
 
-extension Workflow {
+extension WorkflowStart {
     enum Mock {
-        static let all: [Workflow] = [
-            Workflow(id: "Декомпозиция_портфеля", stateId: [], transitions: []),
-            Workflow(id: "Код_ревью", stateId: [], transitions: []),
-            Workflow(id: "Дейли_стендап", stateId: [], transitions: []),
+        static let all: [WorkflowStart] = [
+            WorkflowStart(workflowId: "Декомпозиция_портфеля", title: "PORTFOLIO-23325: navigation bar v9", data: WorkflowData()),
+            WorkflowStart(workflowId: "Декомпозиция_портфеля", title: "PORTFOLIO-23410: profile redesign", data: WorkflowData()),
+            WorkflowStart(workflowId: "Код_ревью", title: nil, data: WorkflowData()),
+            WorkflowStart(workflowId: "Дейли_стендап", title: nil, data: WorkflowData())
         ]
     }
 }

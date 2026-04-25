@@ -24,11 +24,10 @@ test_manual_provider() {
     exit 1
   fi
 
-  # Should list 'greeting' in inputs
-  local has_greeting
-  has_greeting="$(jq '[.[0].inputs[] | select(.key == "greeting")] | length' <<<"$response")"
-  if [[ "$has_greeting" -lt 1 ]]; then
-    echo "Expected 'greeting' in inputs" >&2
+  local workflowId
+  workflowId="$(jq -r '.[0].workflowId' <<<"$response")"
+  if [[ "$workflowId" != "InitialDataWorkflow" ]]; then
+    echo "Expected workflowId 'InitialDataWorkflow', got '$workflowId'" >&2
     exit 1
   fi
 }
@@ -74,11 +73,11 @@ test_custom_providers() {
     exit 1
   fi
 
-  # All candidates should have 'greeting' in inputs
-  local all_have_greeting
-  all_have_greeting="$(jq '[.[] | .inputs[] | select(.key == "greeting")] | length' <<<"$response")"
-  if [[ "$all_have_greeting" -ne 3 ]]; then
-    echo "Expected all 3 candidates to have 'greeting' in inputs" >&2
+  # All candidates should belong to ProvidedWorkflow
+  local all_workflow_ids
+  all_workflow_ids="$(jq '[.[] | select(.workflowId == "ProvidedWorkflow")] | length' <<<"$response")"
+  if [[ "$all_workflow_ids" -ne 3 ]]; then
+    echo "Expected all 3 candidates to have workflowId 'ProvidedWorkflow'" >&2
     exit 1
   fi
 }

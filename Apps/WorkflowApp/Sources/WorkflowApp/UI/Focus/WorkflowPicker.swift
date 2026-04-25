@@ -7,29 +7,35 @@ import API
 import SwiftUI
 
 struct WorkflowPicker: View {
-    let workflows: [Workflow]
-    let onSelect: (Workflow) -> Void
+    let starts: [WorkflowStart]
+    let onSelect: (WorkflowStart) -> Void
 
     @Environment(\.theme) private var theme
 
     var body: some View {
         ScrollView {
-            ForEach(workflows) { workflow in
+            ForEach(starts) { start in
                 Button {
-                    onSelect(workflow)
+                    onSelect(start)
                 } label: {
-                    Card(tint: workflow.tint) {
-                        Text(workflow.id)
-                            .themeFont(\.body)
-                            .themeColor(\.content.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    Card(tint: start.workflowId.tint) {
+                        VStack(alignment: .leading) {
+                            Text(start.title ?? start.workflowId)
+                                .themeFont(\.body)
+                                .themeColor(\.content.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(start.workflowId)
+                                .themeFont(\.caption)
+                                .themeColor(\.content.secondary)
+                        }
                     }
                 }
                 .buttonStyle(.plain)
+                .padding(.horizontal, theme.spacing.xl)
             }
         }
         .frame(maxHeight: 400)
-        .contentMargins(theme.spacing.xl, for: .scrollContent)
+        .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
     }
 }
 
@@ -39,6 +45,6 @@ struct WorkflowPicker: View {
     } content: {
         EmptyFocus {}
     } drawer: {
-        WorkflowPicker(workflows: Workflow.Mock.all) { _ in }
+        WorkflowPicker(starts: WorkflowStart.Mock.all) { _ in }
     }
 }

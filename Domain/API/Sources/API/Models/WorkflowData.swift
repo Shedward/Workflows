@@ -7,7 +7,7 @@
 
 import Rest
 
-public struct WorkflowData: JSONBody {
+public struct WorkflowData: JSONBody, Hashable {
     public let data: [String: String]
 
     public init(data: [String: String] = [:]) {

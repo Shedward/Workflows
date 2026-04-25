@@ -11,7 +11,7 @@ import SwiftUI
 final class FocusViewModel {
     enum State {
         case empty
-        case selectingWorkflow([Workflow])
+        case selectingWorkflow([WorkflowStart])
         case active(WorkflowInstance)
         case failed(String)
     }
@@ -27,9 +27,9 @@ final class FocusViewModel {
     func startSelection() {
         Task {
             do {
-                let workflows = try await service.getWorkflows()
+                let starts = try await service.getStartingWorkflows()
                 withAnimation(.snappy) {
-                    state = .selectingWorkflow(workflows)
+                    state = .selectingWorkflow(starts)
                 }
             } catch {
                 withAnimation(.snappy) {
@@ -39,10 +39,10 @@ final class FocusViewModel {
         }
     }
 
-    func select(workflow: Workflow) {
+    func select(_ start: WorkflowStart) {
         Task {
             do {
-                let instance = try await service.startWorkflow(id: workflow.id)
+                let instance = try await service.startWorkflow(start)
                 withAnimation(.snappy) {
                     state = .active(instance)
                 }
