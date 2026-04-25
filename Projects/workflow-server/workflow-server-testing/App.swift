@@ -11,10 +11,19 @@ import os
 import TestingWorkflows
 import WorkflowEngine
 import WorkflowServer
+import GoogleServices
 
 @main
 enum App {
-    static func main() async throws {
+    static func main() async {
+        do {
+            try await runServer()
+        } catch {
+            reportFatalAndExit(error)
+        }
+    }
+
+    private static func runServer() async throws {
         Logger.enable(.workflow)
 
         let dependencies = DependenciesContainer()

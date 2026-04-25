@@ -18,6 +18,9 @@ struct Работать_над_портфелем: Workflow {
         case ждет_релиза
     }
 
+    @Input
+    var portfolioKey: String
+
     var transitions: Transitions {
         afterStart {
             Подготовиться_к_работе_над_портфелем.to(.исследование)
@@ -38,6 +41,10 @@ struct Работать_над_портфелем: Workflow {
         on(.тестирование) {
             Начать_аб_тестирование.to(.аб_тест)
             Найдены_баги.to(.разработка)
+        }
+
+        always {
+            Завершить.toFinish()
         }
     }
 
