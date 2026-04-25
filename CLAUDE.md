@@ -9,13 +9,18 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 ## Build & Test Commands
 
 ```bash
-# Build (ALWAYS use this script — do not call xcodebuild directly)
-./Tools/Run/build
+# Build (ALWAYS use this script — do not call xcodebuild directly).
+# Optional environment argument: `test` (default, builds workflow-server-testing
+# with TestingWorkflows + in-memory storage) or `prod` (builds workflow-server
+# with HHWorkflows + JSON file storage).
+./Tools/Run/build               # same as ./Tools/Run/build test
+./Tools/Run/build prod
 
 swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
-# Build and run the server
-./Tools/Run/run_server
+# Build and run the server. Same `test` (default) / `prod` argument as build.
+./Tools/Run/run_server          # same as ./Tools/Run/run_server test
+./Tools/Run/run_server prod
 
 # Build, run server, run all integration tests, then shut down
 ./Tools/Run/full_check
