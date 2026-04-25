@@ -5,10 +5,10 @@
 
 import SwiftUI
 
-private struct FloatingShadowModifier<S: InsettableShape>: ViewModifier {
+private struct FloatingShadowModifier<ShapeType: InsettableShape>: ViewModifier {
     @Environment(\.theme) private var theme
 
-    let shape: S
+    let shape: ShapeType
 
     private var borderGradient: LinearGradient {
         LinearGradient(

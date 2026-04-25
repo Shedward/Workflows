@@ -54,13 +54,13 @@ struct WorkflowInstancesController: Controller {
         }
 
         switch result {
-        case .completed(.success(let instance)):
-            return API.WorkflowInstance(model: instance)
-        case .completed(.failure(let error)):
-            throw error
-        case .timedOut:
-            let current = try await workflows.instance(id: created.id)
-            return API.WorkflowInstance(model: current)
+            case .completed(.success(let instance)):
+                return API.WorkflowInstance(model: instance)
+            case .completed(.failure(let error)):
+                throw error
+            case .timedOut:
+                let current = try await workflows.instance(id: created.id)
+                return API.WorkflowInstance(model: current)
         }
     }
 
@@ -74,13 +74,13 @@ struct WorkflowInstancesController: Controller {
         }
 
         switch result {
-        case .completed(.success(let instance)):
-            return API.WorkflowInstance(model: instance)
-        case .completed(.failure(let error)):
-            throw error
-        case .timedOut:
-            let current = try await workflows.instance(id: instanceId)
-            return API.WorkflowInstance(model: current)
+            case .completed(.success(let instance)):
+                return API.WorkflowInstance(model: instance)
+            case .completed(.failure(let error)):
+                throw error
+            case .timedOut:
+                let current = try await workflows.instance(id: instanceId)
+                return API.WorkflowInstance(model: current)
         }
     }
 
@@ -94,13 +94,13 @@ struct WorkflowInstancesController: Controller {
         }
 
         switch result {
-        case .completed(.success(let instance)):
-            return API.WorkflowInstance(model: instance)
-        case .completed(.failure(let error)):
-            throw error
-        case .timedOut:
-            let current = try await workflows.instance(id: instanceId)
-            return API.WorkflowInstance(model: current)
+            case .completed(.success(let instance)):
+                return API.WorkflowInstance(model: instance)
+            case .completed(.failure(let error)):
+                throw error
+            case .timedOut:
+                let current = try await workflows.instance(id: instanceId)
+                return API.WorkflowInstance(model: current)
         }
     }
 

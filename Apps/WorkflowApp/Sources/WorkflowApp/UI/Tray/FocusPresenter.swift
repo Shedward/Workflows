@@ -77,7 +77,9 @@ final class FocusPresenter {
     }
 
     func show() {
-        guard let panel else { return }
+        guard let panel else {
+            return
+        }
         fitToActiveScreen(panel)
         // An `.accessory` app whose previous window was hidden via
         // `hidesOnDeactivate` will silently no-op `makeKeyAndOrderFront`
@@ -105,14 +107,18 @@ final class FocusPresenter {
     }
 
     fileprivate func fitToPanelScreen() {
-        guard let panel, let frame = panel.screen?.visibleFrame else { return }
+        guard let panel, let frame = panel.screen?.visibleFrame else {
+            return
+        }
         panel.setFrame(frame, display: true)
     }
 
     private func fitToActiveScreen(_ panel: NSPanel) {
         let mouse = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
-        guard let frame = screen?.visibleFrame else { return }
+        guard let frame = screen?.visibleFrame else {
+            return
+        }
         panel.setFrame(frame, display: true)
     }
 }

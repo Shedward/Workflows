@@ -5,6 +5,7 @@
 
 import SwiftUI
 
+// swiftlint:disable identifier_name
 struct Spacing {
     let xxs: CGFloat
     let xs: CGFloat
@@ -14,6 +15,7 @@ struct Spacing {
     let xl: CGFloat
     let cornerRadius: CGFloat
 }
+// swiftlint:enable identifier_name
 
 extension Spacing {
     static let `default` = Spacing(

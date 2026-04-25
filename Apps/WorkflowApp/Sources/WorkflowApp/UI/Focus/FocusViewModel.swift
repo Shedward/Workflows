@@ -9,48 +9,51 @@ import SwiftUI
 @Observable
 @MainActor
 final class FocusViewModel {
-    enum State {
-        case empty
-        case selectingWorkflow([WorkflowStart])
-        case active(WorkflowInstance)
-        case failed(String)
+    static let modes: [FocusModeDescriptor] = [
+        FocusModeDescriptor(
+            id: .initial,
+            bar: nil,
+            make: { focus in AnyFocusMode(InitMode(focus: focus)) }
+        ),
+        FocusModeDescriptor(
+            id: .switching,
+            bar: ModeBarEntry(icon: "rectangle.stack", shortcut: "s"),
+            make: { focus in AnyFocusMode(SwitchMode(focus: focus)) }
+        ),
+        FocusModeDescriptor(
+            id: .transition,
+            bar: ModeBarEntry(icon: "arrow.triangle.branch", shortcut: "t"),
+            make: { focus in AnyFocusMode(TransitionMode(focus: focus)) }
+        )
+    ]
+
+    static func descriptor(for id: FocusModeID) -> FocusModeDescriptor {
+        guard let descriptor = modes.first(where: { $0.id == id }) else {
+            fatalError("No descriptor for mode \(id) — registry out of sync with FocusModeID")
+        }
+        return descriptor
     }
 
-    private(set) var state: State = .empty
+    let service: WorkflowsService
+    private(set) var currentMode: FocusModeID = .initial
+    private(set) var activeWorkflow: WorkflowInstance?
 
-    private let service: WorkflowsService
+    @ObservationIgnored private(set) lazy var switchVM = SwitchViewModel(focus: self)
+    @ObservationIgnored private(set) lazy var transitionVM = TransitionViewModel(focus: self)
 
     init(service: WorkflowsService) {
         self.service = service
     }
 
-    func startSelection() {
-        Task {
-            do {
-                let starts = try await service.getStartingWorkflows()
-                withAnimation(.snappy) {
-                    state = .selectingWorkflow(starts)
-                }
-            } catch {
-                withAnimation(.snappy) {
-                    state = .failed(error.localizedDescription)
-                }
-            }
+    func enter(_ mode: FocusModeID) {
+        withAnimation(.snappy) {
+            currentMode = mode
         }
     }
 
-    func select(_ start: WorkflowStart) {
-        Task {
-            do {
-                let instance = try await service.startWorkflow(start)
-                withAnimation(.snappy) {
-                    state = .active(instance)
-                }
-            } catch {
-                withAnimation(.snappy) {
-                    state = .failed(error.localizedDescription)
-                }
-            }
-        }
+    /// Single point of truth for active-workflow updates so cross-mode side effects
+    /// can be added here later (analytics, cache invalidation, etc.).
+    func setActiveWorkflow(_ workflow: WorkflowInstance?) {
+        activeWorkflow = workflow
     }
 }

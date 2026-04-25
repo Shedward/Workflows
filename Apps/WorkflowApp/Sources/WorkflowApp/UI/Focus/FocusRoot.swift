@@ -8,22 +8,27 @@ import SwiftUI
 struct FocusRoot: View {
     let viewModel: FocusViewModel
 
+    @Environment(\.theme) private var theme
+
     var body: some View {
+        let mode = FocusViewModel.descriptor(for: viewModel.currentMode).make(viewModel)
         FocusHUD {
-            EmptyView()
+            VStack(spacing: theme.spacing.s) {
+                ModeBar(focus: viewModel)
+                mode.roof
+            }
         } content: {
-            switch viewModel.state {
-            case .empty, .selectingWorkflow, .failed:
-                EmptyFocus(onStart: viewModel.startSelection)
-            case .active(let instance):
-                WorkflowCard(workflowInstance: instance)
-            }
+            mode.content
         } drawer: {
-            if case .selectingWorkflow(let starts) = viewModel.state {
-                WorkflowPicker(starts: starts) { start in
-                    viewModel.select(start)
-                }
+            mode.drawer
+        }
+        .onKeyPress(.escape) {
+            if viewModel.currentMode == .initial {
+                FocusPresenter.shared.hide()
+            } else {
+                viewModel.enter(.initial)
             }
+            return .handled
         }
     }
 }

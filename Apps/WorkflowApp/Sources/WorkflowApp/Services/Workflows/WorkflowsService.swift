@@ -30,4 +30,14 @@ struct WorkflowsService: Sendable {
         let request = StartWorkflow(workflowId: start.workflowId, initialData: start.data)
         return try await rest.fetch(request)
     }
+
+    func getTransitions(instanceId: String) async throws -> [API.Transition] {
+        let request = AvailableTransitions(instanceId: instanceId)
+        return try await rest.fetch(request).items
+    }
+
+    func takeTransition(instanceId: String, transitionProcessId: String) async throws -> WorkflowInstance {
+        let request = TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId)
+        return try await rest.fetch(request)
+    }
 }

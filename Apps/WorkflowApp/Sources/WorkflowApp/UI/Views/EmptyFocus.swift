@@ -10,12 +10,6 @@ struct EmptyFocus: View {
 
     @Environment(\.theme) private var theme
 
-    init(
-        onStart: @escaping () -> Void
-    ) {
-        self.onStart = onStart
-    }
-
     var body: some View {
         Button {
             onStart()

@@ -16,13 +16,13 @@ public struct StartWorkflow: WorkflowApi {
     public let workflowId: String
     public let initialData: WorkflowData?
 
+    public var request: RouteRequest {
+        request(body: RequestBody(workflowId: workflowId, initialData: initialData))
+    }
+
     public init(workflowId: String, initialData: WorkflowData? = nil) {
         self.workflowId = workflowId
         self.initialData = initialData
-    }
-
-    public var request: RouteRequest {
-        request(body: RequestBody(workflowId: workflowId, initialData: initialData))
     }
 }
 

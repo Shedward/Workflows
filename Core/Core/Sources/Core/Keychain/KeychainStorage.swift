@@ -30,18 +30,18 @@ public struct KeychainStorage: Sendable {
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
         switch status {
-        case errSecSuccess:
-            guard
-                let data = result as? Data,
-                let value = String(data: data, encoding: .utf8)
-            else {
-                throw Failure("Keychain item for '\(key)' is not valid UTF-8")
-            }
-            return value
-        case errSecItemNotFound:
-            return nil
-        default:
-            throw Failure("Keychain read failed for '\(key)' (OSStatus \(status))")
+            case errSecSuccess:
+                guard
+                    let data = result as? Data,
+                    let value = String(data: data, encoding: .utf8)
+                else {
+                    throw Failure("Keychain item for '\(key)' is not valid UTF-8")
+                }
+                return value
+            case errSecItemNotFound:
+                return nil
+            default:
+                throw Failure("Keychain read failed for '\(key)' (OSStatus \(status))")
         }
     }
 

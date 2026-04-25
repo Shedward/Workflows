@@ -16,16 +16,23 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 ./Tools/Run/build               # same as ./Tools/Run/build test
 ./Tools/Run/build prod
 
+# Build the macOS WorkflowApp (separate from the server).
+./Tools/Run/build_app
+
 swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
 # Build and run the server. Same `test` (default) / `prod` argument as build.
 ./Tools/Run/run_server          # same as ./Tools/Run/run_server test
 ./Tools/Run/run_server prod
 
-# Build, run server, run all integration tests, then shut down
+# Build, run server, run all integration tests, then shut down.
+# NOTE: full_check does NOT kill an existing server on :8443 — if one is
+# running (e.g. a stale prod server), curl will hit it instead of the test
+# binary, producing confusing WorkflowNotFound failures. Stop it first:
+#   kill "$(lsof -ti tcp:8443 -sTCP:LISTEN)"
 ./Tools/Run/full_check
 
-# Integration tests (require running server on :8080)
+# Integration tests (require running server on :8443)
 ./Tools/Tests/run_all                          # Run all integration tests
 ./Tools/Tests/run_simple_workflow              # Run a single test
 

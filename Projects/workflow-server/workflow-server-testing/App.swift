@@ -7,11 +7,11 @@
 
 import Core
 import Foundation
+import GoogleServices
 import os
 import TestingWorkflows
 import WorkflowEngine
 import WorkflowServer
-import GoogleServices
 
 @main
 enum App {

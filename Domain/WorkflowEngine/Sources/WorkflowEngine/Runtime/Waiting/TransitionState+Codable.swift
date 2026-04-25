@@ -44,31 +44,31 @@ extension TransitionState.State: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type_ = try container.decode(StateType.self, forKey: .type)
         switch type_ {
-        case .executing:
-            self = .executing
-        case .waiting:
-            self = .waiting(try container.decode(Waiting.self, forKey: .waiting))
-        case .failed:
-            let userDescription = try container.decode(String.self, forKey: .userDescription)
-            let debugDescription = try container.decode(String.self, forKey: .debugDescription)
-            self = .failed(DeserializedError(userDescription: userDescription, debugDescription: debugDescription))
+            case .executing:
+                self = .executing
+            case .waiting:
+                self = .waiting(try container.decode(Waiting.self, forKey: .waiting))
+            case .failed:
+                let userDescription = try container.decode(String.self, forKey: .userDescription)
+                let debugDescription = try container.decode(String.self, forKey: .debugDescription)
+                self = .failed(DeserializedError(userDescription: userDescription, debugDescription: debugDescription))
         }
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .executing:
-            try container.encode(StateType.executing, forKey: .type)
-        case .waiting(let waiting):
-            try container.encode(StateType.waiting, forKey: .type)
-            try container.encode(waiting, forKey: .waiting)
-        case .failed(let error):
-            try container.encode(StateType.failed, forKey: .type)
-            let userDescription = (error as? DescriptiveError)?.userDescription ?? error.localizedDescription
-            let debugDescription = String(reflecting: error)
-            try container.encode(userDescription, forKey: .userDescription)
-            try container.encode(debugDescription, forKey: .debugDescription)
+            case .executing:
+                try container.encode(StateType.executing, forKey: .type)
+            case .waiting(let waiting):
+                try container.encode(StateType.waiting, forKey: .type)
+                try container.encode(waiting, forKey: .waiting)
+            case .failed(let error):
+                try container.encode(StateType.failed, forKey: .type)
+                let userDescription = (error as? DescriptiveError)?.userDescription ?? error.localizedDescription
+                let debugDescription = String(reflecting: error)
+                try container.encode(userDescription, forKey: .userDescription)
+                try container.encode(debugDescription, forKey: .debugDescription)
         }
     }
 }

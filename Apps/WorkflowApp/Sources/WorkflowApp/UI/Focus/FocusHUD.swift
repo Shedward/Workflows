@@ -36,11 +36,9 @@ struct FocusHUD<Roof: View, Content: View, Drawer: View>: View {
             .focusEffectDisabled()
             .focused($isFocused)
             .onChange(of: presenter.isVisible) { _, isVisible in
-                if isVisible { isFocused = true }
-            }
-            .onKeyPress(.escape) {
-                presenter.hide()
-                return .handled
+                if isVisible {
+                    isFocused = true
+                }
             }
             .fixedSize()
             .movable()
