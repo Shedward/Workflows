@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Creates the TLS certificate the servers load from ~/.workflows/certs and
+# trusts it for SSL in the login keychain, so curl and workflow-app accept
+# https://127.0.0.1:8443. Uses only tools shipped with macOS.
+#
+# Usage: setup_certs [--force]
+#   --force   Regenerate the certificate even if a valid one already exists.
+
+CERTS_DIR="$HOME/.workflows/certs"
+CERT="$CERTS_DIR/localhost+2.pem"
+KEY="$CERTS_DIR/localhost+2-key.pem"
+COMMON_NAME="Workflow local development"
+# Apple rejects TLS server certificates valid for more than 825 days.
+VALID_DAYS=825
+RENEW_BEFORE_SECONDS=$((30 * 24 * 60 * 60))
+
+OPENSSL=/usr/bin/openssl
+SECURITY=/usr/bin/security
+
+FORCE=0
+for arg in "$@"; do
+  case "$arg" in
+    --force) FORCE=1 ;;
+    *)
+      echo "Usage: $(basename "$0") [--force]" >&2
+      exit 1
+      ;;
+  esac
+done
+
+login_keychain() {
+  "$SECURITY" login-keychain | sed -e 's/^ *"//' -e 's/"$//'
+}
+
+certificate_is_valid() {
+  [[ -f "$CERT" && -f "$KEY" ]] \
+    && "$OPENSSL" x509 -in "$CERT" -noout -checkend "$RENEW_BEFORE_SECONDS" >/dev/null 2>&1
+}
+
+certificate_is_trusted() {
+  "$SECURITY" verify-cert -c "$CERT" -p ssl -n 127.0.0.1 -L -q >/dev/null 2>&1
+}
+
+# Removes the previous certificate and its trust settings from the keychain,
+# so regenerating doesn't leave stale trusted certificates behind.
+forget_certificate() {
+  [[ -f "$CERT" ]] || return 0
+  local fingerprint
+  fingerprint="$("$OPENSSL" x509 -in "$CERT" -noout -fingerprint -sha1 2>/dev/null \
+    | sed -e 's/^.*=//' -e 's/://g')"
+  [[ -n "$fingerprint" ]] || return 0
+  "$SECURITY" delete-certificate -Z "$fingerprint" -t "$(login_keychain)" >/dev/null 2>&1 || true
+}
+
+generate_certificate() {
+  local work_dir
+  work_dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$work_dir'" EXIT
+
+  cat > "$work_dir/request.cnf" <<CONFIG
+[req]
+distinguished_name = dn
+x509_extensions = ext
+prompt = no
+
+[dn]
+CN = $COMMON_NAME
+
+[ext]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:localhost, IP:127.0.0.1, IP:::1
+CONFIG
+
+  (
+    umask 077
+    "$OPENSSL" req -x509 -newkey rsa:2048 -nodes -sha256 \
+      -days "$VALID_DAYS" \
+      -config "$work_dir/request.cnf" \
+      -keyout "$work_dir/key.pem" \
+      -out "$work_dir/cert.pem" 2>/dev/null
+  )
+
+  mkdir -p "$CERTS_DIR"
+  mv "$work_dir/key.pem" "$KEY"
+  mv "$work_dir/cert.pem" "$CERT"
+  chmod 600 "$KEY"
+  chmod 644 "$CERT"
+}
+
+if [[ "$FORCE" -eq 0 ]] && certificate_is_valid; then
+  echo "Certificate already exists at $CERT."
+else
+  echo "Generating certificate in $CERTS_DIR..."
+  forget_certificate
+  generate_certificate
+  echo "Certificate generated."
+fi
+
+if certificate_is_trusted; then
+  echo "Certificate is already trusted."
+else
+  echo "Trusting certificate for SSL in the login keychain (macOS will ask for confirmation)..."
+  if ! "$SECURITY" add-trusted-cert -r trustRoot -p ssl -k "$(login_keychain)" "$CERT"; then
+    echo "Failed to trust certificate. Run this script again to retry." >&2
+    exit 1
+  fi
+
+  # New trust settings take a moment to reach the trust daemon.
+  for _ in $(seq 1 10); do
+    if certificate_is_trusted; then
+      break
+    fi
+    sleep 1
+  done
+
+  if ! certificate_is_trusted; then
+    echo "Certificate was added to the keychain but is still not trusted." >&2
+    exit 1
+  fi
+  echo "Certificate trusted."
+fi
+
+echo "Certificates are ready."

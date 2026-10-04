@@ -45,7 +45,24 @@ Branch: `upgrade-to-xcode27`. Toolchain: Xcode 27.0 (27A266a), Swift 6.4, macOS 
   changes its trait set between versions (stale `SubprocessSpan` trait error from swift-subprocess 0.3 → 0.5+).
 - CLAUDE.md still says integration tests need a server on `:8080`; scripts actually use `https://127.0.0.1:8443`.
 
+## TLS certificate setup script (same day, later)
+
+Added `Tools/Run/setup_certs` so the cert can be built on any Mac without mkcert:
+
+- Generates a self-signed, non-CA leaf (`localhost`, `127.0.0.1`, `::1`; RSA 2048; 825 days, Apple's maximum)
+  with the system `/usr/bin/openssl` into `~/.workflows/certs/localhost+2.pem` + `localhost+2-key.pem`
+  (file names kept, the servers hardcode them).
+- Trusts it for the SSL policy only in the login keychain via `security add-trusted-cert` (macOS asks for
+  confirmation). Being a non-CA leaf, a leaked key can only impersonate localhost, unlike an mkcert root.
+- Idempotent: skips generation while the cert is valid for 30+ more days, skips trust if already trusted.
+  `--force` regenerates and removes the previous cert and its trust settings from the keychain.
+- Gotcha: `security verify-cert` reports "not trusted" for about a second after `add-trusted-cert`;
+  the script polls for up to 10s.
+
+Verified: ran the script on this machine (fresh and `--force`), then plain `./Tools/Run/full_check`: 25/25 pass.
+This supersedes the mkcert instructions above. CLAUDE.md `:8080` comment fixed to `https://127.0.0.1:8443`.
+
 ## Remaining
 
-- Changes are uncommitted on `upgrade-to-xcode27`.
+- Upgrade committed as `7809c51`; `setup_certs` and its docs follow in the next commit on the same branch. Nothing is pushed.
 - In the Xcode app: File → Packages → Reset Package Caches (or restart Xcode) so it picks up the new pins.
