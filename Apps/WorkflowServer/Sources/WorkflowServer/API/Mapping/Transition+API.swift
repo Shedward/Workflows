@@ -6,9 +6,10 @@
 //
 
 import API
+import WorkflowEngine
 
 extension API.Transition {
-    public init(model: WorkflowEngine.AnyTransition) {
+    init(model: WorkflowEngine.AnyTransition) {
         self.init(
             processId: model.id.processId,
             fromState: model.id.from,

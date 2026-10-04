@@ -6,9 +6,10 @@
 //
 
 import API
+import WorkflowEngine
 
 extension API.DataField {
-    public init(model: WorkflowEngine.DataField) {
+    init(model: WorkflowEngine.DataField) {
         self.init(key: model.key, valueType: model.valueType)
     }
 }

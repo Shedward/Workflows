@@ -6,6 +6,7 @@
 //
 
 import API
+import WorkflowEngine
 
 extension API.TransitionState {
     init(model: WorkflowEngine.TransitionState) {

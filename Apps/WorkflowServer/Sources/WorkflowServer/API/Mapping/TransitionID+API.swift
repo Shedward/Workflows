@@ -6,9 +6,10 @@
 //
 
 import API
+import WorkflowEngine
 
 extension API.TransitionID {
-    public init(model: WorkflowEngine.TransitionID) {
+    init(model: WorkflowEngine.TransitionID) {
         self.init(
             workflow: model.workflow,
             processId: model.processId,

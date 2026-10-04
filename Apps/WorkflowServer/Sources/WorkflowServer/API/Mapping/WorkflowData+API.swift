@@ -7,15 +7,16 @@
 
 import API
 import Foundation
+import WorkflowEngine
 
 extension API.WorkflowData {
-    public init(model: WorkflowData) {
+    init(model: WorkflowEngine.WorkflowData) {
         self.init(data: model.data)
     }
 }
 
-extension WorkflowData {
-    public init(api: API.WorkflowData) {
+extension WorkflowEngine.WorkflowData {
+    init(api: API.WorkflowData) {
         self.init(data: api.data)
     }
 }

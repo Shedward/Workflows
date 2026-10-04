@@ -6,9 +6,10 @@
 //
 
 import API
+import WorkflowEngine
 
 extension API.Workflow {
-    public init(model: WorkflowEngine.AnyWorkflow) {
+    init(model: WorkflowEngine.AnyWorkflow) {
         self.init(
             id: model.id,
             stateId: model.states,
