@@ -7,7 +7,6 @@ import API
 import SwiftUI
 
 struct TransitionView: View {
-    let focus: FocusViewModel
     let viewModel: TransitionViewModel
 
     @Environment(\.theme) private var theme
@@ -15,12 +14,9 @@ struct TransitionView: View {
     var body: some View {
         Group {
             if let error = viewModel.error {
-                errorRow(error)
+                DrawerMessage(text: error)
             } else if viewModel.transitions.isEmpty {
-                Text("No available transitions")
-                    .themeFont(\.caption)
-                    .themeColor(\.content.secondary)
-                    .padding()
+                DrawerMessage(text: "No available transitions")
             } else {
                 ScrollView {
                     ForEach(viewModel.transitions, id: \.processId) { transition in
@@ -31,7 +27,7 @@ struct TransitionView: View {
                 .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
             }
         }
-        .task(id: focus.activeWorkflow?.id) {
+        .task(id: viewModel.focus.activeWorkflow?.id) {
             viewModel.refresh()
         }
     }
@@ -80,12 +76,5 @@ struct TransitionView: View {
         .buttonStyle(.plain)
         .disabled(viewModel.runningTransition != nil)
         .transition(.opacity.combined(with: .scale))
-    }
-
-    private func errorRow(_ message: String) -> some View {
-        Text(message)
-            .themeFont(\.caption)
-            .themeColor(\.content.secondary)
-            .padding()
     }
 }

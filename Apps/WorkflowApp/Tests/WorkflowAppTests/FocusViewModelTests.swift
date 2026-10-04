@@ -29,8 +29,8 @@ struct FocusViewModelTests {
     }
 
     @Test func modeBarOffersSwitchingAndTransitionWithTheirShortcuts() {
-        let entries = FocusViewModel.modes.compactMap { mode in
-            mode.bar.map { "\(mode.id) \($0.icon) cmd+\($0.shortcut.character)" }
+        let entries = FocusModeID.allCases.compactMap { mode in
+            mode.bar.map { "\(mode) \($0.icon) cmd+\($0.shortcut.character)" }
         }
 
         #expect(entries == [

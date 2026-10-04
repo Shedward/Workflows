@@ -8,7 +8,7 @@ import SwiftUI
 
 @Observable
 @MainActor
-final class SwitchViewModel {
+final class SwitchViewModel: ErrorPresenting {
     enum State {
         case activeWorkflows
         case newWorkflow
@@ -17,7 +17,7 @@ final class SwitchViewModel {
     private(set) var state: State = .activeWorkflows
     private(set) var activeWorkflows: [WorkflowInstance] = []
     private(set) var newWorkflows: [WorkflowStart] = []
-    private(set) var error: String?
+    var error: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
@@ -29,40 +29,22 @@ final class SwitchViewModel {
     }
 
     func refresh() {
-        refreshTask?.cancel()
-        refreshTask = Task { [service = focus.service] in
-            do {
-                let result = try await service.getWorkflowInstances()
-                guard !Task.isCancelled else {
-                    return
-                }
-                activeWorkflows = result
-                error = nil
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
-            }
+        refreshTask = latest(replacing: refreshTask) { [self] in
+            let result = try await focus.service.getWorkflowInstances()
+            try Task.checkCancellation()
+            activeWorkflows = result
+            error = nil
         }
     }
 
     func showNewWorkflow() {
-        pickerTask?.cancel()
-        pickerTask = Task { [service = focus.service] in
-            do {
-                let result = try await service.getStartingWorkflows()
-                guard !Task.isCancelled else {
-                    return
-                }
-                newWorkflows = result
-                error = nil
-                withAnimation(.snappy) {
-                    state = .newWorkflow
-                }
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
+        pickerTask = latest(replacing: pickerTask) { [self] in
+            let result = try await focus.service.getStartingWorkflows()
+            try Task.checkCancellation()
+            newWorkflows = result
+            error = nil
+            withAnimation(.snappy) {
+                state = .newWorkflow
             }
         }
     }
@@ -79,20 +61,11 @@ final class SwitchViewModel {
     }
 
     func start(_ start: WorkflowStart) {
-        startTask?.cancel()
-        startTask = Task { [service = focus.service] in
-            do {
-                let instance = try await service.startWorkflow(start)
-                guard !Task.isCancelled else {
-                    return
-                }
-                state = .activeWorkflows
-                activate(instance)
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
-            }
+        startTask = latest(replacing: startTask) { [self] in
+            let instance = try await focus.service.startWorkflow(start)
+            try Task.checkCancellation()
+            state = .activeWorkflows
+            activate(instance)
         }
     }
 }

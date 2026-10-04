@@ -8,10 +8,10 @@ import SwiftUI
 
 @Observable
 @MainActor
-final class TransitionViewModel {
+final class TransitionViewModel: ErrorPresenting {
     private(set) var transitions: [API.Transition] = []
     private(set) var runningTransition: API.Transition?
-    private(set) var error: String?
+    var error: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
@@ -26,20 +26,11 @@ final class TransitionViewModel {
             transitions = []
             return
         }
-        refreshTask?.cancel()
-        refreshTask = Task { [service = focus.service] in
-            do {
-                let result = try await service.getTransitions(instanceId: workflow.id)
-                guard !Task.isCancelled else {
-                    return
-                }
-                transitions = result
-                error = nil
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
-            }
+        refreshTask = latest(replacing: refreshTask) { [self] in
+            let result = try await focus.service.getTransitions(instanceId: workflow.id)
+            try Task.checkCancellation()
+            transitions = result
+            error = nil
         }
     }
 
@@ -47,34 +38,24 @@ final class TransitionViewModel {
         guard let workflow = focus.activeWorkflow, runningTransition == nil else {
             return
         }
-        takeTask?.cancel()
-        takeTask = Task { [service = focus.service] in
+        takeTask = latest(replacing: takeTask) { [self] in
             withAnimation(.snappy) {
                 runningTransition = transition
             }
-            do {
-                let updated = try await service.takeTransition(
-                    instanceId: workflow.id,
-                    transitionProcessId: transition.processId
-                )
-                guard !Task.isCancelled else {
-                    return
+            defer {
+                withAnimation(.snappy) {
+                    runningTransition = nil
                 }
-                if updated.finishedAt != nil {
-                    focus.setActiveWorkflow(nil)
-                } else {
-                    focus.setActiveWorkflow(updated)
-                }
-                error = nil
-                refresh()
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
             }
-            withAnimation(.snappy) {
-                runningTransition = nil
-            }
+
+            let updated = try await focus.service.takeTransition(
+                instanceId: workflow.id,
+                transitionProcessId: transition.processId
+            )
+            try Task.checkCancellation()
+            focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
+            error = nil
+            refresh()
         }
     }
 }

@@ -12,9 +12,9 @@ struct ModeBar: View {
 
     var body: some View {
         HStack(spacing: theme.spacing.s) {
-            ForEach(FocusViewModel.modes) { descriptor in
-                if let bar = descriptor.bar {
-                    modeButton(id: descriptor.id, entry: bar)
+            ForEach(FocusModeID.allCases, id: \.self) { mode in
+                if let bar = mode.bar {
+                    modeButton(id: mode, entry: bar)
                 }
             }
             placeholderButton(systemImage: "doc.text")

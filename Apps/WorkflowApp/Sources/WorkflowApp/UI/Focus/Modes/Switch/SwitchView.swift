@@ -14,7 +14,7 @@ struct SwitchView: View {
     var body: some View {
         Group {
             if let error = viewModel.error {
-                errorRow(error)
+                DrawerMessage(text: error)
             } else {
                 switch viewModel.state {
                     case .activeWorkflows:
@@ -31,10 +31,7 @@ struct SwitchView: View {
 
     @ViewBuilder private var activeList: some View {
         if viewModel.activeWorkflows.isEmpty {
-            Text("No running workflows")
-                .themeFont(\.caption)
-                .themeColor(\.content.secondary)
-                .padding()
+            DrawerMessage(text: "No running workflows")
         } else {
             ScrollView {
                 ForEach(viewModel.activeWorkflows) { workflow in
@@ -50,12 +47,5 @@ struct SwitchView: View {
             .frame(maxHeight: 400)
             .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
         }
-    }
-
-    private func errorRow(_ message: String) -> some View {
-        Text(message)
-            .themeFont(\.caption)
-            .themeColor(\.content.secondary)
-            .padding()
     }
 }
