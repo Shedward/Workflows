@@ -4,15 +4,21 @@ set -euo pipefail
 . "$(dirname "$0")/../Lib/request.sh"
 . "$(dirname "$0")/../Lib/workflow.sh"
 
-# Verifies runtime loop protection in WorkflowRunner. AutomaticLoopWorkflow
-# bounces ping -> pong -> ping through automatic transitions without changing
-# its data. The runner must notice the repeated step, mark the instance as
-# failed and return, instead of spinning forever.
+# Verifies runtime loop protection in WorkflowRunner.
+#
+# 1. AutomaticLoopWorkflow bounces ping -> pong -> ping through automatic
+#    transitions without changing its data. The runner must notice the
+#    repeated step, mark the instance as failed and return.
+# 2. CountingLoopWorkflow bounces tick -> tock -> tick and bumps a counter on
+#    every step, so no step ever repeats. Only the automatic step cap (100)
+#    can stop it.
 #
 # Kept last in run_all: if protection regresses, the server spins and eats
 # memory until full_check shuts it down.
 
-main() {
+readonly STEP_CAP=100
+
+test_repeated_step_is_detected() {
   start_workflow "AutomaticLoopWorkflow"
   assert_state "_start"
 
@@ -51,6 +57,35 @@ main() {
   take_transition "StartB"
   take_transition "Finalize"
   assert_finished
+}
+
+test_step_cap_stops_changing_loop() {
+  start_workflow "CountingLoopWorkflow"
+  assert_state "_start"
+
+  # StartCounting sets counter to 0, then every automatic step adds 1.
+  LAST_RESPONSE="$(request POST "/workflowInstances/$INSTANCE_ID/takeTransition?timeout=3" \
+    '{"transitionProcessId":"StartCounting"}')"
+
+  local counter
+  counter="$(jq -r '.data.data.counter' <<<"$LAST_RESPONSE")"
+  if [[ "$counter" != "$STEP_CAP" ]]; then
+    echo "Expected the chain to stop after $STEP_CAP automatic steps, counter is '$counter'" >&2
+    exit 1
+  fi
+
+  # An even number of steps brings the instance back to tick.
+  assert_state "tick"
+  assert_data "counter" "$STEP_CAP"
+
+  # The chain really stopped.
+  sleep 1
+  assert_data "counter" "$STEP_CAP"
+}
+
+main() {
+  test_repeated_step_is_detected
+  test_step_cap_stops_changing_loop
 
   echo "Finished Successfully"
 }

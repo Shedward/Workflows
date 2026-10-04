@@ -284,7 +284,7 @@ extension WorkflowRunner {
         var current = start
         var steps = 0
         var seen: Set<AutomaticStepSignature> = []
-        let maxSteps = 1000
+        let maxSteps = 100
 
         while let (transition, workflow) = await findAutomaticTransition(from: current) {
             let signature = AutomaticStepSignature(

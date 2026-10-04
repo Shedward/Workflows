@@ -119,11 +119,16 @@ B8. **`workflowDidStart` is not delivered for instances started over REST** (arc
     code). The plugin callback is only invoked in `WorkflowRunner.start`, which is reached only through
     `WorkflowContext.startSubflow`. The server uses `Workflows.create` + `runAutomaticTransitions(on:)`, which
     never invokes it. So only subflow children report a start.
-B9. **The 1000-step cap stops a chain silently** (noticed while fixing B7; reachable only now that the cap
-    works). A loop that changes data on every step is not caught by the seen-set, so it runs until
+B9. **The automatic step cap stops a chain silently** (noticed while fixing B7; reachable only now that the
+    cap works). A loop that changes data on every step is not caught by the seen-set, so it runs until
     `maxSteps`. Then the runner logs "Automatic transition limit reached" and returns the instance as is:
-    not failed, sitting in a state with a pending automatic transition, with nothing visible over REST.
-    Suggested: mark it failed like `AutomaticLoopDetected`. Needs a decision on the error type.
+    not failed, sitting in a state with a pending automatic transition, `transitionState: null`, so over
+    REST it looks healthy. Suggested: mark it failed like `AutomaticLoopDetected`. Needs a decision on the
+    error type.
+    Cap lowered from 1000 to 100 on 2026-10-04 (user: workflows are not meant to be that long, 100 is the
+    maximum reasonable chain). That makes this case easier to hit, so B9 matters more now. Covered by
+    `test_step_cap_stops_changing_loop` in `Tools/Tests/run_automatic_loop` (`CountingLoopWorkflow`), which
+    asserts only that the chain stops at 100 steps, not how the instance is marked, so it survives the fix.
 
 ## Progress log
 
