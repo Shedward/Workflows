@@ -9,11 +9,11 @@ import Core
 
 extension Workflow {
     public func onStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        build().map { Transition<State>(from: State.start, targets: $0.targets, process: $0.process, workflow: self, trigger: .manual) }
+        transitions(from: State.start, trigger: .manual, build())
     }
 
     public func on(_ state: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        build().map { Transition(from: state.id, targets: $0.targets, process: $0.process, workflow: self, trigger: .manual) }
+        transitions(from: state.id, trigger: .manual, build())
     }
 
     public func on(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
@@ -25,15 +25,11 @@ extension Workflow {
     }
 
     public func afterStart(_ build: () -> ToTransition<State>) -> [Transition<State>] {
-        let toTransition = build()
-        return [Transition<State>(
-            from: State.start, targets: toTransition.targets, process: toTransition.process, workflow: self, trigger: .automatic
-        )]
+        transitions(from: State.start, trigger: .automatic, [build()])
     }
 
     public func after(_ state: State, _ build: () -> ToTransition<State>) -> [Transition<State>] {
-        let toTransition = build()
-        return [Transition<State>(from: state.id, targets: toTransition.targets, process: toTransition.process, workflow: self, trigger: .automatic)]
+        transitions(from: state.id, trigger: .automatic, [build()])
     }
 
     public func after(_ states: State..., build: () -> ToTransition<State>) -> [Transition<State>] {
@@ -41,41 +37,38 @@ extension Workflow {
     }
 
     public func chainedAfterStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        var currentStateId = State.start
-
-        return build().map { toTransition in
-            assert(
-                toTransition.targets.count <= 1,
-                "Branching transitions cannot be used in chains. Use on() instead of chainedAfterStart()."
-            )
-            let transition = Transition<State>(
-                from: currentStateId,
-                targets: toTransition.targets,
-                process: toTransition.process,
-                workflow: self,
-                trigger: .automatic
-            )
-            currentStateId = toTransition.targets[0]
-            return transition
-        }
+        chain(from: State.start, build(), builderName: "chainedAfterStart")
     }
 
     public func chainedAfter(_ initial: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        var currentStateId = initial.id
+        chain(from: initial.id, build(), builderName: "chainedAfter")
+    }
 
-        return build().map { toTransition in
+    private func transitions(
+        from state: StateID,
+        trigger: TransitionTrigger,
+        _ steps: [ToTransition<State>]
+    ) -> [Transition<State>] {
+        steps.map { Transition(from: state, targets: $0.targets, process: $0.process, workflow: self, trigger: trigger) }
+    }
+
+    /// Automatic transitions where each step starts from the state the previous one leads to.
+    private func chain(from initial: StateID, _ steps: [ToTransition<State>], builderName: String) -> [Transition<State>] {
+        var currentStateId = initial
+
+        return steps.map { step in
             assert(
-                toTransition.targets.count <= 1,
-                "Branching transitions cannot be used in chains. Use on() instead of chainedAfter()."
+                step.targets.count <= 1,
+                "Branching transitions cannot be used in chains. Use on() instead of \(builderName)()."
             )
             let transition = Transition<State>(
                 from: currentStateId,
-                targets: toTransition.targets,
-                process: toTransition.process,
+                targets: step.targets,
+                process: step.process,
                 workflow: self,
                 trigger: .automatic
             )
-            currentStateId = toTransition.targets[0]
+            currentStateId = step.targets[0]
             return transition
         }
     }

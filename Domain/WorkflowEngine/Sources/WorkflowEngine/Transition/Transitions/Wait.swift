@@ -13,26 +13,9 @@ public protocol Wait: TransitionProcess, DataBindable, Sendable, Defaultable {
 
 public extension Wait where Self: TransitionProcess {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
-        var wait = self
-
-        try Failure.wrap("Failed to prepare waiting \(type(of: self))") {
-            try wait.bind(BindInputs(data: context.instance.data))
-            try wait.bind(CreateOutputStorage())
-            try wait.bind(SetDependencies(container: context.dependencies))
+        let nextTime = try await withBoundData(in: &context, kind: "waiting") {
+            try await $0.resume()
         }
-
-        let runningWait = wait
-        let nextTime = try await Failure.wrap("Failed to run waiting \(type(of: self))") {
-             try await runningWait.resume()
-        }
-        wait = runningWait
-
-        var readOutputs = ReadOutputs(data: context.instance.data)
-
-        try Failure.wrap("Failed to finish waiting \(type(of: self))") {
-            try wait.bind(&readOutputs)
-        }
-        context.instance.data = readOutputs.data
 
         if let nextTime {
             return .waiting(.time(nextTime))
