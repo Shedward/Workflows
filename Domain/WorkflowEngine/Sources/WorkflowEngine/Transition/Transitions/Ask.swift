@@ -33,7 +33,7 @@ public extension Asking where Self: TransitionProcess {
             try Failure.wrap("Failed to prepare ask \(type(of: self))") {
                 try ask.bind(CreateOutputStorage())
                 try ask.bind(BindAskInputs(data: userData))
-                try ask.bind(SetDependencies(container: context.dependancyContainer))
+                try ask.bind(SetDependencies(container: context.dependencies))
             }
 
             let runningAsk = ask

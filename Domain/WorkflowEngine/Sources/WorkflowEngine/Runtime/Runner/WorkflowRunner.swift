@@ -27,7 +27,7 @@ actor WorkflowRunner {
     private let logger = Logger(scope: .workflow)
 
     /// Per-instance serialization queue. See `WorkflowRunner+InstanceLock.swift`.
-    var inflight: [WorkflowInstanceID: InflightEntry] = [:]
+    var inflight: [WorkflowInstanceID: Task<Void, Never>] = [:]
 
     init(storage: WorkflowStorage, registry: WorkflowRegistry, dependencies: DependenciesContainer, plugins: Plugins) {
         self.storage = storage
@@ -42,14 +42,7 @@ actor WorkflowRunner {
         await scheduler.rebuild(from: instances)
         for instance in instances {
             if let workflow = await registry.workflow(instance: instance) {
-                guard instance.workflowVersion == workflow.version else {
-                    throw WorkflowsError.WorkflowVersionMismatch(
-                        instanceId: instance.id,
-                        workflowId: instance.workflowId,
-                        instanceVersion: instance.workflowVersion,
-                        workflowVersion: workflow.version
-                    )
-                }
+                try checkVersion(of: instance, against: workflow)
             }
             await runAutomaticTransitions(from: instance)
         }
@@ -70,30 +63,38 @@ actor WorkflowRunner {
     }
 
     @discardableResult
-    func takeTransition(
-        _ transition: AnyTransition,
-        on instanceId: WorkflowInstanceID,
-        of workflow: AnyWorkflow,
-        resumeReason: WaitScheduler.ResumeReason? = nil
-    ) async throws -> WorkflowInstance {
-        try await withInstanceLock(instanceId) { [self] in
-            // Re-load the instance under the lock; the snapshot the caller saw
-            // before queueing may have been advanced by an earlier serialized
-            // operation on this id.
-            guard let instance = try await storage.instance(id: instanceId) else {
-                throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
-            }
+    func takeTransition(processId: TransitionProcessID, on instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
+        // Resolve against a snapshot before queueing, so a transition that is
+        // not available fails right away instead of waiting behind a running one.
+        let snapshot = try await loadInstance(instanceId)
+        guard let workflow = await registry.workflow(id: snapshot.workflowId) else {
+            throw WorkflowsError.WorkflowNotFound(workflowId: snapshot.workflowId)
+        }
+        let candidates = workflow.anyTransitions.filter { $0.from == snapshot.state && $0.id.processId == processId }
+        guard let transition = candidates.first, candidates.count == 1 else {
+            throw WorkflowsError.TransitionProcessNotFoundForInstance(
+                instance: instanceId,
+                workflow: workflow.id,
+                transitionId: processId,
+                availableTransitions: workflow.anyTransitions.map(\.id)
+            )
+        }
+
+        return try await withInstanceLock(instanceId) { [self] in
+            // Re-load under the lock; an earlier queued operation on this id
+            // may have advanced the instance past the snapshot.
+            let instance = try await loadInstance(instanceId)
             guard instance.state == transition.from else {
                 throw WorkflowsError.TransitionProcessNotFoundForInstance(
                     instance: instanceId,
                     workflow: workflow.id,
-                    transitionId: transition.id.processId,
+                    transitionId: processId,
                     availableTransitions: workflow.anyTransitions
                         .filter { $0.from == instance.state }
                         .map(\.id)
                 )
             }
-            return try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
+            return try await takeTransitionLocked(transition, on: instance, of: workflow)
         }
     }
 
@@ -106,14 +107,7 @@ actor WorkflowRunner {
     ) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
-        guard instance.workflowVersion == workflow.version else {
-            throw WorkflowsError.WorkflowVersionMismatch(
-                instanceId: instance.id,
-                workflowId: instance.workflowId,
-                instanceVersion: instance.workflowVersion,
-                workflowVersion: workflow.version
-            )
-        }
+        try checkVersion(of: instance, against: workflow)
 
         let traceId = UUID()
         await plugins.invoke(WorkflowTransitionListener.self) {
@@ -126,7 +120,7 @@ actor WorkflowRunner {
         var context = WorkflowContext(
             instance: executing,
             resume: resumeReason,
-            dependancyContainer: dependencies,
+            dependencies: dependencies,
             start: self.start
         )
         let result = try await executeTransitionProcess(transition, on: instance, context: &context)
@@ -139,14 +133,12 @@ actor WorkflowRunner {
         switch result {
             case .completed:
                 let target = context.routedTarget ?? transition.targets[0]
-                if let routedTarget = context.routedTarget {
-                    guard transition.targets.contains(routedTarget) else {
-                        throw WorkflowsError.InvalidRouteTarget(
-                            transitionId: transition.id,
-                            requestedTarget: routedTarget,
-                            allowedTargets: transition.targets
-                        )
-                    }
+                guard transition.targets.contains(target) else {
+                    throw WorkflowsError.InvalidRouteTarget(
+                        transitionId: transition.id,
+                        requestedTarget: target,
+                        allowedTargets: transition.targets
+                    )
                 }
                 next = next.transitionEnded().moveToState(target)
             case .waiting(let waiting):
@@ -199,14 +191,15 @@ actor WorkflowRunner {
 
     @discardableResult
     func answerAsk(instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
-        try await withInstanceLock(instanceId) { [self] in
-            let instance = try await storage.instance(id: instanceId)
+        let snapshot = try await loadInstance(instanceId)
+        guard case .waiting(.asking) = snapshot.transitionState?.state else {
+            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+        }
 
+        return try await withInstanceLock(instanceId) { [self] in
             guard
-                let instance,
-                let transitionState = instance.transitionState,
-                let workflow = await registry.workflow(id: instance.workflowId),
-                let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
+                let instance = try await storage.instance(id: instanceId),
+                let (transition, workflow) = await currentTransition(of: instance)
             else {
                 throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
             }
@@ -226,29 +219,50 @@ actor WorkflowRunner {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
 
         await withInstanceLock(instanceId) { [self] in
-            let instance: WorkflowInstance?
             do {
-                instance = try await storage.instance(id: instanceId)
-            } catch {
-                logger?.error("Failed to load instance \(instanceId, privacy: .public) from storage: \(error, privacy: .public)")
-                return
-            }
-
-            guard
-                let instance,
-                let transitionState = instance.transitionState,
-                let workflow = await registry.workflow(id: instance.workflowId),
-                let transition = workflow.anyTransitions.first(where: { $0.id == transitionState.transitionId })
-            else {
-                logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
-                return
-            }
-
-            do {
+                guard
+                    let instance = try await storage.instance(id: instanceId),
+                    let (transition, workflow) = await currentTransition(of: instance)
+                else {
+                    logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
+                    return
+                }
                 try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: reason)
             } catch {
                 logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
             }
+        }
+    }
+
+    // MARK: - Lookup
+
+    private func loadInstance(_ instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
+        guard let instance = try await storage.instance(id: instanceId) else {
+            throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
+        }
+        return instance
+    }
+
+    /// The transition recorded in the instance's `transitionState`, with its workflow.
+    private func currentTransition(of instance: WorkflowInstance) async -> (AnyTransition, AnyWorkflow)? {
+        guard
+            let transitionId = instance.transitionState?.transitionId,
+            let workflow = await registry.workflow(id: instance.workflowId),
+            let transition = workflow.anyTransitions.first(where: { $0.id == transitionId })
+        else {
+            return nil
+        }
+        return (transition, workflow)
+    }
+
+    private func checkVersion(of instance: WorkflowInstance, against workflow: AnyWorkflow) throws {
+        guard instance.workflowVersion == workflow.version else {
+            throw WorkflowsError.WorkflowVersionMismatch(
+                instanceId: instance.id,
+                workflowId: instance.workflowId,
+                instanceVersion: instance.workflowVersion,
+                workflowVersion: workflow.version
+            )
         }
     }
 }

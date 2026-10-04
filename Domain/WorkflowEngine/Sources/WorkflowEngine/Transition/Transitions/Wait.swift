@@ -18,7 +18,7 @@ public extension Wait where Self: TransitionProcess {
         try Failure.wrap("Failed to prepare waiting \(type(of: self))") {
             try wait.bind(BindInputs(data: context.instance.data))
             try wait.bind(CreateOutputStorage())
-            try wait.bind(SetDependencies(container: context.dependancyContainer))
+            try wait.bind(SetDependencies(container: context.dependencies))
         }
 
         let runningWait = wait

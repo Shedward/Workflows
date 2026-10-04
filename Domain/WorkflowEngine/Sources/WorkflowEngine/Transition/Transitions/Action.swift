@@ -18,7 +18,7 @@ public extension Action where Self: TransitionProcess {
         try Failure.wrap("Failed to prepare to run action \(type(of: self))") {
             try action.bind(BindInputs(data: context.instance.data))
             try action.bind(CreateOutputStorage())
-            try action.bind(SetDependencies(container: context.dependancyContainer))
+            try action.bind(SetDependencies(container: context.dependencies))
         }
 
         let runningAction = action

@@ -18,7 +18,7 @@ public extension Condition where Self: TransitionProcess {
         try Failure.wrap("Failed to prepare condition \(type(of: self))") {
             try condition.bind(BindInputs(data: context.instance.data))
             try condition.bind(CreateOutputStorage())
-            try condition.bind(SetDependencies(container: context.dependancyContainer))
+            try condition.bind(SetDependencies(container: context.dependencies))
         }
 
         let runningCondition = condition
