@@ -167,6 +167,48 @@ B20. **Two error-to-text mappings disagree**: over HTTP an engine error gets a f
     completed..."), via `API.ErrorDescription(error:)` / `TransitionState+Codable`.
 B21. On timeout the fallback `workflows.instance(id:)` can throw `WorkflowInstanceNotFound` if the instance was
     already removed, turning a slow success into a 404 (clarity agent, read from code, low).
+B22. **Path parameters are not percent-decoded** (confirmed by experiment, 2026-10-05, production server in a
+    sandboxed home). `GET /workflows/<percent-encoded Cyrillic id>/graph` and `/starting` answer 404 with the raw
+    `%D0…` id in the message; `GET /workflows/SimpleWorkflow/graph` works on the testing server. Every production
+    workflow id is Cyrillic, so both endpoints are unusable in production. Unnoticed because the app uses the
+    flat `/startingWorkflows` list and instance ids are UUIDs. Fix: decode in the one place path parameters are
+    read (`API+Route`), plus an integration case with a non-ASCII id.
+
+B23–B29 come from the graph validation round (2026-10-05). They were read from code by the rewrite agents; unless
+a test is named, they are NOT verified by experiment. The cleanup kept every one of these behaviors.
+
+B23. **Transitions from unreachable states take part in merging** (all three agents). Such an edge carries no
+    data, so "one unreachable transition into a state wipes out all data there, including declared inputs"
+    (clarity). Result: false `conditionallyAvailableInput` / `undeclaredWorkflowInput` errors caused by dead code,
+    and "a *declared* input lost at the merge produces no error downstream" (minimality).
+    Fix: `GraphTopology.transitionsNotClosingCycle(to:)` should also skip sources that are not reachable.
+B24. **Messages that describe a different check than the one performed** (all three agents):
+    - `unreachableState` says "never used in any transition"; the check is "not reachable from start" and also
+      fires for a state that has outgoing transitions.
+    - `undeclaredWorkflowInput` says "not produced by any transition" even when one branch produces it. One cause
+      then gets two errors (test `inputProducedOnOnlyOneBranch` expects both).
+    - `unsatisfiedSubflowInput` always comes together with `undeclaredWorkflowInput` for the same subflow
+      transition, because both read the same declared inputs (test `subflowInputParentDoesNotProvide` expects
+      both). So "subflows first" and the shared builder only matter for that duplicate.
+    - `automaticCycleWithoutExit` says "only automatic transitions"; the check is only "no manual transition
+      leaves the cycle", so an all-manual closed loop or a cycle with an automatic exit gets it too (clarity).
+    - The consumer `typeMismatch` names neither the consuming process nor which type is produced and which is
+      expected (clarity).
+B25. **A declared `@Output` type is never compared with the produced type**; `producedOutputs` carries the type
+    that arrives at finish (all three agents).
+B26. **The duplicate-id check in `WorkflowRegistry.init` can never fire** (all three agents): discovery already
+    keeps one workflow per id, so two workflow types with one id are silently merged and the `throw Failure` is
+    dead. Not removed in the cleanup: without it the initializer no longer throws, which changes the public
+    signature (`try` at `Workflows.swift` and six test call sites) and trips `unneeded_throws_rethrows`.
+    Decide: make the check real (compare before deduplication) or drop `throws`.
+B27. **A type conflict is remembered only at the merge state** (clarity, minimality). One state later the key
+    silently has the alphabetically first type, so a later consumer gets a misleading second mismatch or none.
+B28. In a subflow cycle, the workflow validated first has its subflow's inputs unchecked, silently: the subflow's
+    graph is not built yet (clarity, minimality; low).
+B29. Validation ignores a `DataBindable` process that is not `Defaultable`, while the runtime binds it
+    (architecture). Minimality adds that the `Defaultable` requirement in `collectMetadata()` is a leftover:
+    "nothing calls `init()` any more". Also: `ValidationError.circularSubflow` is only ever logged, never part of
+    a `WorkflowValidationResult`.
 
 ## Progress log
 
@@ -375,11 +417,64 @@ Why things are the way they are:
 
 Bugs B15–B21 below.
 
+### Graph validation pass (S2) — done 2026-10-05
+
+Commits: `d56657c` (local package paths, so every package builds alone), `69d3d77` (29 unit tests from the unused
+fixtures), `c225c2d` (first version: analyzer with its own state), then "Apply critics-rewrite round to graph
+validation". Subsystem (Graph folder, registry, `CollectMetadata`): 949 lines before, 810 after the first
+version, 756 after the round.
+
+Safety net: `Domain/WorkflowEngine/Tests/WorkflowEngineTests` (`./Tools/Run/unit_tests`). The tests compare
+messages regardless of order. Checked by mutation. One mutation survived during the round: including the
+cycle-closing edge in the merge broke nothing, because no fixture consumed data after a loop head. Added
+`DataCarriedThroughCycleWorkflow` and `dataProducedBeforeACycleIsAvailableInsideIt` (30 tests now); the same
+mutation is red with it.
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| Facts apart from rules: analysis emits no messages, the validator alone lists the checks in order | no (analyzer emits) | yes | yes | applied (2/3): `GraphTopology`, `DataAvailability`, checks in `WorkflowValidator` |
+| Drop `BackEdgeKey`, the back-edge tuple, the in-stack set and `?? 0`; a cycle is found in the path | yes | yes | yes | applied (3/3) |
+| Drop `Context` and `Analysis`; the builder computes required inputs and produced outputs itself | yes | yes | yes | applied (3/3) |
+| Per state: types, conflicting types (sorted), keys missing on some branches | merged into one loop | yes | yes | applied (2/3) |
+| Registry: one walk gives validation order and subflow cycles | yes | yes | two walks | applied (2/3): `subflowNesting()` |
+| Registry: one `guard mode == .strict`; log errors without the `isValid` test | yes (log) | yes | yes | applied |
+| `ambiguousAutomaticTransitions` walks states, not a dictionary (stable order) | no | yes | yes | applied (2/3) |
+| Generic `DepthFirstTraversal`, `SubflowHierarchy`, `ValidationReport` types | no | yes | no | rejected (1/3; new entities around one function each) |
+| Registry keeps the builder as its only graph cache | considered, rejected | yes | no | rejected (1/3) |
+| Rule functions in three extension files; enum cases reordered to reporting order | no | no | yes | rejected (1/3; rules stay in one file) |
+| `CollectMetadata` holds one `TransitionMetadata` (`public internal(set) var`) | yes | no | no | rejected (1/3; touches the public type) |
+| Back edge detected implicitly ("source has no types yet") | yes | no | no | rejected (1/3; hides the rule) |
+| Remove the dead duplicate-id check in `WorkflowRegistry.init` | yes | kept | kept | not applied: changes `throws`; see B26 |
+
+Quotes:
+- Clarity: "Split facts from rules. The builder computes facts once per workflow … and emits no messages.
+  `WorkflowValidator.validate` is now a flat, ordered list of rule calls."
+- Architecture: "`GraphTopology` owns structure, `DataAvailability` owns the availability rules, and neither emits
+  a message. `WorkflowValidator` is the only place that lists the checks, their order and what they report."
+- Minimality: "Derive instead of store. One DFS already yields everything the back-edge bookkeeping stored: the
+  path gives the cycle, the finished list gives the topological order and reachability."
+- Architecture: "The process id in the old back-edge key was redundant: back-edge-ness depends only on (from, to)."
+
+Why things are the way they are:
+- Message order inside one result is the same as before wherever it was deterministic: cycles, finish, dead
+  ends, then per state in topological order (type conflicts, conditional inputs), then per transition (inputs),
+  outputs, dependencies, subflow inputs, providers. Three places were non-deterministic before and are stable
+  now: type conflicts at one state (sorted by key), ambiguous-transition warnings (state order), subflow cycles
+  (found from sorted roots).
+- Edge case of walking states for the ambiguous-transition warning: a transition built with the raw
+  `Transition.init` from a state that is not in `states` no longer gets the warning (architecture, clarity).
+- `WorkflowValidator.validate` takes the builder `inout` because it builds the workflow's own graph; subflow
+  graphs are only read from the cache, and silently skipped when absent (B28).
+- The `as? any DataBindable & Defaultable` cast and `try? copy.bind` in metadata collection were left alone by all
+  three agents: removing them changes which processes report metadata (B29).
+
+Verified: 30 unit tests, `full_check` 27/27, test and production builds, SwiftLint 0, production server starting
+under strict validation with the six HH workflows in a sandboxed home. Bugs B22–B29 above.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
-3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~ (done), then S2 graph validation
-   (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
-   S6 and S7 if still worthwhile.
-4. Bug backlog B1–B21 (B7, B9 and B15 already fixed), then the pull request.
+3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~ (done),
+   then S5 app view models; S6 and S7 if still worthwhile.
+4. Bug backlog B1–B29 (B7, B9 and B15 already fixed), then the pull request.
