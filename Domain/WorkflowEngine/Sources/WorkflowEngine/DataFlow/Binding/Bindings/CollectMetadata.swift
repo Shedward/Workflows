@@ -62,14 +62,22 @@ struct CollectMetadata: DataBinding {
     }
 }
 
+extension DataBindable {
+    /// The inputs, outputs, dependencies and asks declared by the property wrappers of this
+    /// value, read without running anything.
+    func declaredMetadata(processId: TransitionProcessID) -> TransitionMetadata {
+        var copy = self
+        var collector = CollectMetadata()
+        try? copy.bind(&collector)
+        return collector.metadata(processId: processId)
+    }
+}
+
 extension TransitionProcess {
     func collectMetadata() -> TransitionMetadata {
-        guard var bindable = self as? any DataBindable & Defaultable else {
+        guard let bindable = self as? any DataBindable & Defaultable else {
             return .empty(processId: id)
         }
-
-        var collector = CollectMetadata()
-        try? bindable.bind(&collector)
-        return collector.metadata(processId: id)
+        return bindable.declaredMetadata(processId: id)
     }
 }

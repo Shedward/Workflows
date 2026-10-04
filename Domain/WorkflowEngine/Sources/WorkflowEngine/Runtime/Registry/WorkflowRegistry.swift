@@ -18,11 +18,7 @@ public actor WorkflowRegistry {
             guard discovered[workflow.id] == nil else { continue }
             discovered[workflow.id] = workflow
 
-            for transition in workflow.anyTransitions {
-                if let subflow = transition.process as? AnyWorkflow, discovered[subflow.id] == nil {
-                    queue.append(subflow)
-                }
-            }
+            queue.append(contentsOf: workflow.subflows.filter { discovered[$0.id] == nil })
         }
 
         return Array(discovered.values)
@@ -110,10 +106,8 @@ public actor WorkflowRegistry {
                 return
             }
             visited.insert(workflowId)
-            for transition in workflow.anyTransitions {
-                if let subflow = transition.process as? AnyWorkflow {
-                    visit(subflow.id)
-                }
+            for subflow in workflow.subflows {
+                visit(subflow.id)
             }
             ordered.append(workflow)
         }
@@ -140,10 +134,7 @@ public actor WorkflowRegistry {
 
             inProgress.insert(workflowId)
 
-            for transition in workflow.anyTransitions {
-                guard let subflow = transition.process as? AnyWorkflow else { continue }
-                let subflowId = subflow.id
-
+            for subflowId in workflow.subflows.map(\.id) {
                 if inProgress.contains(subflowId) {
                     let cycleStart = path.firstIndex(of: subflowId) ?? 0
                     cycles.append(Array(path[cycleStart...]) + [subflowId])
@@ -161,5 +152,11 @@ public actor WorkflowRegistry {
         }
 
         return cycles
+    }
+}
+
+private extension AnyWorkflow {
+    var subflows: [AnyWorkflow] {
+        anyTransitions.compactMap { $0.process as? AnyWorkflow }
     }
 }

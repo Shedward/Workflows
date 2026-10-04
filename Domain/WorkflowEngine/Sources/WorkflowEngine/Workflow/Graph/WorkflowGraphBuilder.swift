@@ -6,102 +6,76 @@
 //
 
 public struct WorkflowGraphBuilder: Sendable {
-    private var graphCache: [WorkflowID: WorkflowGraph] = [:]
-    private var analysisCache: [WorkflowID: DataFlowAnalyzer.Analysis] = [:]
+    /// A workflow's graph together with the analysis it was derived from.
+    struct Built: Sendable {
+        let graph: WorkflowGraph
+        let analysis: DataFlowAnalyzer.Analysis
+    }
+
+    private var cache: [WorkflowID: Built] = [:]
 
     public init() {}
 
     public mutating func build(from workflow: AnyWorkflow) -> WorkflowGraph {
-        if let cached = graphCache[workflow.id] {
+        built(from: workflow).graph
+    }
+
+    mutating func built(from workflow: AnyWorkflow) -> Built {
+        if let cached = cache[workflow.id] {
             return cached
         }
 
-        let states = buildStates(from: workflow)
-        let transitions = buildTransitions(from: workflow)
+        let states = states(of: workflow)
+        let transitions = transitions(of: workflow)
+        let declared = (workflow as? any DataBindable & Defaultable)?.declaredMetadata(processId: workflow.id)
 
-        let declaredIO = collectWorkflowIO(workflow)
-
-        let context = DataFlowAnalyzer.Context(
-            transitions: transitions,
-            states: states,
-            declaredInputs: declaredIO.inputs,
-            declaredOutputs: declaredIO.outputs,
-            startId: workflow.startId,
-            finishId: workflow.finishId
-        )
-        let analysis = DataFlowAnalyzer.analyze(context)
-
-        let graph = WorkflowGraph(
-            workflowId: workflow.id,
-            version: workflow.version,
-            states: states,
-            transitions: transitions,
-            requiredInputs: analysis.requiredInputs,
-            producedOutputs: analysis.producedOutputs
+        let analysis = DataFlowAnalyzer.analyze(
+            DataFlowAnalyzer.Context(
+                transitions: transitions,
+                states: states,
+                declaredInputs: declared?.inputs ?? [],
+                declaredOutputs: declared?.outputs ?? [],
+                startId: workflow.startId,
+                finishId: workflow.finishId
+            )
         )
 
-        graphCache[workflow.id] = graph
-        analysisCache[workflow.id] = analysis
-        return graph
-    }
-
-    func analysis(for workflowId: WorkflowID) -> DataFlowAnalyzer.Analysis? {
-        analysisCache[workflowId]
+        let built = Built(
+            graph: WorkflowGraph(
+                workflowId: workflow.id,
+                version: workflow.version,
+                states: states,
+                transitions: transitions,
+                requiredInputs: analysis.requiredInputs,
+                producedOutputs: analysis.producedOutputs
+            ),
+            analysis: analysis
+        )
+        cache[workflow.id] = built
+        return built
     }
 
     func cachedGraph(for workflowId: WorkflowID) -> WorkflowGraph? {
-        graphCache[workflowId]
+        cache[workflowId]?.graph
     }
 
-    private func buildStates(from workflow: AnyWorkflow) -> [WorkflowGraph.State] {
-        var states: [WorkflowGraph.State] = []
-        states.append(.init(id: workflow.startId, isStart: true, isFinish: false))
-        for stateId in workflow.states {
-            states.append(.init(id: stateId, isStart: false, isFinish: false))
-        }
-        states.append(.init(id: workflow.finishId, isStart: false, isFinish: true))
-        return states
+    private func states(of workflow: AnyWorkflow) -> [WorkflowGraph.State] {
+        [WorkflowGraph.State(id: workflow.startId, isStart: true, isFinish: false)]
+            + workflow.states.map { WorkflowGraph.State(id: $0, isStart: false, isFinish: false) }
+            + [WorkflowGraph.State(id: workflow.finishId, isStart: false, isFinish: true)]
     }
 
-    private func buildTransitions(from workflow: AnyWorkflow) -> [WorkflowGraph.Transition] {
+    private func transitions(of workflow: AnyWorkflow) -> [WorkflowGraph.Transition] {
         workflow.anyTransitions.map { transition in
-            let subworkflow = transition.process as? AnyWorkflow
-            let metadata: TransitionMetadata
-            if let bindableSubflow = subworkflow as? any AnyWorkflow & DataBindable & Defaultable {
-                metadata = collectDataBindableMetadata(bindableSubflow, processId: transition.process.id)
-            } else {
-                metadata = transition.process.collectMetadata()
-            }
-
-            return WorkflowGraph.Transition(
+            WorkflowGraph.Transition(
                 id: transition.id,
                 from: transition.from,
                 targets: transition.targets,
                 processId: transition.process.id,
                 trigger: transition.trigger,
-                metadata: metadata,
-                subflowId: subworkflow?.id
+                metadata: transition.process.collectMetadata(),
+                subflowId: (transition.process as? AnyWorkflow)?.id
             )
         }
-    }
-
-    private func collectWorkflowIO(
-        _ workflow: AnyWorkflow
-    ) -> (inputs: Set<DataField>, outputs: Set<DataField>) {
-        guard let bindable = workflow as? any DataBindable & Defaultable else {
-            return ([], [])
-        }
-        let metadata = collectDataBindableMetadata(bindable, processId: workflow.id)
-        return (metadata.inputs, metadata.outputs)
-    }
-
-    private func collectDataBindableMetadata(
-        _ bindable: any DataBindable & Defaultable,
-        processId: TransitionProcessID
-    ) -> TransitionMetadata {
-        var instance = bindable
-        var collector = CollectMetadata()
-        try? instance.bind(&collector)
-        return collector.metadata(processId: processId)
     }
 }
