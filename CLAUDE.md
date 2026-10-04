@@ -154,5 +154,5 @@ Project notes are stored in `.claude/notes/`. Use dated markdown files (e.g. `20
 
 - `hummingbird` (2.0.0+) — HTTP framework
 - `swift-configuration` (1.0.0+) — Configuration
-- `swift-subprocess` (0.3.0+) — Process execution (Git)
-- `swift-syntax` (602.0.0+) — Macro support
+- `swift-subprocess` (1.0.0+) — Process execution (Git)
+- `swift-syntax` (604.0.0+) — Macro support

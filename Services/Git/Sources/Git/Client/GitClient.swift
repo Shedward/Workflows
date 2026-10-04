@@ -17,15 +17,18 @@ public struct GitClient: Sendable {
         arguments: String...,
         output: Output = .string(limit: 4096),
         error: Error = .discarded
-    ) async throws -> CollectedResult<Output, Error> {
-        try await Failure.wrap("Failed git \(command) \(arguments)") {
-            try await Subprocess.run(
+    ) async throws -> ExecutionResult<Void, Output, Error> {
+        // `ExecutionResult` is noncopyable, so it can't pass through the generic `Failure.wrap`.
+        do {
+            return try await Subprocess.run(
                 .name("git"),
                 arguments: .init([command] + arguments),
                 workingDirectory: workingPath,
                 output: output,
                 error: error
             )
+        } catch {
+            throw Failure("Failed git \(command) \(arguments)", underlyingError: error)
         }
     }
 }
