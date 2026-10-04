@@ -99,8 +99,8 @@ var transitions: Transitions {
 
 **Graph Validation** — At startup, `WorkflowRegistry.validateAll` builds a `WorkflowGraph` for each workflow and runs static analysis:
 - `CollectMetadata` (a `DataBinding` implementation) introspects `@Input`/`@Output`/`@Dependency` metadata from transitions and workflows without executing them
-- `DataFlowAnalyzer` performs forward data propagation (topological sort, intersection at merge points) to detect unsatisfied inputs, unreachable states, dead ends, and missing dependencies
-- `WorkflowValidator` orchestrates all checks and returns `WorkflowValidationResult` with errors/warnings
+- `GraphTopology` (reachable states in topological order, cycles) and `DataAvailability` (forward data propagation, intersection at merge points) compute facts and emit no messages
+- `WorkflowValidator` is the only place that lists the checks, in reporting order, and turns the facts into `WorkflowValidationResult` errors/warnings (unsatisfied inputs, unreachable states, dead ends, missing dependencies)
 - `ValidationMode.strict` throws on errors (blocking startup); `.lenient` logs them (default)
 - Graphs are cached in the registry and accessible via `Workflows.graph(for:)` for UI introspection
 - At workflow start time, `requiredInputs` from the graph are checked against provided `initialData`

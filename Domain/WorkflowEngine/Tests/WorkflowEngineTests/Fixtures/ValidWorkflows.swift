@@ -133,6 +133,32 @@ struct CycleWithManualExitWorkflow: Workflow {
 }
 
 @DataBindable
+struct DataCarriedThroughCycleWorkflow: Workflow {
+    enum State: String, WorkflowState {
+        case ping
+        case pong
+    }
+
+    var transitions: Transitions {
+        onStart {
+            ProduceString.to(.ping)
+        }
+
+        after(.ping) {
+            GoNextStep.to(.pong)
+        }
+
+        after(.pong) {
+            GoNextStep.to(.ping)
+        }
+
+        on(.ping) {
+            ConsumeString.toFinish()
+        }
+    }
+}
+
+@DataBindable
 struct WrongInputTypeWorkflow: Workflow {
     enum State: String, WorkflowState {
         case produced

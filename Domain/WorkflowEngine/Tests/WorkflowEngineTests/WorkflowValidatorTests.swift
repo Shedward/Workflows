@@ -82,6 +82,13 @@ struct DataFlowValidationTests {
         expect(validate(BranchesAgreeWorkflow()))
     }
 
+    @Test func dataProducedBeforeACycleIsAvailableInsideIt() {
+        expect(
+            validate(DataCarriedThroughCycleWorkflow()),
+            warnings: ["Cycle detected involving states: ping → pong"]
+        )
+    }
+
     @Test func branchesProduceDifferentTypesForOneKey() {
         expect(
             validate(TypeMismatchWorkflow()),

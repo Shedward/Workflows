@@ -56,102 +56,73 @@ public actor WorkflowRegistry {
 
     public func validateAll(dependencies: DependenciesContainer, mode: ValidationMode) throws {
         let logger = Logger(scope: .workflow)
+        let (subflowsFirst, subflowCycles) = subflowNesting()
         var graphBuilder = WorkflowGraphBuilder()
-        var results: [WorkflowValidationResult] = []
+        var invalidResults: [WorkflowValidationResult] = []
 
-        let orderedWorkflows = topologicalWorkflowOrder()
-
-        for workflow in orderedWorkflows {
+        for workflow in subflowsFirst {
             let result = WorkflowValidator.validate(
                 workflow: workflow,
                 dependencies: dependencies,
                 graphBuilder: &graphBuilder
             )
-
-            let graph = graphBuilder.build(from: workflow)
-            graphs[workflow.id] = graph
+            graphs[workflow.id] = graphBuilder.build(from: workflow)
 
             for warning in result.warnings {
                 logger?.warning("[\(workflow.id, privacy: .public)] \(warning.description, privacy: .public)")
             }
-
+            for error in result.errors {
+                logger?.error("[\(workflow.id, privacy: .public)] \(error.description, privacy: .public)")
+            }
             if !result.isValid {
-                for error in result.errors {
-                    logger?.error("[\(workflow.id, privacy: .public)] \(error.description, privacy: .public)")
-                }
-                results.append(result)
+                invalidResults.append(result)
             }
         }
 
-        let circularCycles = detectCircularSubflows()
-        for cycle in circularCycles {
+        for cycle in subflowCycles {
             let description = ValidationError.circularSubflow(cycle).description
             logger?.error("\(description, privacy: .public)")
         }
-        if !circularCycles.isEmpty, mode == .strict {
-            throw WorkflowsError.CircularSubflows(cycles: circularCycles)
-        }
 
-        if mode == .strict, !results.isEmpty {
-            throw WorkflowsError.ValidationFailed(results: results)
+        guard mode == .strict else {
+            return
+        }
+        if !subflowCycles.isEmpty {
+            throw WorkflowsError.CircularSubflows(cycles: subflowCycles)
+        }
+        if !invalidResults.isEmpty {
+            throw WorkflowsError.ValidationFailed(results: invalidResults)
         }
     }
 
-    private func topologicalWorkflowOrder() -> [AnyWorkflow] {
+    private func subflowNesting() -> (subflowsFirst: [AnyWorkflow], cycles: [[WorkflowID]]) {
         var visited: Set<WorkflowID> = []
-        var ordered: [AnyWorkflow] = []
-
-        func visit(_ workflowId: WorkflowID) {
-            guard !visited.contains(workflowId), let workflow = workflows[workflowId] else {
-                return
-            }
-            visited.insert(workflowId)
-            for subflow in workflow.subflows {
-                visit(subflow.id)
-            }
-            ordered.append(workflow)
-        }
-
-        for workflowId in workflows.keys.sorted() {
-            visit(workflowId)
-        }
-
-        return ordered
-    }
-
-    private func detectCircularSubflows() -> [[WorkflowID]] {
-        var visited: Set<WorkflowID> = []
-        var inProgress: Set<WorkflowID> = []
+        var subflowsFirst: [AnyWorkflow] = []
         var cycles: [[WorkflowID]] = []
 
-        func dfs(_ workflowId: WorkflowID, path: [WorkflowID]) {
+        func visit(_ workflowId: WorkflowID, parents: [WorkflowID]) {
             guard let workflow = workflows[workflowId] else {
                 return
             }
-            guard !visited.contains(workflowId) else {
-                return
-            }
-
-            inProgress.insert(workflowId)
+            visited.insert(workflowId)
+            let pathFromRoot = parents + [workflowId]
 
             for subflowId in workflow.subflows.map(\.id) {
-                if inProgress.contains(subflowId) {
-                    let cycleStart = path.firstIndex(of: subflowId) ?? 0
-                    cycles.append(Array(path[cycleStart...]) + [subflowId])
+                if let cycleStart = pathFromRoot.firstIndex(of: subflowId) {
+                    cycles.append(Array(pathFromRoot[cycleStart...]) + [subflowId])
                 } else if !visited.contains(subflowId) {
-                    dfs(subflowId, path: path + [subflowId])
+                    visit(subflowId, parents: pathFromRoot)
                 }
             }
 
-            inProgress.remove(workflowId)
-            visited.insert(workflowId)
+            subflowsFirst.append(workflow)
         }
 
-        for workflowId in workflows.keys {
-            dfs(workflowId, path: [workflowId])
+        for workflowId in workflows.keys.sorted() where !visited.contains(workflowId) {
+            visit(workflowId, parents: [])
         }
 
-        return cycles
+        return (subflowsFirst, cycles)
     }
 }
 

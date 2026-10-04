@@ -6,10 +6,12 @@
 //
 
 public struct WorkflowGraphBuilder: Sendable {
-    /// A workflow's graph together with the analysis it was derived from.
+    /// A workflow's graph together with the facts its validation is based on.
     struct Built: Sendable {
         let graph: WorkflowGraph
-        let analysis: DataFlowAnalyzer.Analysis
+        let declaredOutputs: Set<DataField>
+        let topology: GraphTopology
+        let availability: DataAvailability
     }
 
     private var cache: [WorkflowID: Built] = [:]
@@ -25,31 +27,29 @@ public struct WorkflowGraphBuilder: Sendable {
             return cached
         }
 
-        let states = states(of: workflow)
         let transitions = transitions(of: workflow)
         let declared = (workflow as? any DataBindable & Defaultable)?.declaredMetadata(processId: workflow.id)
-
-        let analysis = DataFlowAnalyzer.analyze(
-            DataFlowAnalyzer.Context(
-                transitions: transitions,
-                states: states,
-                declaredInputs: declared?.inputs ?? [],
-                declaredOutputs: declared?.outputs ?? [],
-                startId: workflow.startId,
-                finishId: workflow.finishId
-            )
-        )
+            ?? .empty(processId: workflow.id)
+        let topology = GraphTopology(transitions: transitions, start: workflow.startId)
+        let availability = DataAvailability(in: topology, declaredInputs: declared.inputs)
+        let typesAtFinish = availability.types(at: workflow.finishId)
 
         let built = Built(
             graph: WorkflowGraph(
                 workflowId: workflow.id,
                 version: workflow.version,
-                states: states,
+                states: states(of: workflow),
                 transitions: transitions,
-                requiredInputs: analysis.requiredInputs,
-                producedOutputs: analysis.producedOutputs
+                requiredInputs: declared.inputs,
+                producedOutputs: Set(
+                    declared.outputs.compactMap { output in
+                        typesAtFinish[output.key].map { DataField(key: output.key, valueType: $0) }
+                    }
+                )
             ),
-            analysis: analysis
+            declaredOutputs: declared.outputs,
+            topology: topology,
+            availability: availability
         )
         cache[workflow.id] = built
         return built

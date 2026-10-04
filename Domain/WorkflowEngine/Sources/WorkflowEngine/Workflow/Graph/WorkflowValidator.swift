@@ -15,29 +15,182 @@ public struct WorkflowValidator: Sendable {
         graphBuilder: inout WorkflowGraphBuilder
     ) -> WorkflowValidationResult {
         let built = graphBuilder.built(from: workflow)
-        let registeredKeys = dependencies.keys
+        let validator = WorkflowValidator(
+            workflow: workflow,
+            graph: built.graph,
+            declaredOutputs: built.declaredOutputs,
+            topology: built.topology,
+            availability: built.availability,
+            alreadyBuilt: graphBuilder,
+            registeredDependencies: dependencies.keys
+        )
 
-        var errors = built.analysis.errors
+        return WorkflowValidationResult(
+            workflowId: workflow.id,
+            errors: validator.errors,
+            warnings: validator.warnings
+        )
+    }
 
-        for transition in built.graph.transitions {
-            for dep in transition.metadata.dependencies where !registeredKeys.contains(dep.key) {
-                errors.append(.missingDependency(
-                    key: dep.key,
-                    valueType: dep.valueType,
-                    processId: transition.processId
-                ))
+    private let workflow: AnyWorkflow
+    private let graph: WorkflowGraph
+    private let declaredOutputs: Set<DataField>
+    private let topology: GraphTopology
+    private let availability: DataAvailability
+    private let alreadyBuilt: WorkflowGraphBuilder
+    private let registeredDependencies: Set<String>
+
+    private var errors: [ValidationError] {
+        let checks = [
+            automaticCyclesWithoutExit,
+            unreachableFinish,
+            deadEndStates,
+            conflictsBetweenBranches,
+            unsatisfiedInputs,
+            undeclaredOutputs,
+            missingDependencies,
+            unsatisfiedSubflowInputs,
+            missingProviderDependencies
+        ]
+        return Array(checks.joined())
+    }
+
+    private var warnings: [ValidationWarning] {
+        let checks = [
+            cycles,
+            unreachableStates,
+            ambiguousAutomaticTransitions,
+            unusedInputs
+        ]
+        return Array(checks.joined())
+    }
+}
+
+// MARK: - Structure
+
+private extension WorkflowValidator {
+    var cycles: [ValidationWarning] {
+        topology.cycles.map { .cycleDetected($0) }
+    }
+
+    var automaticCyclesWithoutExit: [ValidationError] {
+        topology.cycles
+            .filter { cycle in
+                let transitionsFromCycle = cycle.flatMap { topology.transitions(from: $0) }
+                let hasManualExit = transitionsFromCycle.contains { transition in
+                    transition.trigger == .manual && transition.targets.contains { !cycle.contains($0) }
+                }
+                return !hasManualExit
+            }
+            .map { .automaticCycleWithoutExit($0) }
+    }
+
+    var unreachableFinish: [ValidationError] {
+        topology.reachable.contains(workflow.finishId) ? [] : [.unreachableFinish]
+    }
+
+    var unreachableStates: [ValidationWarning] {
+        graph.states
+            .filter { !$0.isStart && !$0.isFinish && !topology.reachable.contains($0.id) }
+            .map { .unreachableState($0.id) }
+    }
+
+    var deadEndStates: [ValidationError] {
+        graph.states
+            .filter { !$0.isFinish && topology.reachable.contains($0.id) && topology.transitions(from: $0.id).isEmpty }
+            .map { .deadEndState($0.id) }
+    }
+
+    var ambiguousAutomaticTransitions: [ValidationWarning] {
+        graph.states.compactMap { state in
+            let automaticCount = topology.transitions(from: state.id).filter { $0.trigger == .automatic }.count
+            return automaticCount > 1 ? .ambiguousAutomaticTransitions(state: state.id, count: automaticCount) : nil
+        }
+    }
+}
+
+// MARK: - Data flow
+
+private extension WorkflowValidator {
+    var conflictsBetweenBranches: [ValidationError] {
+        var errors: [ValidationError] = []
+        for state in topology.reachableInTopologicalOrder {
+            for (key, types) in availability.conflictingTypes(at: state).sorted(by: { $0.key < $1.key }) {
+                errors.append(.typeMismatch(key: key, types: types, atState: state))
+            }
+
+            let keysMissingOnSomeBranches = availability.keysMissingOnSomeBranches(at: state)
+            for transition in topology.transitions(from: state) {
+                for key in transition.metadata.inputKeys where keysMissingOnSomeBranches.contains(key) {
+                    errors.append(.conditionallyAvailableInput(key: key, processId: transition.processId, atState: state))
+                }
             }
         }
+        return errors
+    }
 
-        for transition in built.graph.transitions {
+    var unsatisfiedInputs: [ValidationError] {
+        let declaredInputKeys = Set(graph.requiredInputs.map(\.key))
+
+        var errors: [ValidationError] = []
+        for transition in graph.transitions where topology.reachable.contains(transition.from) {
+            let availableTypes = availability.types(at: transition.from)
+            let alreadyReported = availability.conflictingTypes(at: transition.from)
+
+            for input in transition.metadata.inputs {
+                if let availableType = availableTypes[input.key] {
+                    if availableType != input.valueType, alreadyReported[input.key] == nil {
+                        errors.append(.typeMismatch(
+                            key: input.key,
+                            types: [availableType, input.valueType],
+                            atState: transition.from
+                        ))
+                    }
+                } else if !declaredInputKeys.contains(input.key) {
+                    errors.append(.undeclaredWorkflowInput(key: input.key, processId: transition.processId))
+                }
+            }
+        }
+        return errors
+    }
+
+    var undeclaredOutputs: [ValidationError] {
+        let typesAtFinish = availability.types(at: workflow.finishId)
+        return declaredOutputs
+            .filter { typesAtFinish[$0.key] == nil }
+            .map { .undeclaredWorkflowOutput(key: $0.key) }
+    }
+
+    var unusedInputs: [ValidationWarning] {
+        let consumedKeys = Set(graph.transitions.flatMap(\.metadata.inputKeys))
+        return Set(graph.requiredInputs.map(\.key))
+            .subtracting(consumedKeys)
+            .map { .unusedWorkflowInput(key: $0) }
+    }
+}
+
+// MARK: - Dependencies and subflows
+
+private extension WorkflowValidator {
+    var missingDependencies: [ValidationError] {
+        graph.transitions.flatMap { transition in
+            transition.metadata.dependencies
+                .filter { !registeredDependencies.contains($0.key) }
+                .map { .missingDependency(key: $0.key, valueType: $0.valueType, processId: transition.processId) }
+        }
+    }
+
+    var unsatisfiedSubflowInputs: [ValidationError] {
+        var errors: [ValidationError] = []
+        for transition in graph.transitions {
             guard let subflowId = transition.subflowId else {
                 continue
             }
 
-            let availableKeys = Set((built.analysis.typeAtState[transition.from] ?? [:]).keys)
-            let requiredInputs = graphBuilder.cachedGraph(for: subflowId)?.requiredInputs ?? []
+            let availableTypes = availability.types(at: transition.from)
+            let requiredInputs = alreadyBuilt.cachedGraph(for: subflowId)?.requiredInputs ?? []
 
-            for field in requiredInputs where !availableKeys.contains(field.key) {
+            for field in requiredInputs where availableTypes[field.key] == nil {
                 errors.append(.unsatisfiedSubflowInput(
                     key: field.key,
                     subflowId: subflowId,
@@ -45,24 +198,23 @@ public struct WorkflowValidator: Sendable {
                 ))
             }
         }
+        return errors
+    }
 
+    var missingProviderDependencies: [ValidationError] {
+        var errors: [ValidationError] = []
         for provider in workflow.providers {
             let providerType = String(describing: type(of: provider))
             let declared = provider.declaredMetadata(processId: providerType)
 
-            for dep in declared.dependencies where !registeredKeys.contains(dep.key) {
+            for dependency in declared.dependencies where !registeredDependencies.contains(dependency.key) {
                 errors.append(.missingProviderDependency(
-                    key: dep.key,
-                    valueType: dep.valueType,
+                    key: dependency.key,
+                    valueType: dependency.valueType,
                     providerType: providerType
                 ))
             }
         }
-
-        return WorkflowValidationResult(
-            workflowId: workflow.id,
-            errors: errors,
-            warnings: built.analysis.warnings
-        )
+        return errors
     }
 }
