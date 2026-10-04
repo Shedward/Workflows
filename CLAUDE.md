@@ -58,7 +58,7 @@ swiftlint --fix                                # Auto-fix formatting violations
 - **Core/Rest** — REST client framework: `RestClient` protocol, `NetworkRestClient` (URLSession), type-safe `Request<RequestBody, ResponseBody>`, body types (`JSONBody`, `EmptyBody`, etc.), decorators, validators
 - **Domain/WorkflowEngine** — Core engine: workflow protocol, transitions, runner, registry, storage, data flow, wait scheduling. Depends only on `Core` (and swift-syntax for the macro); it must not import `API` or `Rest`
 - **Domain/API** — REST API endpoint definitions and shared models (`Workflow`, `WorkflowInstance`, `Transition`, `TransitionState`). Shared by the server and `WorkflowApp`
-- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints. Owns the engine model ↔ REST model conversions in `API/Mapping/*+API.swift`
+- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints. Owns the engine model ↔ REST model conversions in `API/Mapping/*+API.swift` and the error → HTTP status table in `Errors/ErrorResponseMiddleware.swift`
 - **Services/Git, Services/Github** — External service integrations
 - **Workflows/TestingWorkflows** — Example workflow definitions used by integration tests
 
@@ -146,7 +146,7 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 ### Known Issues
 
-- **Open bug backlog from the 2026-10 cleanup** (resume on startup never runs, `workflowDidStart` not delivered for REST-started instances, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
+- **Open bug backlog from the 2026-10 cleanup** (`?timeout=nan` crashes the server, resume on startup never runs, `workflowDidStart` not delivered for REST-started instances, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
 - **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
 - **`@Input`/`@Output` crash risk**: Property wrappers trap (`preconditionFailure`, `fatalError` for `@Ask`) on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.

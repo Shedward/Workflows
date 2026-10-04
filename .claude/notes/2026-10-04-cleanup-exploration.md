@@ -143,6 +143,27 @@ B13. **An optional `@Output` / `@Ask` set to `nil` fails** as "Value is not prov
     from code): `ValueStorage` holds `Sendable?`, so the optional is flattened.
 B14. **`ValueStorage` takes `&lock` on a stored `os_unfair_lock_s`** (minimality agent). Swift does not guarantee
     a stable address for that pattern. Fix: `OSAllocatedUnfairLock`.
+B15. **`?timeout=nan` (or `inf`, or a huge value) kills the server** — CONFIRMED by experiment 2026-10-04.
+    `WorkflowInstancesController.timeout(from:)` accepts anything `Double()` parses; `withTimeout` passes it to
+    `Task.sleep(for: .seconds(...))`, which traps: "Fatal error: Double value cannot be converted to _Int128
+    because it is outside the representable range". One request to `POST /workflowInstances?timeout=nan` and the
+    process is gone. Negative values are harmless (immediate timeout). Fix: accept only finite, positive values
+    within a sane range, else the default. Affects start, takeTransition and answer.
+B16. **Client mistakes answer with a bare 500 and an empty body**: malformed JSON, a missing body, and
+    `MissingRequiredInputs` on start. They should be 400 with an `ErrorResponse`. With the new table
+    (`ErrorResponse.init?(mappedFrom:)`) each is a one-line addition, plus body-decoding errors in `API+Route`.
+B17. **Success responses carry no `Content-Type` header** (error responses do). `ApiResponse` ignores
+    `DataEncodable.contentType`.
+B18. **Two different 404 shapes for an unknown workflow**: `GET /workflows/:id/graph` throws a Hummingbird
+    `HTTPError` (`{"error":{"message":...}}`), every other endpoint answers `ErrorResponse`.
+B19. **The production entry point hardcodes the OAuth redirect URI** `https://127.0.0.1:8443/auth/google/callback`,
+    repeating `Config`'s default host and port and `AuthController`'s route. Environment variables are read
+    before the in-memory `Config` values, so overriding host or port leaves the redirect URI stale.
+B20. **Two error-to-text mappings disagree**: over HTTP an engine error gets a fixed text from the table; the same
+    error stored in `transitionState.failed` gets `localizedDescription` ("The operation couldn't be
+    completed..."), via `API.ErrorDescription(error:)` / `TransitionState+Codable`.
+B21. On timeout the fallback `workflows.instance(id:)` can throw `WorkflowInstanceNotFound` if the instance was
+    already removed, turning a slow success into a 404 (clarity agent, read from code, low).
 
 ## Progress log
 
@@ -311,11 +332,51 @@ Other side findings:
 - `WorkflowGraphBuilder`'s subflow branch duplicates `process.collectMetadata()` (relevant for S2).
 - Bugs B10–B14 below.
 
+### Server pass (S4) — done 2026-10-04
+
+First version `4f2eb2b`, applied round: see the commit after it ("Apply critics-rewrite round to the server
+cleanup"). Server module: 955 lines before, 864 after.
+
+Safety net built for this pass: a snapshot script calling 30 cases (every error path plus the main success
+shapes) and recording status, content type and body with ids/dates normalized. Compare with JSON keys sorted:
+the encoder's key order differs between server runs. Baseline, first version and applied round are identical.
+The script lived in the session scratchpad; worth turning into a real golden-file test.
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| The whole error contract in ONE file (v1 spread it over three) | yes | yes | yes | applied (3/3) |
+| Table + middleware; engine and Core types do not conform to Hummingbird protocols | no (kept protocol) | yes | yes | applied (2/3): `Errors/ErrorResponseMiddleware.swift` |
+| One helper holds the timeout policy for the three handlers | yes | split in two types | yes | kept as in v1 |
+| `buildRouter` takes only `pluginRoutes` | – | yes | yes | applied |
+| Remove the package-template comment in `App.swift`; file names match types | yes | noticed | yes | applied |
+| Delete `ApiResponse` / `Method+HTTPRequest`, inline `App` build steps | yes | no | renamed | rejected (1/3; touches headers, needs a force unwrap) |
+| `ResponseTimeout` + `TimeLimitedInstanceOperation` types | no | yes | no | rejected (1/3) |
+| Extract the ask-field mapping; default host/port constants in `Config` | – | one | one | not applied (1/3 each) |
+
+Quotes:
+- Architecture: "The engine and `Core` no longer conform to HTTP concepts."
+- Clarity: "Error handling is now one visible step instead of six retroactive conformances that Hummingbird
+  picks up implicitly."
+- Minimality, against the middleware: "`switch_case_on_newline` makes it only about 6 lines shorter, and it needs
+  Hummingbird API not used in the code."
+
+Why things are the way they are:
+- Hummingbird turns an `HTTPResponseError` into a response in `RouterResponder.respond`; everything else reaches
+  `Application`, which answers a bare 500 with an empty body. That is why unmapped errors have no body, and why
+  the old code needed the conformances.
+- The middleware must rethrow what it does not map: answering it ourselves would swallow `HTTPParserError`, which
+  `Application` rethrows, and drop its "Unrecognised Error" debug log (clarity).
+- Success responses have no `Content-Type` because the server never reads `DataEncodable.contentType`.
+- The first `on(_:use:)` overload (returning `some ResponseGenerator`) exists only for `getInstance`, which needs
+  410 and the response encoder's header.
+
+Bugs B15–B21 below.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
-3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~ (done), then S4 server, S2 graph validation
+3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~ (done), then S2 graph validation
    (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
    S6 and S7 if still worthwhile.
-4. Bug backlog B1–B14 (B7 and B9 already fixed), then the pull request.
+4. Bug backlog B1–B21 (B7 and B9 already fixed; B15 is a crash and should go first), then the pull request.
