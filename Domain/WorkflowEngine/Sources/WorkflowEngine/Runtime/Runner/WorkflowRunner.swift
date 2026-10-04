@@ -292,19 +292,34 @@ extension WorkflowRunner {
                 transitionId: transition.id,
                 data: current.data
             )
-            if !seen.insert(signature).inserted {
-                // swiftlint:disable:next line_length
-                logger?.error("Automatic loop detected on \(current.id, privacy: .public) at state \(current.state, privacy: .public) via \(transition.id.processId, privacy: .public)")
-                let loopError = WorkflowsError.AutomaticLoopDetected(
+
+            // A chain may use all `maxSteps` and end on its own; it only fails
+            // when another automatic step is still pending after that.
+            let chainError: (any Error)?
+            if steps >= maxSteps {
+                chainError = WorkflowsError.AutomaticStepLimitReached(
+                    instanceId: current.id,
+                    state: current.state,
+                    transitionId: transition.id,
+                    limit: maxSteps
+                )
+            } else if !seen.insert(signature).inserted {
+                chainError = WorkflowsError.AutomaticLoopDetected(
                     instanceId: current.id,
                     state: current.state,
                     transitionId: transition.id
                 )
-                let failed = current.transitionFailed(loopError, at: transition)
+            } else {
+                chainError = nil
+            }
+
+            if let chainError {
+                logger?.error("Automatic chain stopped on \(current.id, privacy: .public): \(chainError, privacy: .public)")
+                let failed = current.transitionFailed(chainError, at: transition)
                 do {
                     try await storage.update(failed)
                 } catch let persistError {
-                    logger?.error("Failed to persist loop-detection failure: \(persistError, privacy: .public)")
+                    logger?.error("Failed to persist automatic chain failure: \(persistError, privacy: .public)")
                 }
                 return failed
             }
@@ -314,10 +329,6 @@ extension WorkflowRunner {
             }
             current = next
             steps += 1
-            if steps >= maxSteps {
-                logger?.error("Automatic transition limit (\(maxSteps)) reached for \(current.id)")
-                break
-            }
         }
         return current
     }

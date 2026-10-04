@@ -439,7 +439,7 @@ Workflows can define transitions with `trigger: "automatic"`. These execute inli
 - When taking a transition (`POST takeTransition`), any automatic transitions from the resulting state also execute.
 - Only one automatic transition is allowed per state. Multiple automatics from the same state cause an error.
 - A chain that repeats a step with unchanged data is stopped and the instance is marked failed (`AutomaticLoopDetected`).
-- A safety limit of 100 automatic steps per chain stops loops that change data on every step.
+- A chain is stopped after 100 automatic steps if another automatic step is still pending, and the instance is marked failed (`AutomaticStepLimitReached`). This catches loops that change data on every step. A chain that ends on its own within 100 steps is not affected.
 
 ### Subflows
 

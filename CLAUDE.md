@@ -146,7 +146,7 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 ### Known Issues
 
-- **Open bug backlog from the 2026-10 cleanup** (resume on startup never runs, `workflowDidStart` not delivered for REST-started instances, the automatic step cap stops a chain without marking it failed, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
+- **Open bug backlog from the 2026-10 cleanup** (resume on startup never runs, `workflowDidStart` not delivered for REST-started instances, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
 - **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
 - **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.

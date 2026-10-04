@@ -6,6 +6,18 @@
 import Core
 import Foundation
 
+extension WorkflowsError.AutomaticLoopDetected: DescriptiveError {
+    public var userDescription: String {
+        "Automatic transitions keep repeating at state '\(state)' via '\(transitionId.processId)' without changing any data"
+    }
+}
+
+extension WorkflowsError.AutomaticStepLimitReached: DescriptiveError {
+    public var userDescription: String {
+        "Automatic chain was stopped after \(limit) steps, with '\(transitionId.processId)' at state '\(state)' still pending"
+    }
+}
+
 extension WorkflowsError.ValidationFailed: DescriptiveError {
     public var userDescription: String {
         let nonEmpty = results.filter { !$0.errors.isEmpty || !$0.warnings.isEmpty }

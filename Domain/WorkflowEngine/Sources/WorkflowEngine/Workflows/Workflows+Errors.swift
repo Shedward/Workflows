@@ -57,6 +57,13 @@ public enum WorkflowsError {
         public let transitionId: TransitionID
     }
 
+    public struct AutomaticStepLimitReached: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let state: StateID
+        public let transitionId: TransitionID
+        public let limit: Int
+    }
+
     public struct InputBindingFailed: Swift.Error {
         public enum Reason: Sendable {
             case missing
