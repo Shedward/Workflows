@@ -5,7 +5,6 @@
 //  Created by Vlad Maltsev on 03.01.2026.
 //
 
-import SwiftLexicalLookup
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
@@ -39,7 +38,6 @@ private enum WrapperKind {
 
 private struct Field {
     let name: String
-    let type: TypeSyntax
     let kind: WrapperKind
 }
 
@@ -83,7 +81,7 @@ public struct DataBindableMacro: MemberMacro {
             let varDecl = member.decl.as(VariableDeclSyntax.self),
             let binding = varDecl.bindings.first,
             let identifier = binding.pattern.as(IdentifierPatternSyntax.self),
-            let type = binding.typeAnnotation?.type
+            binding.typeAnnotation != nil
         else {
             return nil
         }
@@ -102,19 +100,19 @@ public struct DataBindableMacro: MemberMacro {
             switch attrName {
                 case "Input":
                     let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .input(key: key))
+                    return Field(name: propertyName, kind: .input(key: key))
 
                 case "Output":
                     let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .output(key: key))
+                    return Field(name: propertyName, kind: .output(key: key))
 
                 case "Dependency":
                     let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .dependency(key: key))
+                    return Field(name: propertyName, kind: .dependency(key: key))
 
                 case "Ask":
                     let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .ask(key: key))
+                    return Field(name: propertyName, kind: .ask(key: key))
 
                 default:
                     continue

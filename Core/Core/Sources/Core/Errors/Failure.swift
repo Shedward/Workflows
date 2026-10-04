@@ -5,15 +5,6 @@
 //  Created by Vlad Maltsev on 21.12.2025.
 //
 
-/// A type-erased, sendable box for any Error.
-public struct AnySendableError: Error, @unchecked Sendable {
-    public let base: any Error
-
-    public init(_ base: any Error) {
-        self.base = base
-    }
-}
-
 public struct Failure: DescriptiveError, CustomDebugStringConvertible, Sendable {
     public let file: StaticString
     public let line: UInt
