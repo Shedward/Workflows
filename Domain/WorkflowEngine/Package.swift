@@ -24,6 +24,10 @@ let package = Package(
                 "WorkflowMacro"
             ]
         ),
+        .testTarget(
+            name: "WorkflowEngineTests",
+            dependencies: ["WorkflowEngine"]
+        ),
         .target(
             name: "WorkflowMacro",
             dependencies: ["WorkflowMacroImpl"]

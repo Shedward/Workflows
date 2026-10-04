@@ -19,7 +19,9 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 # Build the macOS WorkflowApp (separate from the server).
 ./Tools/Run/build_app
 
-swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
+./Tools/Run/unit_tests                         # Unit tests of every package that has them (Swift Testing, no server)
+swift test --package-path Core/Core            # ...or one package: Core utilities
+swift test --package-path Domain/WorkflowEngine  # ...graph validation, graph builder, registry
 
 # One-time machine setup: create and trust the TLS certificate in ~/.workflows/certs
 ./Tools/Run/setup_certs                        # --force to regenerate
@@ -133,6 +135,10 @@ Full specification: `Documentation/API.md`
 - Error responses: `{userDescription, debugDescription}` with appropriate HTTP status codes.
 
 ### Testing
+
+Every package builds and tests on its own with SwiftPM (`swift build|test --package-path <package>`); the Xcode workspace is only needed for the app and server executables.
+
+**Unit tests** live in `Domain/WorkflowEngine/Tests/WorkflowEngineTests` (validator, graph builder, registry; fixtures of deliberately invalid workflows in `Fixtures/`) and `Core/Core/Tests`. Run `./Tools/Run/unit_tests`. When changing graph validation, add a fixture workflow and an expectation there.
 
 When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkflows**:
 1. Add or update integration test scripts in `Tools/Tests/` to cover new or changed behavior.

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Runs the unit tests of every package that has them. No server needed.
+
+ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+
+PACKAGES=(
+  Core/Core
+  Domain/WorkflowEngine
+)
+
+for package in "${PACKAGES[@]}"; do
+  echo "Testing $package..."
+  swift test --package-path "$ROOT_DIR/$package" --quiet
+done
+
+echo "Unit tests passed."

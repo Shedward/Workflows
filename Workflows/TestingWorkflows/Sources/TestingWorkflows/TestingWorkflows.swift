@@ -28,18 +28,3 @@ public let workflows: [any Workflow] = [
     AutomaticLoopWorkflow(),
     CountingLoopWorkflow()
 ]
-
-public let invalidWorkflows: [any Workflow] = [
-    UnreachableFinishWorkflow(),
-    UnreachableStateWorkflow(),
-    AutomaticCycleWorkflow(),
-    AmbiguousAutomaticWorkflow(),
-    UndeclaredInputWorkflow(),
-    UndeclaredOutputWorkflow(),
-    ConditionalInputWorkflow(),
-    TypeMismatchWorkflow(),
-    UnusedInputWorkflow(),
-    MissingDependencyWorkflow(),
-    UnsatisfiedSubflowInputWorkflow(),
-    CircularAlpha()
-]
