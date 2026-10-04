@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+
+test_returns_flat_list() {
+  local response
+  response="$(request GET "/startingWorkflows")"
+
+  local count
+  count="$(jq 'length' <<<"$response")"
+  if [[ "$count" -lt 3 ]]; then
+    echo "Expected at least 3 starts in flat list, got $count" >&2
+    exit 1
+  fi
+
+  # Should include both titled (TestProvider's "First item") and untitled (ManualProvider) entries
+  local first_item_count
+  first_item_count="$(jq '[.[] | select(.title == "First item")] | length' <<<"$response")"
+  if [[ "$first_item_count" -lt 1 ]]; then
+    echo "Expected a 'First item' entry from TestProvider in /startingWorkflows" >&2
+    exit 1
+  fi
+
+  local untitled_count
+  untitled_count="$(jq '[.[] | select(.title == null)] | length' <<<"$response")"
+  if [[ "$untitled_count" -lt 1 ]]; then
+    echo "Expected at least one untitled entry from ManualProvider in /startingWorkflows" >&2
+    exit 1
+  fi
+}
+
+test_entries_have_workflow_id_and_id() {
+  local response
+  response="$(request GET "/startingWorkflows")"
+
+  local missing
+  missing="$(jq '[.[] | select((.workflowId | length) == 0 or (.id | length) == 0)] | length' <<<"$response")"
+  if [[ "$missing" -ne 0 ]]; then
+    echo "Found entries with empty workflowId or id" >&2
+    exit 1
+  fi
+}
+
+main() {
+  test_returns_flat_list
+  test_entries_have_workflow_id_and_id
+  echo "Finished Successfully"
+}
+
+main "$@"

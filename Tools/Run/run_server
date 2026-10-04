@@ -4,9 +4,37 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR/../.."
 
-"$SCRIPT_DIR/build"
+ENVIRONMENT="${1:-test}"
+case "$ENVIRONMENT" in
+  test) SCHEME="workflow-server-testing" ;;
+  prod) SCHEME="workflow-server" ;;
+  *)
+    echo "Unknown environment: $ENVIRONMENT (expected 'test' or 'prod')" >&2
+    exit 1
+    ;;
+esac
 
-EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/workflow-server-testing"
+"$SCRIPT_DIR/build" "$ENVIRONMENT"
 
-echo "Starting server..."
+# Gracefully stop any server already bound to the TLS port so the fresh build
+# can take over without an "Address already in use" crash.
+PORT=8443
+existing_pid="$(lsof -ti "tcp:$PORT" -sTCP:LISTEN 2>/dev/null || true)"
+if [[ -n "$existing_pid" ]]; then
+  echo "Stopping existing server on :$PORT (pid $existing_pid)..."
+  kill "$existing_pid" 2>/dev/null || true
+  for _ in $(seq 1 50); do
+    kill -0 "$existing_pid" 2>/dev/null || break
+    sleep 0.1
+  done
+  if kill -0 "$existing_pid" 2>/dev/null; then
+    echo "Server didn't exit gracefully — sending SIGKILL"
+    kill -9 "$existing_pid" 2>/dev/null || true
+    sleep 0.2
+  fi
+fi
+
+EXECUTABLE="$ROOT_DIR/.build/DerivedData/Build/Products/Debug/$SCHEME"
+
+echo "Starting server ($ENVIRONMENT)..."
 exec "$EXECUTABLE"

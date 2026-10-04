@@ -18,17 +18,21 @@ private enum WrapperKind {
 
     var key: String {
         switch self {
-        case .input(let key), .output(let key), .dependency(let key), .ask(let key):
-            return key
+            case .input(let key), .output(let key), .dependency(let key), .ask(let key):
+                return key
         }
     }
 
     var methodName: String {
         switch self {
-        case .input: return "input"
-        case .output: return "output"
-        case .dependency: return "dependency"
-        case .ask: return "ask"
+            case .input:
+                return "input"
+            case .output:
+                return "output"
+            case .dependency:
+                return "dependency"
+            case .ask:
+                return "ask"
         }
     }
 }
@@ -96,24 +100,24 @@ public struct DataBindableMacro: MemberMacro {
             }
 
             switch attrName {
-            case "Input":
-                let key = Self.extractKey(from: attribute) ?? propertyName
-                return Field(name: propertyName, type: type, kind: .input(key: key))
+                case "Input":
+                    let key = Self.extractKey(from: attribute) ?? propertyName
+                    return Field(name: propertyName, type: type, kind: .input(key: key))
 
-            case "Output":
-                let key = Self.extractKey(from: attribute) ?? propertyName
-                return Field(name: propertyName, type: type, kind: .output(key: key))
+                case "Output":
+                    let key = Self.extractKey(from: attribute) ?? propertyName
+                    return Field(name: propertyName, type: type, kind: .output(key: key))
 
-            case "Dependency":
-                let key = Self.extractKey(from: attribute) ?? propertyName
-                return Field(name: propertyName, type: type, kind: .dependency(key: key))
+                case "Dependency":
+                    let key = Self.extractKey(from: attribute) ?? propertyName
+                    return Field(name: propertyName, type: type, kind: .dependency(key: key))
 
-            case "Ask":
-                let key = Self.extractKey(from: attribute) ?? propertyName
-                return Field(name: propertyName, type: type, kind: .ask(key: key))
+                case "Ask":
+                    let key = Self.extractKey(from: attribute) ?? propertyName
+                    return Field(name: propertyName, type: type, kind: .ask(key: key))
 
-            default:
-                continue
+                default:
+                    continue
             }
         }
 

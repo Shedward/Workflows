@@ -33,14 +33,14 @@ actor WaitScheduler {
 
     func schedule(for instanceId: WorkflowInstanceID, waiting: Waiting) {
         switch waiting {
-        case .time(let time):
-            logger?.trace("Schedule waiting for time \(time.date, privacy: .public)")
-            scheduleTimeWait(for: instanceId, date: time.date)
-        case .workflowFinished(let finished):
-            logger?.trace("Schedule waiting for finishing instance \(finished.instanceId, privacy: .public)")
-            registerFinishWaiter(waitingId: instanceId, finishedId: finished.instanceId)
-        case .asking:
-            logger?.trace("Asking for user input on \(instanceId, privacy: .public)")
+            case .time(let time):
+                logger?.trace("Schedule waiting for time \(time.date, privacy: .public)")
+                scheduleTimeWait(for: instanceId, date: time.date)
+            case .workflowFinished(let finished):
+                logger?.trace("Schedule waiting for finishing instance \(finished.instanceId, privacy: .public)")
+                registerFinishWaiter(waitingId: instanceId, finishedId: finished.instanceId)
+            case .asking:
+                logger?.trace("Asking for user input on \(instanceId, privacy: .public)")
         }
     }
 

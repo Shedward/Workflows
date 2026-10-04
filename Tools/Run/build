@@ -3,8 +3,17 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 WORKSPACE="$ROOT_DIR/Workflow.xcworkspace"
-SCHEME="workflow-server-testing"
 DERIVED_DATA="$ROOT_DIR/.build/DerivedData"
+
+ENVIRONMENT="${1:-test}"
+case "$ENVIRONMENT" in
+  test) SCHEME="workflow-server-testing" ;;
+  prod) SCHEME="workflow-server" ;;
+  *)
+    echo "Unknown environment: $ENVIRONMENT (expected 'test' or 'prod')" >&2
+    exit 1
+    ;;
+esac
 
 echo "Building $SCHEME..."
 xcodebuild build \

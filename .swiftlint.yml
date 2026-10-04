@@ -61,6 +61,7 @@ opt_in_rules:
   - sorted_imports
   - static_operator
   - static_over_final_class
+  - switch_case_on_newline
   - toggle_bool
   - trailing_closure
   - type_contents_order
@@ -194,7 +195,7 @@ statement_position:
   statement_mode: default
 
 switch_case_alignment:
-  indented_cases: false
+  indented_cases: true
 
 trailing_closure:
   only_single_muted_parameter: true

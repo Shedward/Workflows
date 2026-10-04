@@ -91,10 +91,10 @@ extension Headers: CustomStringConvertible {
 
     private func shouldRedactHeader(_ key: String) -> Bool {
         switch key {
-        case "Authorization":
-            return true
-        default:
-            return false
+            case "Authorization":
+                return true
+            default:
+                return false
         }
     }
 }

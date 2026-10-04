@@ -11,7 +11,7 @@ extension Color {
 
     private static let autoTintPalette: [Color] = [
         .red, .orange, .yellow, .green, .mint,
-        .teal, .cyan, .blue, .indigo, .purple, .pink, .brown,
+        .teal, .cyan, .blue, .indigo, .purple, .pink, .brown
     ]
 
     init(hash value: some Hashable) {

@@ -11,14 +11,9 @@ struct Card<Content: View>: View {
     let tint: Color?
     @ViewBuilder let content: Content
 
-    init(tint: Color? = nil, @ViewBuilder content: () -> Content) {
-        self.tint = tint
-        self.content = content()
-    }
-
     private var borderHighlight: Color {
         if let tint {
-            tint.opacity(0.2)
+            tint.opacity(0.3)
         } else {
             theme.colors.content.tertiary.opacity(0.5)
         }
@@ -58,5 +53,10 @@ struct Card<Content: View>: View {
                     .shadow(color: theme.colors.content.tertiary.opacity(0.2), radius: 3, y: 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: theme.spacing.cornerRadius))
+    }
+
+    init(tint: Color? = nil, @ViewBuilder content: () -> Content) {
+        self.tint = tint
+        self.content = content()
     }
 }

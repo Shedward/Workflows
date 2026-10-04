@@ -21,12 +21,23 @@ struct WorkflowsService: Sendable {
         return try await rest.fetch(request).items
     }
 
-    func getWorkflows() async throws -> [Workflow] {
-        let request = GetWorkflows()
+    func getStartingWorkflows() async throws -> [WorkflowStart] {
+        let request = GetStartingWorkflows()
         return try await rest.fetch(request).items
     }
-}
 
-extension EnvironmentValues {
-    @Entry var workflowService: WorkflowsService?
+    func startWorkflow(_ start: WorkflowStart) async throws -> WorkflowInstance {
+        let request = StartWorkflow(workflowId: start.workflowId, initialData: start.data)
+        return try await rest.fetch(request)
+    }
+
+    func getTransitions(instanceId: String) async throws -> [API.Transition] {
+        let request = AvailableTransitions(instanceId: instanceId)
+        return try await rest.fetch(request).items
+    }
+
+    func takeTransition(instanceId: String, transitionProcessId: String) async throws -> WorkflowInstance {
+        let request = TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId)
+        return try await rest.fetch(request)
+    }
 }

@@ -9,18 +9,30 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 ## Build & Test Commands
 
 ```bash
-# Build (ALWAYS use this script — do not call xcodebuild directly)
-./Tools/Run/build
+# Build (ALWAYS use this script — do not call xcodebuild directly).
+# Optional environment argument: `test` (default, builds workflow-server-testing
+# with TestingWorkflows + in-memory storage) or `prod` (builds workflow-server
+# with HHWorkflows + JSON file storage).
+./Tools/Run/build               # same as ./Tools/Run/build test
+./Tools/Run/build prod
+
+# Build the macOS WorkflowApp (separate from the server).
+./Tools/Run/build_app
 
 swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
 # One-time machine setup: create and trust the TLS certificate in ~/.workflows/certs
 ./Tools/Run/setup_certs                        # --force to regenerate
 
-# Build and run the server
-./Tools/Run/run_server
+# Build and run the server. Same `test` (default) / `prod` argument as build.
+./Tools/Run/run_server          # same as ./Tools/Run/run_server test
+./Tools/Run/run_server prod
 
-# Build, run server, run all integration tests, then shut down
+# Build, run server, run all integration tests, then shut down.
+# NOTE: full_check does NOT kill an existing server on :8443 — if one is
+# running (e.g. a stale prod server), curl will hit it instead of the test
+# binary, producing confusing WorkflowNotFound failures. Stop it first:
+#   kill "$(lsof -ti tcp:8443 -sTCP:LISTEN)"
 ./Tools/Run/full_check
 
 # Integration tests (require running server on https://127.0.0.1:8443)
@@ -105,6 +117,8 @@ Full specification: `Documentation/API.md`
 
 - `GET /health` — Liveness check
 - `GET /workflows` — List workflow types
+- `GET /startingWorkflows` — Flat list of available starts across all workflows (`WorkflowStart`: `{id, workflowId, title?, data}`)
+- `GET /workflows/:id/starting` — Available starts for one workflow
 - `GET /workflowInstances` — List active instances (finished instances are removed)
 - `POST /workflowInstances` — Start workflow (`{workflowId, initialData?}`)
 - `GET /workflowInstances/:id` — Instance status

@@ -2,35 +2,30 @@
 //  Workflows+Starting.swift
 //  WorkflowEngine
 //
-//  Created by Claude on 03.04.2026.
-//
 
 import Core
 
 public extension Workflows {
-    func starting(for workflowId: WorkflowID) async throws -> [WorkflowStartCandidate] {
+    func starting(for workflowId: WorkflowID) async throws -> [WorkflowStart] {
         let workflow = try await workflow(id: workflowId)
-        let graph = await registry.graph(for: workflowId)
-        let requiredInputs = graph?.requiredInputs ?? []
-
-        var candidates: [WorkflowStartCandidate] = []
-
+        var result: [WorkflowStart] = []
         for provider in workflow.providers {
             let resolved = try resolveProvider(provider)
             let starts = try await Failure.wrap("Getting startings") {
                 try await resolved.starting()
             }
-            for start in starts {
-                candidates.append(WorkflowStartCandidate(
-                    title: start.title,
-                    workflowId: workflowId,
-                    data: start.data,
-                    inputs: requiredInputs
-                ))
-            }
+            result.append(contentsOf: starts)
         }
+        return result
+    }
 
-        return candidates
+    func allStarting() async throws -> [(workflowId: WorkflowID, start: WorkflowStart)] {
+        var all: [(WorkflowID, WorkflowStart)] = []
+        for workflow in await workflows() {
+            let starts = try await starting(for: workflow.id)
+            all.append(contentsOf: starts.map { (workflow.id, $0) })
+        }
+        return all
     }
 
     private func resolveProvider(_ provider: any WorkflowStartProvider) throws -> any WorkflowStartProvider {
