@@ -79,8 +79,4 @@ extension Workflow {
             return transition
         }
     }
-
-    public func chainAfter(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        states.flatMap { chainedAfter($0, build: build) }
-    }
 }

@@ -44,24 +44,6 @@ actor WaitScheduler {
         }
     }
 
-    func cancel(for instanceId: WorkflowInstanceID) {
-        logger?.trace("Canceled scheduling for \(instanceId)")
-        if let task = timeTasks.removeValue(forKey: instanceId) {
-            task.cancel()
-        }
-        // Remove from all finish-waiter sets
-        for key in Array(finishWaiters.keys) {
-            var set = finishWaiters[key] ?? []
-            if set.remove(instanceId) != nil {
-                if set.isEmpty {
-                    finishWaiters.removeValue(forKey: key)
-                } else {
-                    finishWaiters[key] = set
-                }
-            }
-        }
-    }
-
     func notifyFinished(_ instanceId: WorkflowInstanceID, data: WorkflowData) async {
         logger?.trace("Notify finishing for \(instanceId)")
         if let waiters = finishWaiters.removeValue(forKey: instanceId) {

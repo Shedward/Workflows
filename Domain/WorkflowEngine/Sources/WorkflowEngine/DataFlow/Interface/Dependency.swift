@@ -27,10 +27,6 @@ public struct Dependency<Value: Sendable>: Sendable {
         return value
     }
 
-    public var projectedValue: Self {
-        self
-    }
-
     public init(key: StaticString? = nil) {
     }
 }

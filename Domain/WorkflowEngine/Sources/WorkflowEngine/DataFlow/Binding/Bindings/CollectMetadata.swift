@@ -24,14 +24,6 @@ public struct TransitionMetadata: Sendable, Equatable {
     public var outputKeys: Set<String> {
         Set(outputs.map(\.key))
     }
-
-    public var dependencyKeys: Set<String> {
-        Set(dependencies.map(\.key))
-    }
-
-    public var askKeys: Set<String> {
-        Set(asks.map(\.key))
-    }
 }
 
 struct CollectMetadata: DataBinding {

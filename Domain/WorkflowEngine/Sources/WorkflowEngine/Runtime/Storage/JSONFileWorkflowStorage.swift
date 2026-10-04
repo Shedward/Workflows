@@ -46,12 +46,6 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         return encoder
     }()
 
-    private let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }()
-
     public init(directory: URL, retentionInterval: TimeInterval = 3600) async throws {
         self.directory = directory
         self.retentionInterval = retentionInterval
