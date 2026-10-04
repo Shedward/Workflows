@@ -9,11 +9,11 @@ import Core
 
 extension Workflow {
     public func onStart(@ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        transitions(from: State.start, trigger: .manual, build())
+        makeTransitions(from: State.start, trigger: .manual, build())
     }
 
     public func on(_ state: State, @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
-        transitions(from: state.id, trigger: .manual, build())
+        makeTransitions(from: state.id, trigger: .manual, build())
     }
 
     public func on(_ states: State..., @ArrayBuilder<ToTransition<State>> build: () -> [ToTransition<State>]) -> [Transition<State>] {
@@ -25,11 +25,11 @@ extension Workflow {
     }
 
     public func afterStart(_ build: () -> ToTransition<State>) -> [Transition<State>] {
-        transitions(from: State.start, trigger: .automatic, [build()])
+        makeTransitions(from: State.start, trigger: .automatic, [build()])
     }
 
     public func after(_ state: State, _ build: () -> ToTransition<State>) -> [Transition<State>] {
-        transitions(from: state.id, trigger: .automatic, [build()])
+        makeTransitions(from: state.id, trigger: .automatic, [build()])
     }
 
     public func after(_ states: State..., build: () -> ToTransition<State>) -> [Transition<State>] {
@@ -44,12 +44,12 @@ extension Workflow {
         chain(from: initial.id, build(), builderName: "chainedAfter")
     }
 
-    private func transitions(
+    private func makeTransitions(
         from state: StateID,
         trigger: TransitionTrigger,
         _ steps: [ToTransition<State>]
     ) -> [Transition<State>] {
-        steps.map { Transition(from: state, targets: $0.targets, process: $0.process, workflow: self, trigger: trigger) }
+        steps.map { $0.transition(from: state, trigger: trigger, in: self) }
     }
 
     /// Automatic transitions where each step starts from the state the previous one leads to.
@@ -61,15 +61,8 @@ extension Workflow {
                 step.targets.count <= 1,
                 "Branching transitions cannot be used in chains. Use on() instead of \(builderName)()."
             )
-            let transition = Transition<State>(
-                from: currentStateId,
-                targets: step.targets,
-                process: step.process,
-                workflow: self,
-                trigger: .automatic
-            )
-            currentStateId = step.targets[0]
-            return transition
+            defer { currentStateId = step.targets[0] }
+            return step.transition(from: currentStateId, trigger: .automatic, in: self)
         }
     }
 }

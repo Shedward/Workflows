@@ -15,6 +15,10 @@ public struct ToTransition<State: WorkflowState> {
         self.process = process
         self.targets = targets
     }
+
+    func transition(from state: StateID, trigger: TransitionTrigger, in workflow: AnyWorkflow) -> Transition<State> {
+        Transition(from: state, targets: targets, process: process, workflow: workflow, trigger: trigger)
+    }
 }
 
 public extension TransitionProcess {

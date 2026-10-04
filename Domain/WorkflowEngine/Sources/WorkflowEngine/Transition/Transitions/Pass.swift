@@ -9,7 +9,7 @@ import Core
 
 public protocol Pass: TransitionProcess, Defaultable { }
 
-public extension Pass where Self: TransitionProcess {
+public extension Pass {
     func start(context: inout WorkflowContext) -> TransitionResult {
         return .completed
     }

@@ -19,12 +19,10 @@ public extension Asking {
 
     func process() {
     }
-}
 
-public extension Asking where Self: TransitionProcess {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
         if case .answered(let answers) = context.resume {
-            try await withBoundData(in: &context, kind: "ask", runVerb: "process", answers: answers) {
+            try await runBody(in: &context, answers: answers, failures: failures) {
                 try await $0.process()
             }
             return .completed
@@ -32,7 +30,7 @@ public extension Asking where Self: TransitionProcess {
 
         // Not answered yet: only the inputs are bound, so `prompt` can use them.
         var ask = self
-        try Failure.wrap("Failed to prepare ask \(type(of: self))") {
+        try Failure.wrap(failures.prepare) {
             try ask.bind(BindInputs(data: context.instance.data))
         }
 
@@ -41,5 +39,15 @@ public extension Asking where Self: TransitionProcess {
         }
 
         return .waiting(.asking(.init(prompt: ask.prompt, expectedFields: expectedFields)))
+    }
+}
+
+private extension Asking {
+    var failures: BodyFailures {
+        BodyFailures(
+            prepare: "Failed to prepare ask \(type(of: self))",
+            run: "Failed to process ask \(type(of: self))",
+            finish: "Failed to finish ask \(type(of: self))"
+        )
     }
 }

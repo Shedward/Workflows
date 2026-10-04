@@ -20,6 +20,6 @@ struct BindInputs: DataBinding {
         guard let inputValue = decoded else {
             throw WorkflowsError.InputBindingFailed(key: key, reason: .missing)
         }
-        input.storage = ValueStorage(inputValue)
+        input.value = inputValue
     }
 }

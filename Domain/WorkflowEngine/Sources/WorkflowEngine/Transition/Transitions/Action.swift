@@ -11,11 +11,21 @@ public protocol Action: TransitionProcess, DataBindable, Defaultable {
     func run() async throws
 }
 
-public extension Action where Self: TransitionProcess {
+public extension Action {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
-        try await withBoundData(in: &context, kind: "action", prepareVerb: "prepare to run") {
+        try await runBody(in: &context, failures: failures) {
             try await $0.run()
         }
         return .completed
+    }
+}
+
+private extension Action {
+    var failures: BodyFailures {
+        BodyFailures(
+            prepare: "Failed to prepare to run action \(type(of: self))",
+            run: "Failed to run action \(type(of: self))",
+            finish: "Failed to finish action \(type(of: self))"
+        )
     }
 }

@@ -23,6 +23,6 @@ struct SetDependencies: DataBinding {
             )
         }
 
-        dependency.storage = ValueStorage(typedDependency)
+        dependency.value = typedDependency
     }
 }

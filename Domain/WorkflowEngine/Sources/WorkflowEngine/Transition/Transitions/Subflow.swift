@@ -8,7 +8,7 @@
 import Core
 import os
 
-public extension Workflow where Self: TransitionProcess {
+public extension Workflow {
     func start(context: inout WorkflowContext) async throws -> TransitionResult {
         if case .workflowFinished(let childData) = context.resume {
             mergeOutputs(from: childData, into: &context)
