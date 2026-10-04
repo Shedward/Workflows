@@ -45,7 +45,7 @@ struct WorkflowInstancesController: Controller {
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let timeout = self.timeout(from: request)
-        let initialData = body.initialData.map { WorkflowData(api: $0) } ?? WorkflowData()
+        let initialData = body.initialData.map { WorkflowEngine.WorkflowData(api: $0) } ?? WorkflowEngine.WorkflowData()
 
         let created = try await workflows.create(body.workflowId, initialData: initialData)
 
@@ -87,7 +87,7 @@ struct WorkflowInstancesController: Controller {
     private func answerAsk(request: Request, body: AnswerAsk.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let instanceId = try context.parameters.require("id")
         let timeout = self.timeout(from: request)
-        let data = WorkflowData(api: body.data)
+        let data = WorkflowEngine.WorkflowData(api: body.data)
 
         let result = await withTimeout(seconds: timeout) { [workflows] in
             try await workflows.answer(to: instanceId, data: data)

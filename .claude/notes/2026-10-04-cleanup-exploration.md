@@ -133,8 +133,57 @@ Left in place, still unreferenced — each is a decision for the user:
   `Repository.assertExists`, small fluent modifiers in Core/Rest.
 - Redundant but not dead (left for the subsystem passes): hand-written `TransitionState: Codable`.
 
+### Architecture pass: engine no longer depends on API (A1) — done 2026-10-04
+
+First version `289ead8`: nine `*+API.swift` mapping files moved from `WorkflowEngine/API/` to
+`WorkflowServer/API/Mapping/`; `API` dropped from the engine's `Package.swift`; `WorkflowData.data` made
+`public internal(set)`.
+
+    Core <- Rest <- API <------------------ WorkflowServer
+    Core <- WorkflowEngine <---------------/
+
+Then one `/my:critics-rewrite` round: three agents, isolated worktrees, one axis each, rewriting `289ead8`
+over base `1200e17`. Agents did not build; ideas were applied by hand and verified (build test/prod,
+full_check 26/26, SwiftLint 0).
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| Keep the move, the Package cut, and `public internal(set) data` exactly as in v1 | yes | yes | yes | kept (3/3) |
+| Spell `WorkflowEngine.WorkflowData` in the controller instead of overload resolution between two same-named types | yes | yes | yes | applied (3/3) |
+| Fix stale `//  WorkflowEngine` headers in the moved files | noticed | yes | yes (dropped headers) | applied |
+| Delete `WorkflowData+API.swift`, inline as `.data.data` at 4 call sites | yes | no | opposite (named accessors) | rejected: contested, `.data.data` reads worse |
+| Server-owned wire strings for `TransitionTrigger` (`apiValue` switch) | – | yes | – | rejected for now: new entity around one field (1/3). Recorded below |
+| One `instanceResponse` helper for the 3 timeout blocks in `WorkflowInstancesController` | out of scope | yes | out of scope | deferred to the server pass (S4); it is a ready starting point |
+| Merge 9 mapping files into 2 direction-named files, rename label `model:` → `engine:` | rejected (breaks rename tracking) | rejected (cosmetic churn) | yes | rejected (1/3, two against) |
+| Request-body accessors `engineInitialData` / `engineData` | – | – | yes | rejected: new entity for a one-liner |
+
+Quotes:
+- Minimality: "v1 is already close to the floor: eight pure renames plus what the compiler demands."
+- Architecture: "v1's placement is right: the server is the only layer that knows both the engine and the
+  REST DTOs."
+- All three on `WorkflowData.data`: `public internal(set)` is the narrowest that works, because the server
+  needs the getter and `Subflow.swift` mutates `parentData.data[key]` inside the engine.
+
+No second round: the first one converged on "nothing more to compress" for this change.
+
+Side findings from the agents (more valuable than the edits):
+- REST `trigger` strings are the engine enum's `rawValue` (`TransitionTrigger: String`), used in
+  `Transition+API.swift` and `WorkflowGraph+API.swift`. Renaming an engine case would silently change the JSON.
+- `WorkflowServer` imports `Core` without declaring it in its `Package.swift` (works transitively).
+- Misnomers at the REST boundary that cannot change without changing JSON: `API.Workflow.stateId` holds a
+  list; `waitingWorkflow.workflowId` holds an instance id. In `WorkflowInstancesController`, handlers
+  `getWorkflows` / `getWorkflow` and locals named `workflowId` actually deal with instances — fix in S4.
+- `API.ErrorDescription.init(error:)` is mapping logic living inside the DTO package.
+- `WorkflowGraph` DTO arrays (`requiredInputs`, `producedOutputs`, metadata fields) are built by `.map` over a
+  `Set`, so their order in the JSON is not stable between runs.
+- The `instanceResponse` helper reads the `timeout` query parameter after `workflows.create` instead of
+  before; harmless (pure read), but note it when applying in S4.
+
+Scope decision: A2 (facade / runner overlap) is handled at the start of the runner pass (S1), since it changes
+runner internals that S1 rewrites anyway.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
-2. Architectural pass: A1, then A2.
+2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
 3. Subsystems: S1, S2, S3, then S4, S5; S6 and S7 if still worthwhile.

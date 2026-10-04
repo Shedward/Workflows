@@ -1,6 +1,6 @@
 //
 //  TransitionState+API.swift
-//  WorkflowEngine
+//  WorkflowServer
 //
 //  Created by Vlad Maltsev on 24.02.2026.
 //

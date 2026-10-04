@@ -56,9 +56,9 @@ swiftlint --fix                                # Auto-fix formatting violations
 
 - **Core/Core** — Foundation utilities: `Logger` (scoped), `Failure` (structured errors with stack traces), `@ArrayBuilder` (result builder), `Modifiers` (builder pattern), `Defaultable`
 - **Core/Rest** — REST client framework: `RestClient` protocol, `NetworkRestClient` (URLSession), type-safe `Request<RequestBody, ResponseBody>`, body types (`JSONBody`, `EmptyBody`, etc.), decorators, validators
-- **Domain/WorkflowEngine** — Core engine: workflow protocol, transitions, runner, registry, storage, data flow, wait scheduling
-- **Domain/API** — REST API endpoint definitions and shared models (`Workflow`, `WorkflowInstance`, `Transition`, `TransitionState`)
-- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints
+- **Domain/WorkflowEngine** — Core engine: workflow protocol, transitions, runner, registry, storage, data flow, wait scheduling. Depends only on `Core` (and swift-syntax for the macro); it must not import `API` or `Rest`
+- **Domain/API** — REST API endpoint definitions and shared models (`Workflow`, `WorkflowInstance`, `Transition`, `TransitionState`). Shared by the server and `WorkflowApp`
+- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints. Owns the engine model ↔ REST model conversions in `API/Mapping/*+API.swift`
 - **Services/Git, Services/Github** — External service integrations
 - **Workflows/TestingWorkflows** — Example workflow definitions used by integration tests
 

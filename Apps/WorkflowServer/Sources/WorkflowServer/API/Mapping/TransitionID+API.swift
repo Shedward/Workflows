@@ -1,6 +1,6 @@
 //
 //  TransitionID.swift
-//  WorkflowEngine
+//  WorkflowServer
 //
 //  Created by Vlad Maltsev on 23.02.2026.
 //

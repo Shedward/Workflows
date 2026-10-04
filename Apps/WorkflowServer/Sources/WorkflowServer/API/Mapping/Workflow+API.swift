@@ -1,5 +1,5 @@
 //
-//  Workflow+Mapping.swift
+//  Workflow+API.swift
 //  WorkflowServer
 //
 //  Created by Vlad Maltsev on 23.02.2026.

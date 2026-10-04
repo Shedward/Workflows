@@ -1,6 +1,6 @@
 //
 //  API+WorkflowInstance.swift
-//  WorkflowEngine
+//  WorkflowServer
 //
 //  Created by Vlad Maltsev on 09.01.2026.
 //
