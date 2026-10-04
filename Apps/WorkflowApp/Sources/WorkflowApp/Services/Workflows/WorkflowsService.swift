@@ -12,8 +12,12 @@ import SwiftUI
 struct WorkflowsService: Sendable {
     let rest: any RestClient
 
+    init(rest: any RestClient) {
+        self.rest = rest
+    }
+
     init(endpoint: NetworkRestClient.Endpoint) {
-        self.rest = NetworkRestClient(endpoint: endpoint)
+        self.init(rest: NetworkRestClient(endpoint: endpoint))
     }
 
     func getWorkflowInstances() async throws -> [WorkflowInstance] {

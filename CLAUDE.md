@@ -138,7 +138,7 @@ Full specification: `Documentation/API.md`
 
 Every package builds and tests on its own with SwiftPM (`swift build|test --package-path <package>`); the Xcode workspace is only needed for the app and server executables.
 
-**Unit tests** live in `Domain/WorkflowEngine/Tests/WorkflowEngineTests` (validator, graph builder, registry; fixtures of deliberately invalid workflows in `Fixtures/`) and `Core/Core/Tests`. Run `./Tools/Run/unit_tests`. When changing graph validation, add a fixture workflow and an expectation there.
+**Unit tests** live in `Domain/WorkflowEngine/Tests/WorkflowEngineTests` (validator, graph builder, registry; fixtures of deliberately invalid workflows in `Fixtures/`), `Apps/WorkflowApp/Tests/WorkflowAppTests` (Focus view models against a `FakeServer` REST client) and `Core/Core/Tests`. Run `./Tools/Run/unit_tests`. When changing graph validation, add a fixture workflow and an expectation there. When changing a Focus view model, add a test there.
 
 When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkflows**:
 1. Add or update integration test scripts in `Tools/Tests/` to cover new or changed behavior.

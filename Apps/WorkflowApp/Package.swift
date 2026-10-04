@@ -24,6 +24,14 @@ let package = Package(
                 .product(name: "Rest", package: "Rest"),
                 .product(name: "API", package: "API")
             ]
+        ),
+        .testTarget(
+            name: "WorkflowAppTests",
+            dependencies: [
+                "WorkflowApp",
+                .product(name: "Rest", package: "Rest"),
+                .product(name: "API", package: "API")
+            ]
         )
     ]
 )
