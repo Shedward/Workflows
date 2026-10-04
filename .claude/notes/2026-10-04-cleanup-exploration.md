@@ -210,6 +210,30 @@ B29. Validation ignores a `DataBindable` process that is not `Defaultable`, whil
     "nothing calls `init()` any more". Also: `ValidationError.circularSubflow` is only ever logged, never part of
     a `WorkflowValidationResult`.
 
+B30–B33 come from the app view models round (2026-10-05). Read from code, NOT verified by experiment. The
+cleanup kept every one of these behaviors.
+
+B30. **A cancelled request is not a `CancellationError` with the real client** (all three agents, and my own
+    reading). `NetworkRestClient.fetch` wraps `session.data` errors in `Failure.wrap("Executing request")`, so a
+    cancelled in-flight request reaches the view model as a `Failure`. `catch is CancellationError` then only
+    catches the view model's own cancellation check. "In production a replaced in-flight request probably sets
+    `error`; 'cancelled is silent' holds only with `FakeServer`" (clarity). Expected symptom: an error row flashes
+    when a refresh replaces a running one (for example `.task(id:)` plus the refresh after a take).
+    Fix: one place, `ErrorPresenting.latest` (ignore any failure of a cancelled task), or rethrow cancellation
+    unwrapped in the client.
+B31. **`take` has a race and a stuck marker** (all three agents). `runningTransition` is set inside the task, so
+    two `take` calls in one main-actor turn both pass the guard and the second cancels the first. A take that
+    ends in its cancellation branch leaves `runningTransition` set for good. "`take` mixes two policies: the
+    guard says 'ignore while running', the slot says 'latest wins'" (architecture).
+    Fix (minimality's version): set `runningTransition` synchronously before the task; then the guard is enough
+    and `takeTask` with its cancellation branches can go.
+B32. **`TransitionViewModel.refresh` without an active workflow** clears `transitions` but neither cancels an
+    in-flight refresh nor clears `error`, so a stale response can refill the list (all three agents).
+B33. **Switch mode error handling** (minimality, clarity): `showActiveWorkflows` does not clear `error` and
+    `SwitchView` hides everything behind it, so after a failed start "<Back>" leaves the error on screen. A
+    successful `start` does not clear `error` and sets `state` without animation. A replaced `start` silently
+    drops an instance the server already created.
+
 ## Progress log
 
 ### Dead-code sweep — done 2026-10-04
@@ -471,10 +495,68 @@ Why things are the way they are:
 Verified: 30 unit tests, `full_check` 27/27, test and production builds, SwiftLint 0, production server starting
 under strict validation with the six HH workflows in a sandboxed home. Bugs B22–B29 above.
 
+### App view models pass (S5) — done 2026-10-05
+
+Commits: `2261dd8` (23 unit tests for the Focus view models), `ff3ee5e` (first version), then "Apply
+critics-rewrite round to the app view models". Focus folder plus `DrawerMessage`: 707 lines before, 678 after.
+
+Safety net: `Apps/WorkflowApp/Tests/WorkflowAppTests`, part of `./Tools/Run/unit_tests`. `FakeServer` is a
+`RestClient` with queued responses per route that ignores cancellation, and `Gate` holds a response until the
+test opens it, so a test decides when a stale response arrives. Checked by two mutations, stable over six runs.
+`WorkflowsService.init(rest:)` exists for these tests.
+
+What the pass did:
+- Four of the five cancellable loads share `ErrorPresenting.latest(replacing:_:)`. `take` keeps its own task.
+- The mode registry is the `FocusModeID` enum (`CaseIterable`, owns its bar entry) plus an exhaustive switch in
+  `FocusRoot`. `FocusModeDescriptor`, `FocusViewModel.modes` and the `fatalError` lookup are gone.
+- `DrawerMessage` replaces two `errorRow` copies and two captions. `TransitionView` takes only its view model.
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| `take` without v1's `defer` (it was a regression, see below) | yes | yes | yes | applied (3/3): `take` is back to its original form |
+| `take` does not fit the shared helper | plain `Task` | needs an extra `clearRunningTransition()` | "does not fit" a request/apply split | applied: helper serves the four plain loads |
+| File named after its type; no doc comment on the helper | comment removed | type renamed to the file | file renamed to the type | applied: `ErrorPresenting.swift` |
+| `FocusRoot.currentMode` clashes with `viewModel.currentMode` | – | noticed | inlined | applied (2/3): `let mode = switch ...` in `body` |
+| Keep `AnyFocusMode` and the three mode structs | removed them | keep | keep | kept (2/3) |
+| Keep `ErrorPresenting` as a protocol | keep | `LatestTask` object, no protocol | keep | kept (2/3) |
+| Keep `DrawerMessage` | removed | keep | keep | kept (2/3) |
+| Set `runningTransition` synchronously, drop `takeTask` | yes | "would fix the race" | no | not applied: behavior change, see B31 |
+| Child view models get `service` and closures, not the parent | no | yes | no | rejected (1/3) |
+| Cancel and `Task` at each call site, helper only maps the error | no | no | yes | rejected (1/3; brings the boilerplate back) |
+| Mode bar table moved to `ModeBar.swift`; `if let entry`; named `workflowFinished` | – | one | two | not applied (1/3 each) |
+
+Correction of my own first version: its commit message says the `defer` in `take` only changes an unreachable
+path. All three agents showed it is reachable. Architecture: "Two quick takes both pass the guard, and the
+cancelled first one hides the running row while the second is in flight." The round restores the original
+`take`; the underlying race is B31.
+
+Quotes:
+- Clarity: "v1's `latest(replacing:_:)` hid two unrelated decisions in one helper: 'cancel the previous call' and
+  'show the failure text'. The first is one half of 'latest wins'; the other half (`try Task.checkCancellation()`)
+  sat at the call site." (Noted, not resolved: the two proposed fixes point in opposite directions.)
+- Architecture: "`AnyFocusMode` looks load-bearing: all three modes return `ActiveWorkflowContent`, so the
+  `AnyView` keeps identity and `.blurReplace` in `FocusHUD` does not fire on mode change."
+- Clarity: "a top-level switch over modes would give `FocusHUD` a new identity per mode and reset its
+  `@FocusState` and tint."
+- Minimality: "`ActiveWorkflowContent` stays a separate view: it keeps `activeWorkflow` observation out of
+  `FocusRoot.body`." And: `SwitchViewModel.activate` sets the workflow unanimated before the animated
+  `enter(.initial)`; "if `FocusRoot.body` read `activeWorkflow`, the mode change could lose `.snappy`."
+
+Why things are the way they are:
+- `error` of both view models is settable inside the module because the protocol needs the setter.
+- Mode bar order is now the declaration order of `FocusModeID` cases (was an explicit array); the test
+  `modeBarOffersSwitchingAndTransitionWithTheirShortcuts` pins it.
+- After a take that finishes the workflow, `refresh()` runs twice (from `take` and from `.task(id:)`); both hit
+  the no-workflow guard and send nothing (clarity).
+- Dead leftover for the user's decision: `ModeBar.placeholderButton("doc.text")` (minimality, architecture).
+
+Verified: 23 app tests, all unit tests, `build_app`, SwiftLint 0. NOT verified: the look and animations of the
+HUD on screen; the app was not launched. Bugs B30–B33 above.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
-3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~ (done),
-   then S5 app view models; S6 and S7 if still worthwhile.
-4. Bug backlog B1–B29 (B7, B9 and B15 already fixed), then the pull request.
+3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~,
+   ~~S5 app view models~~ (done); S6 storage and S7 Google auth if still worthwhile.
+4. Bug backlog B1–B33 (B7, B9 and B15 already fixed), then the pull request.
