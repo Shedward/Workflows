@@ -1,5 +1,5 @@
 //
-//  WorkflowsController.swift
+//  WorkflowInstancesController.swift
 //  WorkflowServer
 //
 //  Created by Vlad Maltsev on 08.01.2026.

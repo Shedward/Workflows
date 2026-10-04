@@ -1,9 +1,3 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-//
-// Swift Argument Parser
-// https://swiftpackageindex.com/apple/swift-argument-parser/documentation
-
 import Configuration
 import Hummingbird
 import HummingbirdTLS
@@ -45,7 +39,7 @@ public struct App {
 
         let pluginRoutes = await plugins
             .all(PluginController.self)
-            .compactMap(\.endpoints)
+            .map(\.endpoints)
 
         let app = try buildApplication(reader: reader, pluginRoutes: pluginRoutes)
         try await app.runService()
@@ -61,11 +55,7 @@ public struct App {
             return logger
         }()
 
-        let router = buildRouter(
-            workflows: workflows,
-            authRegistry: authRegistry,
-            pluginRoutes: pluginRoutes
-        )
+        let router = buildRouter(pluginRoutes: pluginRoutes)
 
         let tls = try buildTls()
 
@@ -85,14 +75,11 @@ public struct App {
         return .init(tlsConfiguration: tlsConfig)
     }
 
-    func buildRouter(
-        workflows: Workflows,
-        authRegistry: AuthRegistry,
-        pluginRoutes: [RouteCollection<AppRequestContext>]
-    ) -> Router<AppRequestContext> {
+    func buildRouter(pluginRoutes: [RouteCollection<AppRequestContext>]) -> Router<AppRequestContext> {
         let router = Router(context: AppRequestContext.self)
         router.addMiddleware {
             LogRequestsMiddleware(.info)
+            ErrorResponseMiddleware()
         }
 
         router.get("/health") { _, _ in
