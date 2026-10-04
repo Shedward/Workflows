@@ -106,23 +106,24 @@ B5. `Ask` property wrapper uses `fatalError`; `Input` / `Dependency` were alread
     `preconditionFailure`.
 B6. `Core/Marks/Todo.swift` declares a second `implement(_:)` (returning `Void`) instead of `todo(_:)`.
     Copy-paste slip; both marks are currently unused.
-B7. **Runtime loop protection never fires** (found by all three runner-rewrite agents, confirmed by
-    experiment 2026-10-04). `takeTransitionLocked` ends with `runAutomaticTransitionsLocked(from: next)`, and
-    that loop calls `takeTransitionLocked` again, so every automatic step opens a nested loop with a fresh
-    `seen` set and a fresh step counter. Neither the `(state, transitionId, data)` check nor the 1000-step cap
-    ever sees more than one step. Experiment: registered `AutomaticCycleWorkflow` under `.lenient` validation
-    in the testing server and started it: no `AutomaticLoopDetected`, 100% CPU, RSS 20 MB → 1.6 GB in 5 s.
-    Strict validation rejects purely automatic cycles at startup, but a cycle through a `Condition` that has
-    a manual exit passes validation and can still loop at runtime.
-    Fix design (2/3 agents converged): one step function that executes a single transition and does NOT run
-    the chain; a flat loop that owns the seen-set and the cap; the step reports whether the failure came from
-    the process or from the engine (typed error or outcome enum), which also removes the double write of a
-    failed automatic step and the retry of a failed step by outer recursion levels. Side effect to decide:
-    in the double-fault case one persist attempt is made instead of two.
+B7. ~~Runtime loop protection never fires~~ — **FIXED 2026-10-04 in `4d7f906`** (pulled forward by the user
+    because of the evidence). Cause: `takeTransitionLocked` ended with `runAutomaticTransitionsLocked`, whose
+    loop called `takeTransitionLocked` again, so every automatic step got a fresh `seen` set and step
+    counter. Experiment before the fix: `AutomaticCycleWorkflow` under `.lenient` validation ran undetected
+    at 100% CPU, RSS 20 MB → 1.6 GB in 5 s. A cycle with a manual exit passes strict validation too.
+    Fix: `executeTransitionLocked` runs one transition and never the chain; the chain is one flat loop.
+    Regression test: `Tools/Tests/run_automatic_loop` with `AutomaticLoopWorkflow` (red before, green after).
+    Not done, still optional: let the step report whether the process or the engine failed (2/3 agents), which
+    would remove the double write of a failed automatic step. The minimality agent argued against it.
 B8. **`workflowDidStart` is not delivered for instances started over REST** (architecture agent, read from
     code). The plugin callback is only invoked in `WorkflowRunner.start`, which is reached only through
     `WorkflowContext.startSubflow`. The server uses `Workflows.create` + `runAutomaticTransitions(on:)`, which
     never invokes it. So only subflow children report a start.
+B9. **The 1000-step cap stops a chain silently** (noticed while fixing B7; reachable only now that the cap
+    works). A loop that changes data on every step is not caught by the seen-set, so it runs until
+    `maxSteps`. Then the runner logs "Automatic transition limit reached" and returns the instance as is:
+    not failed, sitting in a state with a pending automatic transition, with nothing visible over REST.
+    Suggested: mark it failed like `AutomaticLoopDetected`. Needs a decision on the error type.
 
 ## Progress log
 
@@ -256,4 +257,4 @@ Side findings (why things are the way they are):
 3. Subsystems: ~~S1 runner~~ (done), then S3 transition kinds and binding, S4 server, S2 graph validation
    (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
    S6 and S7 if still worthwhile.
-4. Bug backlog B1–B8, then the pull request.
+4. Bug backlog B1–B9 (B7 already fixed), then the pull request.
