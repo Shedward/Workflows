@@ -56,6 +56,53 @@ List all registered workflow definitions.
 
 ---
 
+### GET /startingWorkflows
+
+List every available way to start a workflow, across all registered workflows, as one flat list. Intended for start pickers.
+
+- **Response**: `200 OK`, [WorkflowStart]
+
+```json
+[
+  {
+    "id": "DFFAF141-9CA4-442C-92BD-381D0CC9D54B",
+    "workflowId": "ProvidedWorkflow",
+    "title": "First item",
+    "data": {
+      "data": {
+        "greeting": "\"hello\""
+      }
+    }
+  },
+  {
+    "id": "5E1149DA-2A49-420C-A20A-86DADF9BED5F",
+    "workflowId": "SimpleWorkflow",
+    "data": {
+      "data": {}
+    }
+  }
+]
+```
+
+To start one, pass its `workflowId` and `data` to `POST /workflowInstances` as `workflowId` and `initialData`.
+
+---
+
+### GET /workflows/:id/starting
+
+List the available starts for a single workflow. Same element shape as `GET /startingWorkflows`.
+
+- **Path Parameters**: `id` — workflow type identifier
+- **Response**: `200 OK`, [WorkflowStart]
+
+- **Errors**:
+
+| Status | Condition |
+|--------|-----------|
+| 404 | Workflow ID not found |
+
+---
+
 ### GET /workflowInstances
 
 List all active workflow instances.
@@ -329,6 +376,24 @@ The `state` field is one of:
 | `fromState` | string | Source state |
 | `toState` | string | Target state |
 | `trigger` | string | `"manual"` or `"automatic"` |
+
+### WorkflowStart
+
+```json
+{
+  "id": "string (UUID)",
+  "workflowId": "string",
+  "title": "string",
+  "data": WorkflowData
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Server-generated UUID. Regenerated on every request, so use it only to identify entries within one response |
+| `workflowId` | string | Workflow definition this start belongs to |
+| `title` | string? | Human-readable label. Omitted when the start has no title |
+| `data` | WorkflowData | Pre-populated initial data for the instance |
 
 ### WorkflowData
 

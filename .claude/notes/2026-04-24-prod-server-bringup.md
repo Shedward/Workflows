@@ -72,3 +72,28 @@ Next session: `Работать_над_портфелем` graph topology errors
 - (Plus warnings about cycles and unused states.)
 
 The redirect URI assumes the GCP OAuth client is "Web application" type with `https://127.0.0.1:8443/auth/google/callback` registered. If the file is `installed`-keyed (Desktop app), the URL convention may differ — flagged with the user, not yet verified.
+
+---
+
+# 2026-10-04 — Merge prep for `focus-ui`
+
+Branch had been idle since 2026-04-25 and was never merged. Brought it up to date for a PR into `main`.
+
+- Merged `main` (Xcode 27 / Swift 6.4 upgrade, `setup_certs`). Only conflict was the commands section of
+  `CLAUDE.md`; kept both the `setup_certs` line and the `test` / `prod` wording.
+- Removed an unused `import GoogleServices` from `Projects/workflow-server/workflow-server-testing/App.swift`.
+  That target has no dependency on the package, so a clean build failed with
+  `Unable to resolve module dependency: 'GoogleServices'`. It only built before because the module was already
+  in the build cache from the prod scheme.
+- Documented `GET /startingWorkflows`, `GET /workflows/:id/starting` and the `WorkflowStart` model in
+  `Documentation/API.md` and the endpoint list in `CLAUDE.md`. Note: `WorkflowStart.id` is regenerated on
+  every request, and `title` is omitted when nil.
+
+Verified on the merged branch: `full_check` 26/26, `build_app`, `build prod`, Core unit tests, SwiftLint 0 violations.
+Prod server passes strict validation and serves all six HH workflows (checked in a sandboxed home with a dummy
+OAuth client file).
+
+Still open:
+- `~/.workflows/google_cloud/oauth_client.json` does not exist on this machine, so the prod server can't start
+  here and real Google calls are untested. The OAuth client type / redirect URI question above is still unverified.
+- FocusHUD interaction itself was not exercised, only app launch.

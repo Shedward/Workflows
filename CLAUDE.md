@@ -117,6 +117,8 @@ Full specification: `Documentation/API.md`
 
 - `GET /health` — Liveness check
 - `GET /workflows` — List workflow types
+- `GET /startingWorkflows` — Flat list of available starts across all workflows (`WorkflowStart`: `{id, workflowId, title?, data}`)
+- `GET /workflows/:id/starting` — Available starts for one workflow
 - `GET /workflowInstances` — List active instances (finished instances are removed)
 - `POST /workflowInstances` — Start workflow (`{workflowId, initialData?}`)
 - `GET /workflowInstances/:id` — Instance status
