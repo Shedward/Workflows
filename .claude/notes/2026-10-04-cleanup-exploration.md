@@ -143,12 +143,15 @@ B13. **An optional `@Output` / `@Ask` set to `nil` fails** as "Value is not prov
     from code): `ValueStorage` holds `Sendable?`, so the optional is flattened.
 B14. **`ValueStorage` takes `&lock` on a stored `os_unfair_lock_s`** (minimality agent). Swift does not guarantee
     a stable address for that pattern. Fix: `OSAllocatedUnfairLock`.
-B15. **`?timeout=nan` (or `inf`, or a huge value) kills the server** — CONFIRMED by experiment 2026-10-04.
-    `WorkflowInstancesController.timeout(from:)` accepts anything `Double()` parses; `withTimeout` passes it to
-    `Task.sleep(for: .seconds(...))`, which traps: "Fatal error: Double value cannot be converted to _Int128
-    because it is outside the representable range". One request to `POST /workflowInstances?timeout=nan` and the
-    process is gone. Negative values are harmless (immediate timeout). Fix: accept only finite, positive values
-    within a sane range, else the default. Affects start, takeTransition and answer.
+B15. ~~`?timeout=nan` (or `inf`, or a huge value) kills the server~~ — **FIXED 2026-10-04** (user: fix the
+    crash). Cause: `WorkflowInstancesController.timeout(from:)` accepted anything `Double()` parses and
+    `withTimeout` passed it to `Task.sleep(for: .seconds(...))`, which traps: "Double value cannot be converted
+    to _Int128 because it is outside the representable range". One `POST /workflowInstances?timeout=nan` and
+    the process was gone. Fix: a value that is not finite means the default (5 s); finite values are kept
+    within `0...600`. Negative still means "answer at once", as before.
+    Test: `Tools/Tests/run_http_edge_cases` sends nan, inf, -inf, 1e30, -1, abc and then checks `/health`
+    (red before: server dead on the first value). `Core.withTimeout` itself still traps on such input; it is
+    only called from this controller.
 B16. **Client mistakes answer with a bare 500 and an empty body**: malformed JSON, a missing body, and
     `MissingRequiredInputs` on start. They should be 400 with an `ErrorResponse`. With the new table
     (`ErrorResponse.init?(mappedFrom:)`) each is a one-line addition, plus body-decoding errors in `API+Route`.
@@ -379,4 +382,4 @@ Bugs B15–B21 below.
 3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~ (done), then S2 graph validation
    (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
    S6 and S7 if still worthwhile.
-4. Bug backlog B1–B21 (B7 and B9 already fixed; B15 is a crash and should go first), then the pull request.
+4. Bug backlog B1–B21 (B7, B9 and B15 already fixed), then the pull request.

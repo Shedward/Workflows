@@ -40,6 +40,16 @@ main() {
   # DELETE on instances endpoint returns error
   assert_http_error DELETE "/workflowInstances"
 
+  # A ?timeout= the server cannot sleep for must not take it down. Values that
+  # are not finite numbers used to trap inside Task.sleep a moment after the
+  # response was sent, killing the process.
+  local value
+  for value in nan inf -inf 1e30 -1 abc; do
+    request POST "/workflowInstances?timeout=$value" '{"workflowId":"SimpleWorkflow"}' >/dev/null
+  done
+  sleep 1
+  assert_http_ok GET "/health"
+
   echo "Finished Successfully"
 }
 

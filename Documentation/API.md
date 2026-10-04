@@ -12,6 +12,7 @@
 - All workflow data values are JSON-encoded strings (e.g., the string `hello` is stored as `"\"hello\""` in the data map).
 - Finished workflow instances are removed from storage and will not appear in any listing.
 - Automatic transitions execute inline before the HTTP response is returned.
+- Endpoints that run transitions (`POST /workflowInstances`, `.../takeTransition`, `.../answer`) accept `?timeout=<seconds>` (default 5, kept within 0–600). If the work takes longer, the response is `200` with the instance as it is at that moment, and the work continues in the background. A value that is not a finite number means the default.
 
 ---
 

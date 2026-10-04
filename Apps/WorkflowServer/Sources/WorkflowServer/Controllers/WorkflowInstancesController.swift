@@ -13,6 +13,7 @@ import WorkflowEngine
 
 struct WorkflowInstancesController: Controller {
     static let defaultTimeout: Double = 5.0
+    static let maxTimeout: Double = 600.0
 
     let workflows: Workflows
 
@@ -96,9 +97,16 @@ struct WorkflowInstancesController: Controller {
         return API.WorkflowInstance(model: instance)
     }
 
+    /// Seconds from `?timeout=`. Anything that is not a finite number means the default, and the
+    /// value is kept within `0...maxTimeout`: `Task.sleep` traps on a duration it cannot represent,
+    /// so `nan`, `inf` or `1e30` from a client would otherwise take the whole server down.
     private func timeout(from request: Request) -> Double {
-        request.uri.queryParameters["timeout"]
-            .flatMap { Double($0) }
-            ?? Self.defaultTimeout
+        guard
+            let seconds = request.uri.queryParameters["timeout"].flatMap({ Double($0) }),
+            seconds.isFinite
+        else {
+            return Self.defaultTimeout
+        }
+        return min(max(seconds, 0), Self.maxTimeout)
     }
 }
