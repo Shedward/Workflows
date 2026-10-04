@@ -24,7 +24,8 @@ public let workflows: [any Workflow] = [
     ConditionBranchingWorkflow(),
     ConditionOutputWorkflow(),
     AskNameWorkflow(),
-    AskWithDataWorkflow()
+    AskWithDataWorkflow(),
+    AutomaticLoopWorkflow()
 ]
 
 public let invalidWorkflows: [any Workflow] = [

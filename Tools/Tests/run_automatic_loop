@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+# Verifies runtime loop protection in WorkflowRunner. AutomaticLoopWorkflow
+# bounces ping -> pong -> ping through automatic transitions without changing
+# its data. The runner must notice the repeated step, mark the instance as
+# failed and return, instead of spinning forever.
+#
+# Kept last in run_all: if protection regresses, the server spins and eats
+# memory until full_check shuts it down.
+
+main() {
+  start_workflow "AutomaticLoopWorkflow"
+  assert_state "_start"
+
+  # Entering the loop has to come back quickly with the loop detected.
+  # Without protection this request only returns on the timeout, with the
+  # instance still executing.
+  LAST_RESPONSE="$(request POST "/workflowInstances/$INSTANCE_ID/takeTransition?timeout=3" \
+    '{"transitionProcessId":"EnterLoop"}')"
+
+  local state_type
+  state_type="$(jq -r '(.transitionState.state // {}) | keys[0] // empty' <<<"$LAST_RESPONSE")"
+  if [[ "$state_type" != "failed" ]]; then
+    echo "Expected the looping chain to end in 'failed', got '$state_type'" >&2
+    exit 1
+  fi
+
+  local debug
+  debug="$(jq -r '.transitionState.state.failed.error.debugDescription' <<<"$LAST_RESPONSE")"
+  if [[ "$debug" != *"AutomaticLoopDetected"* ]]; then
+    echo "Expected AutomaticLoopDetected, got: $debug" >&2
+    exit 1
+  fi
+
+  # The chain stopped where the repeat was noticed, and the failure is stored.
+  assert_state "ping"
+  assert_transition_failed
+
+  # The chain really stopped: the instance does not move any more.
+  sleep 1
+  assert_state "ping"
+  assert_transition_failed
+
+  # The server is still healthy for other instances.
+  start_workflow "SimpleWorkflow"
+  take_transition "StartA"
+  take_transition "StartB"
+  take_transition "Finalize"
+  assert_finished
+
+  echo "Finished Successfully"
+}
+
+main "$@"

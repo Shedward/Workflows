@@ -30,6 +30,7 @@ readonly TEST_SCRIPTS=(
   run_condition_branching
   run_ask
   run_concurrent_transitions
+  run_automatic_loop
 )
 
 readonly GREEN='\033[0;32m'

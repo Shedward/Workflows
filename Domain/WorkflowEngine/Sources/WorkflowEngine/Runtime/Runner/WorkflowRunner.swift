@@ -98,8 +98,23 @@ actor WorkflowRunner {
         }
     }
 
+    /// Takes `transition` and then follows the automatic chain from the state it leads to.
     @discardableResult
     private func takeTransitionLocked(
+        _ transition: AnyTransition,
+        on instance: WorkflowInstance,
+        of workflow: AnyWorkflow,
+        resumeReason: WaitScheduler.ResumeReason? = nil
+    ) async throws -> WorkflowInstance {
+        let next = try await executeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
+        return await runAutomaticTransitionsLocked(from: next)
+    }
+
+    /// Executes exactly one transition and persists its result. It must not continue into the
+    /// automatic chain itself: the chain is one flat loop in `runAutomaticTransitionsLocked`, so
+    /// that its loop protection sees every step. Re-entering the chain from here would give each
+    /// step a fresh seen-set and step counter.
+    private func executeTransitionLocked(
         _ transition: AnyTransition,
         on instance: WorkflowInstance,
         of workflow: AnyWorkflow,
@@ -152,7 +167,7 @@ actor WorkflowRunner {
             try await storage.update(next)
         }
 
-        return await runAutomaticTransitionsLocked(from: next)
+        return next
     }
 
     private func executeTransitionProcess(
@@ -340,7 +355,7 @@ extension WorkflowRunner {
     ) async -> WorkflowInstance? {
         logger?.trace("Auto transition \(transition.id.processId, privacy: .public)")
         do {
-            return try await takeTransitionLocked(transition, on: instance, of: workflow)
+            return try await executeTransitionLocked(transition, on: instance, of: workflow)
         } catch {
             let failed = instance.transitionFailed(error, at: transition)
             logger?.error("Transition \(transition.id.processId, privacy: .public) failed \(error, privacy: .public)")
