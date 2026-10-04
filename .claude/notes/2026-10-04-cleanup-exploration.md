@@ -128,6 +128,21 @@ B9. ~~The automatic step cap stops a chain silently~~ — **FIXED 2026-10-04** (
     Both chain errors (`AutomaticLoopDetected`, `AutomaticStepLimitReached`) are `DescriptiveError` now, so
     the stored `userDescription` is readable instead of "The operation couldn't be completed".
     Test: `test_step_cap_stops_changing_loop` in `Tools/Tests/run_automatic_loop` (`CountingLoopWorkflow`).
+B10. **A late answer can resume the wrong transition** (architecture agent, read from code; also noted in the
+    runner pass). `WorkflowRunner.answerAsk` checks "is asking" on a snapshot, but `resumeTransition` under the
+    lock resumes whatever transition is recorded then. If a first answer completed the ask and the instance
+    moved on to a time `Wait` or a subflow, a second concurrent answer would re-run that `Wait` early, or
+    re-enter `Subflow.start` with `.answered` and start a second child. Fix: re-check `.asking` under the lock.
+B11. **REST arrays built from sets have unstable order** (3/3 agents). `Waiting.Asking.expectedFields` comes from
+    `Set<DataField>`; so do `requiredInputs` / `producedOutputs` / metadata arrays in the workflow graph DTO.
+    Their order differs between server runs. Fix: sort by key where the set is turned into an array.
+B12. **Chain builders assert `targets.count <= 1` and then read `targets[0]`** (3/3 agents). An empty target
+    list passes the assert and crashes; with asserts compiled out a branching step silently chains from its
+    first target. Low: only `Condition.branching()` builds multi-target steps, and it asserts non-empty.
+B13. **An optional `@Output` / `@Ask` set to `nil` fails** as "Value is not provided in output K" (2/3 agents, read
+    from code): `ValueStorage` holds `Sendable?`, so the optional is flattened.
+B14. **`ValueStorage` takes `&lock` on a stored `os_unfair_lock_s`** (minimality agent). Swift does not guarantee
+    a stable address for that pattern. Fix: `OSAllocatedUnfairLock`.
 
 ## Progress log
 
@@ -254,11 +269,53 @@ Side findings (why things are the way they are):
 - The three failure-persist sites differ only in the double-fault case; unifying them is part of B7.
 - Bugs B7 and B8 below.
 
+### Transition kinds and data binding (S3) — done 2026-10-04
+
+First version `08d6047`, applied round `8c1829a`. Transition + DataFlow + macro: 1153 lines before, 1098 after.
+All client-visible error texts are byte-identical (compared against the running server).
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| One shared bind → run → read-outputs life cycle | yes | yes | yes | kept (3/3) |
+| That function belongs in the transition layer, not under `DataFlow/Binding` (it takes `WorkflowContext`) | no (kept in data layer) | yes | yes | applied (2/3): `Transition/Transitions/TransitionBody.swift`, `runBody` |
+| Each kind owns its three error texts as whole literals; no `kind` / verb parameters | no | yes | yes | applied (2/3): private `failures` per kind |
+| `@Input` / `@Dependency` hold a typed `Value?`, no `ValueStorage` | yes | no (`Reading` enum) | yes | applied (2/3) |
+| One step → `Transition` conversion shared by the DSL helpers | yes (zip) | yes | for-loop | applied in the architecture agent's shape |
+| Helper named `transitions` shadows the protocol property | – | – | yes | applied: `makeTransitions` |
+| Drop redundant `where Self: TransitionProcess` | – | – | yes | applied (true redundancy) |
+| Bind ask answers inside `CreateOutputStorage`, delete `BindAskInputs` | yes | no | no | rejected: changes the binding order |
+| Reshape the macro (one function / `WrappedProperty` type / named helpers) | yes | yes | yes | not applied: three different shapes, no convergence |
+| Renames `ReadOutputs`→`WriteOutputs`, `Ask.swift`→`Asking.swift`, move `TransitionMetadata` | – | some | some | rejected (1/3 each) |
+
+Quotes:
+- Architecture: "v1's `withBoundData` sat in the data-binding layer but took a `WorkflowContext`, kind names and
+  verb fragments, so the lower layer knew the runner and the kinds, and client texts were assembled from pieces."
+- Clarity: "the irregular ones (\"prepare to run action\", \"process ask\") are greppable where they belong."
+- Minimality: "`@Input`/`@Dependency` are written once and only read, so they hold a plain `Value?` instead of a
+  locked `ValueStorage`."
+
+Why things are the way they are (do not "simplify" these away):
+- `CreateOutputStorage` exists because a transition value is created once and copied per run; storage created in
+  `Output.init` would be shared across concurrent runs (minimality).
+- `@Output` / `@Ask` need the shared `ValueStorage` box because the body runs non-mutating on a copy (clarity).
+- `@Ask` keeps `fatalError`: reading it in `prompt` before an answer is author misuse, not an engine bug.
+- The two irregular error texts are historical per-kind wording; as whole literals they need no special cases.
+- `chain(..., builderName:)` carries the name because the assertion must name the builder the author called.
+
+Other side findings:
+- An `Action` / `Condition` / `Wait` that declares `@Ask` gets empty storage and can use it as a readable output.
+- `collectMetadata()` casts to `DataBindable & Defaultable` although `Defaultable` is not used, so a bindable
+  process that is not `Defaultable` reports empty metadata (3/3 agents).
+- The macro matches wrappers by bare attribute name: `@WorkflowEngine.Input` is skipped silently, only the first
+  wrapper on a property counts, and `@DataBindable` on a `private struct` would generate a `private` `bind`.
+- `WorkflowGraphBuilder`'s subflow branch duplicates `process.collectMetadata()` (relevant for S2).
+- Bugs B10–B14 below.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
-3. Subsystems: ~~S1 runner~~ (done), then S3 transition kinds and binding, S4 server, S2 graph validation
+3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~ (done), then S4 server, S2 graph validation
    (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
    S6 and S7 if still worthwhile.
-4. Bug backlog B1–B9 (B7 and B9 already fixed), then the pull request.
+4. Bug backlog B1–B14 (B7 and B9 already fixed), then the pull request.
