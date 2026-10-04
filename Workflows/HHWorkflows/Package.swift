@@ -12,10 +12,10 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Core"),
-        .package(path: "../Services/Git"),
-        .package(path: "../Services/GoogleServices"),
-        .package(path: "../Domain/WorkflowEngine")
+        .package(path: "../../Core/Core"),
+        .package(path: "../../Services/Git"),
+        .package(path: "../../Services/GoogleServices"),
+        .package(path: "../../Domain/WorkflowEngine")
     ],
     targets: [
         .target(

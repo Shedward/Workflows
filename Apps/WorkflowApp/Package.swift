@@ -14,8 +14,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Rest"),
-        .package(path: "../Domain/API")
+        .package(path: "../../Core/Rest"),
+        .package(path: "../../Domain/API")
     ],
     targets: [
         .target(

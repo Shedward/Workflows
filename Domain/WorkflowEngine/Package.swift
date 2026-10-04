@@ -13,7 +13,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Core"),
+        .package(path: "../../Core/Core"),
         .package(url: "https://github.com/apple/swift-syntax", from: "604.0.0")
     ],
     targets: [

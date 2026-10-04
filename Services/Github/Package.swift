@@ -12,7 +12,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Rest")
+        .package(path: "../../Core/Rest")
     ],
     targets: [
         .target(
