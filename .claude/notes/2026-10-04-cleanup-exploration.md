@@ -107,8 +107,34 @@ B5. `Ask` property wrapper uses `fatalError`; `Input` / `Dependency` were alread
 B6. `Core/Marks/Todo.swift` declares a second `implement(_:)` (returning `Void`) instead of `todo(_:)`.
     Copy-paste slip; both marks are currently unused.
 
+## Progress log
+
+### Dead-code sweep — done 2026-10-04
+
+Rule used: remove code with no reference in the workspace unless it is documented framework surface or a
+deliberate developer tool. 196 lines removed across 18 files, verified as a whole (build test/prod,
+build_app, Github + GoogleServices schemes, full_check 26/26, unit tests, SwiftLint 0).
+
+| Commit | What |
+|---|---|
+| `9916c20` | Unused public engine API: `Workflows.start` ×2, `transition(id:)`, `takeTransition(id:)`, errors `TransitionNotFound` / `WorkflowInstanceMismatch` (+ HTTP mappings, API.md rows), `InputBindingFailed.typeMismatch`, `WorkflowRegistry.register`, `DataField(api:)` |
+| `7454f2f` | Engine internals: `CleanStorage`, `binded`, `dependencyKeys` / `askKeys`, `Dependency.projectedValue`, `WaitScheduler.cancel`, `JSONFileWorkflowStorage.decoder`, `chainAfter` |
+| `c1aab54` | `AnySendableError`, `JsonApi`, macro's `SwiftLexicalLookup` import + product and `Field.type` |
+
+Left in place, still unreferenced — each is a decision for the user:
+- `Services/Github` package: nothing imports it, but it is the canonical endpoint example in
+  `Documentation/Architecture.md` and the `gen-api-endpoint` skill.
+- `ServiceAccountTokenProvider` + `ServiceAccountCredentials` (156 LOC): superseded by user OAuth, but
+  documented in `Documentation/Architecture.md`.
+- `ValidationTestWorkflows/*` + `TestingWorkflows.invalidWorkflows` (270 LOC): fixtures for every validation
+  error, never registered or asserted. Better turned into real validator tests than deleted.
+- `PlainTextBody`, `UrlEncodedBody` (documented body types), `toStart()` (only way to target `_start`),
+  `LoggerScope.debug` / `.file`, the `implement()` marks, `ValidationMode.lenient`, `themeBackground`,
+  `Repository.assertExists`, small fluent modifiers in Core/Rest.
+- Redundant but not dead (left for the subsystem passes): hand-written `TransitionState: Codable`.
+
 ## Proposed order
 
-1. Dead-code sweep (mechanical, shrinks everything that follows).
+1. ~~Dead-code sweep~~ — done, see progress log.
 2. Architectural pass: A1, then A2.
 3. Subsystems: S1, S2, S3, then S4, S5; S6 and S7 if still worthwhile.
