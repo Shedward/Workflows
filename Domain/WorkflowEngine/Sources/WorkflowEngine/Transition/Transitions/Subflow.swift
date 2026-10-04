@@ -15,7 +15,7 @@ public extension Workflow where Self: TransitionProcess {
             return .completed
         }
 
-        let subflowInstance = try await context.start(self, filteredData(from: context.instance.data))
+        let subflowInstance = try await context.startSubflow(self, filteredData(from: context.instance.data))
 
         // If child already finished (all automatic transitions completed inline),
         // skip waiting and complete immediately

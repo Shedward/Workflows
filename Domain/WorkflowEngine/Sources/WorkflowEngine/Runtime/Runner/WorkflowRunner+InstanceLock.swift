@@ -36,11 +36,6 @@ extension WorkflowRunner {
         if inflight[instanceId] == tail {
             inflight[instanceId] = nil
         }
-        switch result {
-            case .success(let value):
-                return value
-            case .failure(let error):
-                throw error
-        }
+        return try result.get()
     }
 }

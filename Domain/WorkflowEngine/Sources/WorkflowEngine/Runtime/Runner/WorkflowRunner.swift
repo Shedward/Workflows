@@ -121,7 +121,7 @@ actor WorkflowRunner {
             instance: executing,
             resume: resumeReason,
             dependencies: dependencies,
-            start: self.start
+            startSubflow: self.start
         )
         let result = try await executeTransitionProcess(transition, on: instance, context: &context)
 
@@ -178,7 +178,7 @@ actor WorkflowRunner {
         }
     }
 
-    func finish(_ instance: WorkflowInstance) async throws {
+    private func finish(_ instance: WorkflowInstance) async throws {
         logger?.trace("Finish \(instance.id, privacy: .public)")
         try await storage.finish(instance)
         await plugins.invoke(WorkflowTransitionListener.self) {
@@ -195,42 +195,41 @@ actor WorkflowRunner {
         guard case .waiting(.asking) = snapshot.transitionState?.state else {
             throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
         }
-
-        return try await withInstanceLock(instanceId) { [self] in
-            guard
-                let instance = try await storage.instance(id: instanceId),
-                let (transition, workflow) = await currentTransition(of: instance)
-            else {
-                throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
-            }
-
-            return try await takeTransitionLocked(
-                transition,
-                on: instance,
-                of: workflow,
-                resumeReason: .answered(data: data)
-            )
+        guard let instance = try await resumeTransition(on: instanceId, reason: .answered(data: data)) else {
+            throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
         }
+        return instance
     }
 
     // MARK: - Waiting
 
     private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
-
-        await withInstanceLock(instanceId) { [self] in
-            do {
-                guard
-                    let instance = try await storage.instance(id: instanceId),
-                    let (transition, workflow) = await currentTransition(of: instance)
-                else {
-                    logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
-                    return
-                }
-                try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: reason)
-            } catch {
-                logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
+        do {
+            if try await resumeTransition(on: instanceId, reason: reason) == nil {
+                logger?.error("Failed to resolve waiting context for \(instanceId, privacy: .public)")
             }
+        } catch {
+            logger?.error("Failed to resume \(instanceId, privacy: .public) with error \(error, privacy: .public)")
+        }
+    }
+
+    /// Takes the transition recorded in the instance's `transitionState` again, under the lock.
+    /// Returns `nil` when the instance or that transition can no longer be resolved.
+    private func resumeTransition(
+        on instanceId: WorkflowInstanceID,
+        reason: WaitScheduler.ResumeReason
+    ) async throws -> WorkflowInstance? {
+        try await withInstanceLock(instanceId) { [self] in
+            guard
+                let instance = try await storage.instance(id: instanceId),
+                let transitionId = instance.transitionState?.transitionId,
+                let workflow = await registry.workflow(id: instance.workflowId),
+                let transition = workflow.anyTransitions.first(where: { $0.id == transitionId })
+            else {
+                return nil
+            }
+            return try await takeTransitionLocked(transition, on: instance, of: workflow, resumeReason: reason)
         }
     }
 
@@ -241,18 +240,6 @@ actor WorkflowRunner {
             throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
         }
         return instance
-    }
-
-    /// The transition recorded in the instance's `transitionState`, with its workflow.
-    private func currentTransition(of instance: WorkflowInstance) async -> (AnyTransition, AnyWorkflow)? {
-        guard
-            let transitionId = instance.transitionState?.transitionId,
-            let workflow = await registry.workflow(id: instance.workflowId),
-            let transition = workflow.anyTransitions.first(where: { $0.id == transitionId })
-        else {
-            return nil
-        }
-        return (transition, workflow)
     }
 
     private func checkVersion(of instance: WorkflowInstance, against workflow: AnyWorkflow) throws {

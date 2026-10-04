@@ -38,7 +38,7 @@ actor WaitScheduler {
                 scheduleTimeWait(for: instanceId, date: time.date)
             case .workflowFinished(let finished):
                 logger?.trace("Schedule waiting for finishing instance \(finished.instanceId, privacy: .public)")
-                registerFinishWaiter(waitingId: instanceId, finishedId: finished.instanceId)
+                finishWaiters[finished.instanceId, default: []].insert(instanceId)
             case .asking:
                 logger?.trace("Asking for user input on \(instanceId, privacy: .public)")
         }
@@ -80,12 +80,6 @@ actor WaitScheduler {
         }
 
         timeTasks[instanceId] = task
-    }
-
-    private func registerFinishWaiter(waitingId: WorkflowInstanceID, finishedId: WorkflowInstanceID) {
-        var set = finishWaiters[finishedId] ?? []
-        set.insert(waitingId)
-        finishWaiters[finishedId] = set
     }
 }
 

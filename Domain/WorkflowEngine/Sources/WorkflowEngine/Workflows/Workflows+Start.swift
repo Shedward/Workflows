@@ -13,9 +13,7 @@ public extension Workflows {
     }
 
     func runAutomaticTransitions(on instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
-        guard let instance = try await storage.instance(id: instanceId) else {
-            throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
-        }
+        let instance = try await instance(id: instanceId)
         return await runner.runAutomaticTransitions(from: instance)
     }
 
