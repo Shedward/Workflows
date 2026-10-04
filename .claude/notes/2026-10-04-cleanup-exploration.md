@@ -106,6 +106,23 @@ B5. `Ask` property wrapper uses `fatalError`; `Input` / `Dependency` were alread
     `preconditionFailure`.
 B6. `Core/Marks/Todo.swift` declares a second `implement(_:)` (returning `Void`) instead of `todo(_:)`.
     Copy-paste slip; both marks are currently unused.
+B7. **Runtime loop protection never fires** (found by all three runner-rewrite agents, confirmed by
+    experiment 2026-10-04). `takeTransitionLocked` ends with `runAutomaticTransitionsLocked(from: next)`, and
+    that loop calls `takeTransitionLocked` again, so every automatic step opens a nested loop with a fresh
+    `seen` set and a fresh step counter. Neither the `(state, transitionId, data)` check nor the 1000-step cap
+    ever sees more than one step. Experiment: registered `AutomaticCycleWorkflow` under `.lenient` validation
+    in the testing server and started it: no `AutomaticLoopDetected`, 100% CPU, RSS 20 MB → 1.6 GB in 5 s.
+    Strict validation rejects purely automatic cycles at startup, but a cycle through a `Condition` that has
+    a manual exit passes validation and can still loop at runtime.
+    Fix design (2/3 agents converged): one step function that executes a single transition and does NOT run
+    the chain; a flat loop that owns the seen-set and the cap; the step reports whether the failure came from
+    the process or from the engine (typed error or outcome enum), which also removes the double write of a
+    failed automatic step and the retry of a failed step by outer recursion levels. Side effect to decide:
+    in the double-fault case one persist attempt is made instead of two.
+B8. **`workflowDidStart` is not delivered for instances started over REST** (architecture agent, read from
+    code). The plugin callback is only invoked in `WorkflowRunner.start`, which is reached only through
+    `WorkflowContext.startSubflow`. The server uses `Workflows.create` + `runAutomaticTransitions(on:)`, which
+    never invokes it. So only subflow children report a start.
 
 ## Progress log
 
@@ -182,8 +199,61 @@ Side findings from the agents (more valuable than the edits):
 Scope decision: A2 (facade / runner overlap) is handled at the start of the runner pass (S1), since it changes
 runner internals that S1 rewrites anyway.
 
+### Runner pass (S1, with A2) — done 2026-10-04
+
+First version `9dbf83d`, applied round `ad65207`. Runner subsystem (`Runtime/Runner/*` + `Workflows+Transitions`
+/ `Workflows+Start`): 643 lines before, 564 after.
+
+**Correction to the exploration.** A2 ("facade and runner overlap") was not accidental duplication. Taking a
+transition is a deliberate two-phase protocol: resolve by `processId` against a snapshot BEFORE queueing (an
+unavailable transition fails at once instead of waiting behind a running one), then reload under the lock and
+require `instance.state == transition.from`. `Tools/Tests/run_concurrent_transitions` depends on it (10
+concurrent identical takes → exactly 1 success). The cleanup kept the protocol and moved both phases into the
+runner; the facade forwards.
+
+One `/my:critics-rewrite` round over `9dbf83d` (base `b8e0603`):
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| Keep v1 core: one typed-throws lock, two-phase take in the runner, forwarding facade | yes | yes (restructured) | yes | kept |
+| One locked function behind `answerAsk` and `resumeWaiting` | yes | yes | no | applied (2/3), with the architecture agent's nil-returning shape |
+| `finish` not exposed by the runner | inlined | moved, private | private | applied as `private` |
+| `WorkflowContext.start` → `startSubflow` | – | yes | yes | applied (2/3) |
+| `Workflows.runAutomaticTransitions(on:)` reuses `instance(id:)` | yes | forwards | yes | applied (2/3) |
+| Inline `WaitScheduler.registerFinishWaiter` | yes | – | yes | applied (2/3) |
+| `try result.get()` in the lock | yes | – | kept switch | applied (compiles, shorter) |
+| Flat loop instead of take ↔ chain mutual recursion | preserved it | yes | yes | NOT applied: behavior change → bug B7 |
+| Step reports where it failed (typed error / outcome enum) instead of nested `do/catch` + `nil` | no ("needs a marker type") | yes | yes | deferred with B7 (it comes with un-nesting) |
+| Split runner into `InstanceQueue` / `TransitionStep` / `TransitionChain` / `TransitionFailurePolicy` | – | yes | no | rejected: 4 new files, 590 → 720 lines (1/3) |
+| `Set<[AnyHashable]>` for the loop signature; loop detection via `error is AutomaticLoopDetected` | yes | no | no | rejected (1/3, weaker typing) |
+| One `notFound` error reused in both phases | yes | – | no | rejected: changes `availableTransitions` in the racing case |
+| Renames (`inflight`→`queueTails`, `resume`→`resumeReason`, `.time`→`.timeElapsed`, …) | – | some | yes | rejected except `startSubflow` |
+| `ResumeReason` top-level instead of `WaitScheduler.ResumeReason` | – | yes | – | not applied (1/3); reasonable, revisit with B7 |
+
+Quotes:
+- Minimality: "Keep v1's structure (one typed-throws lock, two-phase take in the runner, forwarding facade) and
+  remove every remaining second path."
+- Clarity: "The step returns an enum instead of hiding the failure policy in nested `do/catch`, and v1's mutual
+  recursion between take and the chain is gone."
+- Architecture: "'locked code must not re-lock' is enforced by type boundary instead of the `*Locked` naming."
+
+Side findings (why things are the way they are):
+- Why the lock uses two tasks (minimality): "running the body in the caller's task would inherit cancellation,
+  and `notifyFinished` cancels the very timer task that drives a resume." Do not "simplify" the lock into
+  running the body inline.
+- `answerAsk` under the lock does not re-check that the instance is still asking; only the pre-queue check does.
+- `Workflows.runAutomaticTransitions(on:)` runs from a snapshot loaded outside the lock.
+- `ResumeReason` is nested in `WaitScheduler`, but `.answered` never comes from the scheduler.
+- `DataFlow/Storage/WorkflowData.swift` has a comment naming `AutomaticStepSignature` as the reason
+  `WorkflowData` is `Hashable`; keep the two in sync.
+- The three failure-persist sites differ only in the double-fault case; unifying them is part of B7.
+- Bugs B7 and B8 below.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
-3. Subsystems: S1, S2, S3, then S4, S5; S6 and S7 if still worthwhile.
+3. Subsystems: ~~S1 runner~~ (done), then S3 transition kinds and binding, S4 server, S2 graph validation
+   (first turn the unused `ValidationTestWorkflows` fixtures into real validator tests), S5 app view models;
+   S6 and S7 if still worthwhile.
+4. Bug backlog B1–B8, then the pull request.
