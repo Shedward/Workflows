@@ -38,24 +38,30 @@ final class TransitionViewModel: ErrorPresenting {
         guard let workflow = focus.activeWorkflow, runningTransition == nil else {
             return
         }
-        takeTask = latest(replacing: takeTask) { [self] in
+        takeTask?.cancel()
+        takeTask = Task {
             withAnimation(.snappy) {
                 runningTransition = transition
             }
-            defer {
-                withAnimation(.snappy) {
-                    runningTransition = nil
+            do {
+                let updated = try await focus.service.takeTransition(
+                    instanceId: workflow.id,
+                    transitionProcessId: transition.processId
+                )
+                guard !Task.isCancelled else {
+                    return
                 }
+                focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
+                error = nil
+                refresh()
+            } catch is CancellationError {
+                return
+            } catch {
+                self.error = error.localizedDescription
             }
-
-            let updated = try await focus.service.takeTransition(
-                instanceId: workflow.id,
-                transitionProcessId: transition.processId
-            )
-            try Task.checkCancellation()
-            focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
-            error = nil
-            refresh()
+            withAnimation(.snappy) {
+                runningTransition = nil
+            }
         }
     }
 }

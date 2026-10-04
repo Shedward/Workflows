@@ -1,5 +1,5 @@
 //
-//  LatestTask.swift
+//  ErrorPresenting.swift
 //  WorkflowApp
 //
 
@@ -11,8 +11,6 @@ protocol ErrorPresenting: AnyObject {
 }
 
 extension ErrorPresenting {
-    /// Starts `work` in place of `previous`, which is cancelled. A cancelled `work` is silent
-    /// when it checks for cancellation; any other failure becomes `error`.
     func latest(
         replacing previous: Task<Void, Never>?,
         _ work: @escaping @MainActor () async throws -> Void
