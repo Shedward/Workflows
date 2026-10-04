@@ -43,40 +43,6 @@ extension WorkflowsError.WorkflowInstanceNotFound: @retroactive HTTPResponseErro
     }
 }
 
-extension WorkflowsError.WorkflowInstanceMismatch: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Workflow instance does not match expected workflow",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
-    }
-}
-
-extension WorkflowsError.WorkflowInstanceMismatch: @retroactive HTTPResponseError {
-    public var status: HTTPResponse.Status {
-        .internalServerError
-    }
-}
-
-extension WorkflowsError.TransitionNotFound: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Transition not found",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
-    }
-}
-
-extension WorkflowsError.TransitionNotFound: @retroactive HTTPResponseError {
-    public var status: HTTPResponse.Status {
-        .notFound
-    }
-}
-
 extension WorkflowsError.TransitionProcessNotFoundForInstance: @retroactive ResponseGenerator {
     public func response(from request: Request, context: some RequestContext) throws -> Response {
         try ErrorResponse(

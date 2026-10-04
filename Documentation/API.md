@@ -424,9 +424,7 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 |-------|-------------|-----------------|
 | Workflow not found | 404 | "Workflow not found" |
 | Instance not found | 404 | "Workflow instance not found" |
-| Transition not found | 404 | "Transition not found" |
 | Transition not available from state | 500 | "Transition process not found for instance" |
-| Instance/workflow mismatch | 500 | "Workflow instance does not match expected workflow" |
 | Instance not asking | 409 | "Workflow instance is not waiting for an answer" |
 
 ---

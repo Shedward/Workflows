@@ -14,17 +14,6 @@ public enum WorkflowsError {
         public let instanceId: WorkflowInstanceID
     }
 
-    public struct WorkflowInstanceMismatch: Swift.Error {
-        public let instance: WorkflowInstanceID
-        public let expectedWorkflow: WorkflowID
-        public let foundWorkflow: WorkflowID
-    }
-
-    public struct TransitionNotFound: Swift.Error {
-        public let transitionId: TransitionID
-        public let availableTransitions: [TransitionID]
-    }
-
     public struct TransitionProcessNotFoundForInstance: Swift.Error {
         public let instance: WorkflowInstanceID
         public let workflow: WorkflowID
@@ -71,7 +60,6 @@ public enum WorkflowsError {
     public struct InputBindingFailed: Swift.Error {
         public enum Reason: Sendable {
             case missing
-            case typeMismatch(expected: String)
             case decodingFailed(any Swift.Error)
         }
 

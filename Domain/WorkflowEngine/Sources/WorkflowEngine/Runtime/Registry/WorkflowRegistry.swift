@@ -42,10 +42,6 @@ public actor WorkflowRegistry {
         }
     }
 
-    public func register(_ workflow: AnyWorkflow) {
-        self.workflows[workflow.id] = workflow
-    }
-
     public func workflow(instance: WorkflowInstance) -> AnyWorkflow? {
         workflow(id: instance.workflowId)
     }

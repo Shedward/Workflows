@@ -12,9 +12,3 @@ extension API.DataField {
         self.init(key: model.key, valueType: model.valueType)
     }
 }
-
-extension WorkflowEngine.DataField {
-    public init(api: API.DataField) {
-        self.init(key: api.key, valueType: api.valueType)
-    }
-}
