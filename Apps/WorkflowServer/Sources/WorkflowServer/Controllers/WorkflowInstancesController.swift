@@ -18,103 +18,82 @@ struct WorkflowInstancesController: Controller {
 
     var endpoints: RouteCollection<AppRequestContext> {
         RouteCollection()
-            .on(GetWorkflowsInstances.self, use: getWorkflows)
+            .on(GetWorkflowsInstances.self, use: getInstances)
             .on(StartWorkflow.self, use: startWorkflow)
-            .on(GetWorkflowInstance.self, use: getWorkflow)
+            .on(GetWorkflowInstance.self, use: getInstance)
             .on(TakeTransition.self, use: takeTransition)
             .on(AvailableTransitions.self, use: availableTransitions)
             .on(AnswerAsk.self, use: answerAsk)
     }
 
-    private func getWorkflows(request: Request, body: GetWorkflows.RequestBody, context: Context) async throws -> ListBody<API.WorkflowInstance> {
-        let allWorkflows = try await workflows.instances()
-        let instances = allWorkflows.map { API.WorkflowInstance(model: $0) }
-        return ListBody(items: instances)
+    private func getInstances(request: Request, body: EmptyBody, context: Context) async throws -> ListBody<API.WorkflowInstance> {
+        let instances = try await workflows.instances()
+        return ListBody(items: instances.map { API.WorkflowInstance(model: $0) })
     }
 
-    private func getWorkflow(request: Request, body: EmptyBody, context: Context) async throws -> Response {
-        let workflowId = try context.parameters.require("id")
-        let workflow = try await workflows.instance(id: workflowId)
-        let apiInstance = API.WorkflowInstance(model: workflow)
-        var response = try context.responseEncoder.encode(apiInstance, from: request, context: context)
-        if workflow.finishedAt != nil {
+    private func getInstance(request: Request, body: EmptyBody, context: Context) async throws -> Response {
+        let instanceId = try context.parameters.require("id")
+        let instance = try await workflows.instance(id: instanceId)
+        var response = try context.responseEncoder.encode(API.WorkflowInstance(model: instance), from: request, context: context)
+        if instance.finishedAt != nil {
             response.status = .gone
         }
         return response
     }
 
     private func startWorkflow(request: Request, body: StartWorkflow.RequestBody, context: Context) async throws -> API.WorkflowInstance {
-        let timeout = self.timeout(from: request)
         let initialData = body.initialData.map { WorkflowEngine.WorkflowData(api: $0) } ?? WorkflowEngine.WorkflowData()
-
         let created = try await workflows.create(body.workflowId, initialData: initialData)
 
-        let result = await withTimeout(seconds: timeout) { [workflows] in
+        return try await instanceResponse(for: created.id, request: request) { [workflows] in
             try await workflows.runAutomaticTransitions(on: created.id)
-        }
-
-        switch result {
-            case .completed(.success(let instance)):
-                return API.WorkflowInstance(model: instance)
-            case .completed(.failure(let error)):
-                throw error
-            case .timedOut:
-                let current = try await workflows.instance(id: created.id)
-                return API.WorkflowInstance(model: current)
         }
     }
 
     private func takeTransition(request: Request, body: TakeTransition.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let instanceId = try context.parameters.require("id")
-        let timeout = self.timeout(from: request)
         let transitionProcessId = body.transitionProcessId
 
-        let result = await withTimeout(seconds: timeout) { [workflows] in
+        return try await instanceResponse(for: instanceId, request: request) { [workflows] in
             try await workflows.takeTransition(processId: transitionProcessId, on: instanceId)
-        }
-
-        switch result {
-            case .completed(.success(let instance)):
-                return API.WorkflowInstance(model: instance)
-            case .completed(.failure(let error)):
-                throw error
-            case .timedOut:
-                let current = try await workflows.instance(id: instanceId)
-                return API.WorkflowInstance(model: current)
         }
     }
 
     private func answerAsk(request: Request, body: AnswerAsk.RequestBody, context: Context) async throws -> API.WorkflowInstance {
         let instanceId = try context.parameters.require("id")
-        let timeout = self.timeout(from: request)
         let data = WorkflowEngine.WorkflowData(api: body.data)
 
-        let result = await withTimeout(seconds: timeout) { [workflows] in
+        return try await instanceResponse(for: instanceId, request: request) { [workflows] in
             try await workflows.answer(to: instanceId, data: data)
-        }
-
-        switch result {
-            case .completed(.success(let instance)):
-                return API.WorkflowInstance(model: instance)
-            case .completed(.failure(let error)):
-                throw error
-            case .timedOut:
-                let current = try await workflows.instance(id: instanceId)
-                return API.WorkflowInstance(model: current)
         }
     }
 
     private func availableTransitions(
         request: Request,
-        body: AvailableTransitions.RequestBody,
+        body: EmptyBody,
         context: Context
     ) async throws -> ListBody<API.Transition> {
-        let workflowId = try context.parameters.require("id")
-        let transitions = try await workflows.transitions(for: workflowId)
-        let apiTransitions = transitions.map { transition in
-            API.Transition(model: transition)
+        let instanceId = try context.parameters.require("id")
+        let transitions = try await workflows.transitions(for: instanceId)
+        return ListBody(items: transitions.map { API.Transition(model: $0) })
+    }
+
+    /// Waits for `operation` up to the request's timeout and answers with the instance it returns.
+    /// When the timeout comes first, the operation keeps running and the answer is the instance
+    /// as it is at that moment.
+    private func instanceResponse(
+        for instanceId: WorkflowInstanceID,
+        request: Request,
+        operation: @Sendable @escaping () async throws -> WorkflowEngine.WorkflowInstance
+    ) async throws -> API.WorkflowInstance {
+        let instance: WorkflowEngine.WorkflowInstance
+        switch await withTimeout(seconds: timeout(from: request), operation: operation) {
+            case .completed(let result):
+                instance = try result.get()
+            case .timedOut:
+                instance = try await workflows.instance(id: instanceId)
         }
-        return ListBody(items: apiTransitions)
+        return API.WorkflowInstance(model: instance)
     }
 
     private func timeout(from request: Request) -> Double {

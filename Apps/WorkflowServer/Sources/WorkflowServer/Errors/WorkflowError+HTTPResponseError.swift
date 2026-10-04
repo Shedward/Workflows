@@ -5,91 +5,55 @@
 //  Created by Vlad Maltsev on 23.02.2026.
 //
 
-import API
 import Hummingbird
 import WorkflowEngine
 
-extension WorkflowsError.WorkflowNotFound: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Workflow not found",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
-    }
-}
-
-extension WorkflowsError.WorkflowNotFound: @retroactive HTTPResponseError {
+extension WorkflowsError.WorkflowNotFound: @retroactive HTTPResponseError, APIError {
     public var status: HTTPResponse.Status {
         .notFound
     }
-}
 
-extension WorkflowsError.WorkflowInstanceNotFound: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Workflow instance not found",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
+    public var userDescription: String {
+        "Workflow not found"
     }
 }
 
-extension WorkflowsError.WorkflowInstanceNotFound: @retroactive HTTPResponseError {
+extension WorkflowsError.WorkflowInstanceNotFound: @retroactive HTTPResponseError, APIError {
     public var status: HTTPResponse.Status {
         .notFound
     }
-}
 
-extension WorkflowsError.TransitionProcessNotFoundForInstance: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Transition process not found for instance",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
+    public var userDescription: String {
+        "Workflow instance not found"
     }
 }
 
-extension WorkflowsError.TransitionProcessNotFoundForInstance: @retroactive HTTPResponseError {
+extension WorkflowsError.TransitionProcessNotFoundForInstance: @retroactive HTTPResponseError, APIError {
     public var status: HTTPResponse.Status {
         .internalServerError
     }
-}
 
-extension WorkflowsError.InvalidRouteTarget: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Transition routed to an undeclared target state",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
+    public var userDescription: String {
+        "Transition process not found for instance"
     }
 }
 
-extension WorkflowsError.InvalidRouteTarget: @retroactive HTTPResponseError {
+extension WorkflowsError.InvalidRouteTarget: @retroactive HTTPResponseError, APIError {
     public var status: HTTPResponse.Status {
         .internalServerError
     }
-}
 
-extension WorkflowsError.InstanceNotAsking: @retroactive ResponseGenerator {
-    public func response(from request: Request, context: some RequestContext) throws -> Response {
-        try ErrorResponse(
-            status: status,
-            userDescription: "Workflow instance is not waiting for an answer",
-            debugDescription: String(describing: self)
-        )
-        .response(from: request, context: context)
+    public var userDescription: String {
+        "Transition routed to an undeclared target state"
     }
 }
 
-extension WorkflowsError.InstanceNotAsking: @retroactive HTTPResponseError {
+extension WorkflowsError.InstanceNotAsking: @retroactive HTTPResponseError, APIError {
     public var status: HTTPResponse.Status {
         .conflict
+    }
+
+    public var userDescription: String {
+        "Workflow instance is not waiting for an answer"
     }
 }
