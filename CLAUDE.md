@@ -14,13 +14,16 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 
 swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
 
+# One-time machine setup: create and trust the TLS certificate in ~/.workflows/certs
+./Tools/Run/setup_certs                        # --force to regenerate
+
 # Build and run the server
 ./Tools/Run/run_server
 
 # Build, run server, run all integration tests, then shut down
 ./Tools/Run/full_check
 
-# Integration tests (require running server on :8080)
+# Integration tests (require running server on https://127.0.0.1:8443)
 ./Tools/Tests/run_all                          # Run all integration tests
 ./Tools/Tests/run_simple_workflow              # Run a single test
 
@@ -154,5 +157,5 @@ Project notes are stored in `.claude/notes/`. Use dated markdown files (e.g. `20
 
 - `hummingbird` (2.0.0+) — HTTP framework
 - `swift-configuration` (1.0.0+) — Configuration
-- `swift-subprocess` (0.3.0+) — Process execution (Git)
-- `swift-syntax` (602.0.0+) — Macro support
+- `swift-subprocess` (1.0.0+) — Process execution (Git)
+- `swift-syntax` (604.0.0+) — Macro support
