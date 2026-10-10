@@ -10,31 +10,26 @@ import Foundation
 import os
 
 public actor WorkflowRegistry {
-    private static func discoverSubflows(in workflows: [AnyWorkflow]) -> [AnyWorkflow] {
-        var discovered: [WorkflowID: AnyWorkflow] = [:]
-        var queue: [AnyWorkflow] = workflows
-
-        while let workflow = queue.popLast() {
-            guard discovered[workflow.id] == nil else { continue }
-            discovered[workflow.id] = workflow
-
-            queue.append(contentsOf: workflow.subflows.filter { discovered[$0.id] == nil })
-        }
-
-        return Array(discovered.values)
-    }
-
     private var workflows: [WorkflowID: AnyWorkflow] = [:]
     private var graphs: [WorkflowID: WorkflowGraph] = [:]
 
+    /// Registers the given workflows and every subflow they reach. The same type may appear more
+    /// than once; two different types with one id cannot both be registered, so that is an error.
     public init(_ workflows: [AnyWorkflow]) throws {
-        let allWorkflows = Self.discoverSubflows(in: workflows)
-        self.workflows = .init(uniqueKeysWithValues: allWorkflows.map { ($0.id, $0) })
+        var queue = workflows
 
-        if allWorkflows.count != self.workflows.count {
-            let ids = allWorkflows.map(\.id)
-            let registeredIds = self.workflows.keys
-            throw Failure("Failed to register workflows. Expected \(ids), registered: \(registeredIds)")
+        while let workflow = queue.popLast() {
+            if let registered = self.workflows[workflow.id] {
+                guard ObjectIdentifier(type(of: registered)) == ObjectIdentifier(type(of: workflow)) else {
+                    throw WorkflowsError.DuplicateWorkflowID(
+                        workflowId: workflow.id,
+                        types: [String(describing: type(of: registered)), String(describing: type(of: workflow))]
+                    )
+                }
+                continue
+            }
+            self.workflows[workflow.id] = workflow
+            queue.append(contentsOf: workflow.subflows)
         }
     }
 

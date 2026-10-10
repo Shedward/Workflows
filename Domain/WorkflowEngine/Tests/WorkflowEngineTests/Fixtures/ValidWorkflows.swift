@@ -236,3 +236,45 @@ struct ResumableWorkflow: Workflow {
         }
     }
 }
+
+@DataBindable
+struct TwinAlpha: Workflow {
+    enum State: String, WorkflowState {
+        case middle
+    }
+
+    var id: WorkflowID {
+        "Twin"
+    }
+
+    var transitions: Transitions {
+        onStart {
+            GoNextStep.to(.middle)
+        }
+
+        on(.middle) {
+            Finalize.toFinish()
+        }
+    }
+}
+
+@DataBindable
+struct TwinBeta: Workflow {
+    enum State: String, WorkflowState {
+        case middle
+    }
+
+    var id: WorkflowID {
+        "Twin"
+    }
+
+    var transitions: Transitions {
+        onStart {
+            GoNextStep.to(.middle)
+        }
+
+        on(.middle) {
+            Finalize.toFinish()
+        }
+    }
+}

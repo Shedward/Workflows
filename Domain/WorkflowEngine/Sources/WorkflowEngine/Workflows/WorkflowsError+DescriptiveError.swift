@@ -12,6 +12,12 @@ extension WorkflowsError.WorkflowNotFound: DescriptiveError {
     }
 }
 
+extension WorkflowsError.DuplicateWorkflowID: DescriptiveError {
+    public var userDescription: String {
+        "Workflow id '\(workflowId)' is claimed by two types: \(types.joined(separator: " and "))"
+    }
+}
+
 extension WorkflowsError.WorkflowInstanceNotFound: DescriptiveError {
     public var userDescription: String {
         "Workflow instance '\(instanceId)' not found"

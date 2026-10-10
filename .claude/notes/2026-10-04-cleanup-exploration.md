@@ -119,7 +119,8 @@ needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, 
 | B1 | fixed (user, 2026-10-10: option 1, skip and log; migrations come later), three restart tests | see commit "Resume persisted instances on startup" |
 | B8 | fixed (user, 2026-10-10: notify in `create`; logger signatures fixed) | see commit "Deliver workflowDidStart for every created instance" |
 | B16 | fixed (user, 2026-10-10: option 2, "keep error types clean and semantic") | see commit "Semantic HTTP statuses for client mistakes" |
-| B26, B29 | NEED A DECISION, see below | – |
+| B26 | fixed (user, 2026-10-10: option 1, make the check real) | see commit "Refuse two workflow types with one id" |
+| B29 | NEED A DECISION, see below | – |
 
 Decisions needed:
 - ~~**B1**~~ Done: `App.main` calls `workflows.run()` before serving; unregistered or other-version instances
@@ -132,8 +133,8 @@ Decisions needed:
 - ~~**B16**~~ Done: `InvalidRequestBody` (new server error, 400) wraps body decoding failures in `API+Route`;
   `MissingRequiredInputs` is 400; a transition not available from the current state is 409 (was 500).
   `run_malformed_requests` asserts statuses and texts; `Documentation/API.md` explains the four statuses.
-- **B26** The duplicate-id check in `WorkflowRegistry.init` cannot fire. Make it real (compare before
-  deduplication) or drop `throws` from the initializer (touches `Workflows.swift` and the tests).
+- ~~**B26**~~ Done: the registry walk throws `WorkflowsError.DuplicateWorkflowID(workflowId, types)` when a
+  second type claims an id; the same type given twice is fine. Two registry tests.
 - **B29** Validation ignores a `DataBindable` process that is not `Defaultable`, while the runtime binds it.
   Decide whether `Defaultable` is required for every process (then enforce at the type level) or drop it
   from the metadata cast.

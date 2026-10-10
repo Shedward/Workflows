@@ -14,6 +14,11 @@ public enum WorkflowsError {
         }
     }
 
+    public struct DuplicateWorkflowID: Swift.Error {
+        public let workflowId: WorkflowID
+        public let types: [String]
+    }
+
     public struct WorkflowInstanceNotFound: Swift.Error {
         public let instanceId: WorkflowInstanceID
     }

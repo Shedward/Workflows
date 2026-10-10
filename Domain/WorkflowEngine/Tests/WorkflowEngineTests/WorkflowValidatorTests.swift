@@ -214,6 +214,21 @@ struct WorkflowGraphTests {
 struct WorkflowRegistryTests {
     private let noDependencies = DependenciesContainer()
 
+    @Test func twoTypesWithOneIdCannotBeRegistered() {
+        let failure = #expect(throws: WorkflowsError.DuplicateWorkflowID.self) {
+            try WorkflowRegistry([TwinAlpha(), TwinBeta()])
+        }
+
+        #expect(failure?.workflowId == "Twin")
+        #expect(failure?.types.sorted() == ["TwinAlpha", "TwinBeta"])
+    }
+
+    @Test func theSameTypeMayBeGivenTwice() async throws {
+        let registry = try WorkflowRegistry([LinearWorkflow(), LinearWorkflow()])
+
+        #expect(await registry.allWorkflows().map(\.id) == ["LinearWorkflow"])
+    }
+
     @Test func subflowsAreRegisteredWithTheirParent() async throws {
         let registry = try WorkflowRegistry([SatisfiedSubflowInputWorkflow()])
 
