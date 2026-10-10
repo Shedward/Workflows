@@ -306,17 +306,18 @@ build_app, Github + GoogleServices schemes, full_check 26/26, unit tests, SwiftL
 | `7454f2f` | Engine internals: `CleanStorage`, `binded`, `dependencyKeys` / `askKeys`, `Dependency.projectedValue`, `WaitScheduler.cancel`, `JSONFileWorkflowStorage.decoder`, `chainAfter` |
 | `c1aab54` | `AnySendableError`, `JsonApi`, macro's `SwiftLexicalLookup` import + product and `Field.type` |
 
-Left in place, still unreferenced — each is a decision for the user:
-- `Services/Github` package: nothing imports it, but it is the canonical endpoint example in
-  `Documentation/Architecture.md` and the `gen-api-endpoint` skill.
-- `ServiceAccountTokenProvider` + `ServiceAccountCredentials` (156 LOC): superseded by user OAuth, but
-  documented in `Documentation/Architecture.md`.
-- `ValidationTestWorkflows/*` + `TestingWorkflows.invalidWorkflows` (270 LOC): fixtures for every validation
-  error, never registered or asserted. Better turned into real validator tests than deleted.
-- `PlainTextBody`, `UrlEncodedBody` (documented body types), `toStart()` (only way to target `_start`),
-  `LoggerScope.debug` / `.file`, the `implement()` marks, `ValidationMode.lenient`, `themeBackground`,
-  `Repository.assertExists`, small fluent modifiers in Core/Rest.
-- Redundant but not dead (left for the subsystem passes): hand-written `TransitionState: Codable`.
+Left in place after the sweep, decided one by one with the user on 2026-10-10:
+- `Services/Github` package: deleted (nothing imported it; the placeholder token went with it).
+  `Documentation/Architecture.md` now points at `GoogleServices/.../Drive/Api/CopyFile.swift` as the endpoint
+  example. The user-level `gen-api-endpoint` skill may still name the Github file; outside the repo.
+- `ServiceAccountTokenProvider` + `ServiceAccountCredentials`: deleted; superseded by user OAuth.
+- `ValidationTestWorkflows/*`: turned into the engine's validator tests in the graph validation pass.
+- `PlainTextBody`, `UrlEncodedBody`: kept as documented framework surface (the Google token exchange is the
+  natural first user of the form body). `toStart()`: kept, the DSL's restart step.
+- The marks: kept; the duplicate `implement` became `todo(_:)` (B6).
+- `ModeBar.placeholderButton`: deleted.
+- Not discussed, still unreferenced and harmless: `LoggerScope.debug` / `.file`, `ValidationMode.lenient`
+  (a public option), `themeBackground`, `Repository.assertExists`, small fluent modifiers in Core/Rest.
 
 ### Architecture pass: engine no longer depends on API (A1) — done 2026-10-04
 
@@ -678,5 +679,10 @@ server start under strict validation in a sandboxed home.
 3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~,
    ~~S5 app view models~~, ~~S6 storage~~ (done). S7 Google auth skipped (user, 2026-10-10: storage, then
    bugfixes): half of its duplication is the unreferenced `ServiceAccountTokenProvider`.
-4. ~~Bug backlog B1–B36~~ — done except the five that need a decision (B1, B8, B16, B26, B29) and B6/B36.
-5. Decisions on the leftovers (unreferenced code, marks, B1/B8/B16/B26/B29), then the pull request.
+4. ~~Bug backlog B1–B36~~ — done. 34 fixed, B21 closed as unreachable, B36 left as minor.
+5. ~~Decisions on the leftovers~~ — done 2026-10-10, see the dead-code sweep entry.
+6. Pull request `cleanup` → `main`: prepared 2026-10-10 (60 commits, 139 files, +4402 −2223; 95 unit and
+   28 integration tests).
+
+Open after the PR: B19's environment override of host/port still bypasses the redirect URI; B36 minor
+storage oddities; the HUD was never checked on screen during the app pass.
