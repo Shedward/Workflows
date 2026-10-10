@@ -90,3 +90,15 @@ extension WaitScheduler {
         case answered(data: WorkflowData)
     }
 }
+
+extension WaitScheduler.ResumeReason {
+    /// A late answer or timer must not resume a transition that is waiting for something else.
+    func resumes(_ state: TransitionState.State?) -> Bool {
+        switch (self, state) {
+            case (.time, .waiting(.time)), (.workflowFinished, .waiting(.workflowFinished)), (.answered, .waiting(.asking)):
+                true
+            default:
+                false
+        }
+    }
+}

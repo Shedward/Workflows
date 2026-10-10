@@ -239,6 +239,7 @@ actor WorkflowRunner {
             guard
                 let instance = try await storage.instance(id: instanceId),
                 let transitionId = instance.transitionState?.transitionId,
+                reason.resumes(instance.transitionState?.state),
                 let workflow = await registry.workflow(id: instance.workflowId),
                 let transition = workflow.anyTransitions.first(where: { $0.id == transitionId })
             else {
