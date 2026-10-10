@@ -1,62 +1,39 @@
 //
 //  InMemoryWorkflowStorage.swift
-//  Workflow
-//
-//  Created by Vlad Maltsev on 26.12.2025.
+//  WorkflowEngine
 //
 
 import Foundation
 
 public actor InMemoryWorkflowStorage: WorkflowStorage {
-    private var instances: [WorkflowInstance] = []
-    private let retentionInterval: TimeInterval
+    private var table: WorkflowInstanceTable
 
     public init(retentionInterval: TimeInterval = 3600) {
-        self.retentionInterval = retentionInterval
+        table = WorkflowInstanceTable(retentionInterval: retentionInterval)
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) -> WorkflowInstance {
-        let newId = UUID().uuidString
-        let instance = WorkflowInstance(
-            id: newId,
-            workflowId: workflow.id,
-            workflowVersion: workflow.version,
-            state: workflow.startId,
-            transitionState: nil,
-            data: initialData
-        )
-        instances.append(instance)
+        let instance = WorkflowInstanceTable.newInstance(of: workflow, initialData: initialData)
+        table.put(instance)
         return instance
     }
 
     public func update(_ instance: WorkflowInstance) {
-        instances = instances.filter { $0.id != instance.id } + [instance]
+        table.put(instance)
     }
 
     public func finish(_ instance: WorkflowInstance) {
-        var finished = instance
-        finished.finishedAt = Date()
-        instances = instances.filter { $0.id != instance.id } + [finished]
-        cleanupExpired()
+        _ = table.finish(instance)
+        _ = table.removeExpired()
     }
 
     public func all() -> [WorkflowInstance] {
-        cleanupExpired()
-        return instances.filter { $0.finishedAt == nil }
+        _ = table.removeExpired()
+        return table.running
     }
 
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
-        cleanupExpired()
-        return instances.first { $0.id == id }
-    }
-
-    private func cleanupExpired() {
-        let now = Date()
-        instances.removeAll { instance in
-            guard let finishedAt = instance.finishedAt else {
-                return false
-            }
-            return now.timeIntervalSince(finishedAt) > retentionInterval
-        }
+        _ = table.removeExpired()
+        return table.instance(id: id)
     }
 }

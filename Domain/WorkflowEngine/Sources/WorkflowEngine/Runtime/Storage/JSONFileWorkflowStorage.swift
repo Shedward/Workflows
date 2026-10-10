@@ -1,8 +1,6 @@
 //
 //  JSONFileWorkflowStorage.swift
-//  Workflow
-//
-//  Created by Vlad Maltsev on 29.03.2026.
+//  WorkflowEngine
 //
 
 import Core
@@ -35,9 +33,8 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
     }
 
     private let directory: URL
-    private let retentionInterval: TimeInterval
     private let logger = Logger(scope: .workflow)
-    private var instances: [WorkflowInstance] = []
+    private var table: WorkflowInstanceTable
 
     private let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -48,63 +45,47 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
 
     public init(directory: URL, retentionInterval: TimeInterval = 3600) async throws {
         self.directory = directory
-        self.retentionInterval = retentionInterval
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.instances = try Self.load(from: directory, logger: logger)
+        self.table = WorkflowInstanceTable(
+            instances: try Self.load(from: directory, logger: logger),
+            retentionInterval: retentionInterval
+        )
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) throws -> WorkflowInstance {
-        let instance = WorkflowInstance(
-            id: UUID().uuidString,
-            workflowId: workflow.id,
-            workflowVersion: workflow.version,
-            state: workflow.startId,
-            transitionState: nil,
-            data: initialData
-        )
-        instances.append(instance)
+        let instance = WorkflowInstanceTable.newInstance(of: workflow, initialData: initialData)
+        table.put(instance)
         try save(instance)
         return instance
     }
 
     public func update(_ instance: WorkflowInstance) throws {
-        instances = instances.filter { $0.id != instance.id } + [instance]
+        table.put(instance)
         try save(instance)
     }
 
     public func finish(_ instance: WorkflowInstance) throws {
-        var finished = instance
-        finished.finishedAt = Date()
-        instances = instances.filter { $0.id != instance.id } + [finished]
-        try save(finished)
-        cleanupExpired()
+        try save(table.finish(instance))
+        removeExpired()
     }
 
     public func all() -> [WorkflowInstance] {
-        cleanupExpired()
-        return instances.filter { $0.finishedAt == nil }
+        removeExpired()
+        return table.running
     }
 
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
-        cleanupExpired()
-        return instances.first { $0.id == id }
+        removeExpired()
+        return table.instance(id: id)
     }
 
-    private func cleanupExpired() {
-        let now = Date()
-        instances.removeAll { instance in
-            guard let finishedAt = instance.finishedAt else {
-                return false
-            }
-            guard now.timeIntervalSince(finishedAt) > retentionInterval else {
-                return false
-            }
+    private func removeExpired() {
+        for id in table.removeExpired() {
             do {
-                try FileManager.default.removeItem(at: filePath(for: instance.id))
+                try FileManager.default.removeItem(at: filePath(for: id))
             } catch {
-                logger?.error("Failed to delete expired instance file \(instance.id, privacy: .public): \(error, privacy: .public)")
+                logger?.error("Failed to delete expired instance file \(id, privacy: .public): \(error, privacy: .public)")
             }
-            return true
         }
     }
 
