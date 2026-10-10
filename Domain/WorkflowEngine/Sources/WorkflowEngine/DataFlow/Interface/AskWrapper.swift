@@ -12,22 +12,22 @@ public struct Ask<Value: WorkflowValue>: Sendable {
     public var wrappedValue: Value {
         get {
             guard let storage else {
-                fatalError("Tried to use Ask before setting storage")
+                preconditionFailure("Ask<\(Value.self)> read before CreateOutputStorage ran (engine bug)")
             }
 
             guard let value = storage.value else {
-                fatalError("Ask \(self) is not set before usage")
+                preconditionFailure("Ask<\(Value.self)> read before it was answered; read it only after the answer arrived")
             }
 
             guard let value = value as? Value else {
-                fatalError("Storage value \(value) is not \(Value.self)")
+                preconditionFailure("Ask<\(Value.self)> holds \(type(of: value)), not \(Value.self) (engine bug)")
             }
 
             return value
         }
         nonmutating set {
             guard let storage else {
-                fatalError("Tried to use Ask before setting storage")
+                preconditionFailure("Ask<\(Value.self)> set before CreateOutputStorage ran (engine bug)")
             }
 
             storage.value = newValue
