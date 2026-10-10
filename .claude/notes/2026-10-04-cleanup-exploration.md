@@ -93,6 +93,45 @@ Decision (user, 2026-10-04): bugs stay out of the cleanup commits. Return to thi
 done and fix them then. Cleanup steps must not change these behaviors, and must not delete the code a fix
 needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, `AddQueryRequestDecorator`).
 
+### Status after the bugfix phase (2026-10-10)
+
+| Bug | Status | Commit |
+|---|---|---|
+| B2 | fixed, with the new `RestTests` target | `e723836` |
+| B3, B30, B31, B32, B33 | fixed, five app tests | `ae6ce87` |
+| B4 | fixed | `8bae674` |
+| B5 | fixed | `4f3ab60` |
+| B7, B9, B15 | fixed during the cleanup | `4d7f906`, `8aa9809`, `49cda0a` |
+| B10 | fixed, no test (race window too narrow for the shell suite) | `ed4da3f` |
+| B11 | fixed | `8ee9a54` |
+| B12 | fixed | `9652d8c` |
+| B13 | fixed, unit test | `49d07a2` |
+| B14 | fixed | `c76aeda` |
+| B17, B18 | fixed, integration test | `0e4eac9` |
+| B19 | fixed for the duplication; the environment-variable override of host/port still bypasses the redirect URI | `c22b537` |
+| B20 | fixed, every `WorkflowsError` is `DescriptiveError` | `11bf633` |
+| B22 | fixed, integration test with a Cyrillic id | `80f0697` |
+| B23, B24, B25, B27, B28 | fixed, three new validator tests | `f37a354` |
+| B34, B35 | fixed, two storage tests | `9b293e0` |
+| B21 | closed without change: `instance(id:)` only throws after eviction, and retention (3600 s) is longer than the longest timeout (600 s) | – |
+| B6 | waits for the decision on the developer marks (both are unused) | – |
+| B36 | left as is (minor) | – |
+| B1, B8, B16, B26, B29 | NEED A DECISION, see below | – |
+
+Decisions needed:
+- **B1** Wire `Workflows.run()` so persisted waits are rescheduled after a restart. It throws on instances
+  whose workflow version changed; decide: skip and log them, move them aside, or fail startup.
+- **B8** Deliver `workflowDidStart` for instances started over REST (today only subflow children get it).
+  Plugin semantics; decide whether listeners expect it.
+- **B16** Answer client mistakes (malformed JSON, missing body, `MissingRequiredInputs`) with 400 and an
+  `ErrorResponse` instead of a bare 500. API contract change; one line per error in the table plus the
+  body-decoding errors in `API+Route`.
+- **B26** The duplicate-id check in `WorkflowRegistry.init` cannot fire. Make it real (compare before
+  deduplication) or drop `throws` from the initializer (touches `Workflows.swift` and the tests).
+- **B29** Validation ignores a `DataBindable` process that is not `Defaultable`, while the runtime binds it.
+  Decide whether `Defaultable` is required for every process (then enforce at the type level) or drop it
+  from the metadata cast.
+
 B1. **`Workflows.run()` is never called**, and never was in git history. So `WorkflowRunner.resume()` never
     runs: after a restart, persisted time waits and subflow waits are not rescheduled, and the
     `WorkflowVersionMismatch` "on startup" described in CLAUDE.md cannot happen. Wiring it in is a behavior
@@ -606,6 +645,25 @@ Why things are the way they are:
 
 Verified: 44 engine tests, `full_check` 27/27, prod build, SwiftLint 0. Bugs B34–B36 above.
 
+### Bugfix phase — 2026-10-10
+
+Twenty-five backlog items fixed in sixteen commits (table in the backlog section), each with a test where the
+suite can reach the behavior, each test checked red before the fix by reverting the sources. New test
+targets: `Core/Rest/Tests/RestTests`; new tests in the engine (optional output, storage order and failed
+writes, three validator cases) and the app (five view model cases). `Tools/Run/unit_tests` runs four
+packages now: Core 3, Rest 3, engine 50, app 28. Integration suite: 28 scripts (`run_unicode_workflow_id`
+is new; `run_http_edge_cases` checks content type and the error shape).
+
+Behavior changes a client can see:
+- HTTP error texts now name the ids involved and equal the stored `transitionState.failed` text.
+- Success responses carry `Content-Type: application/json`; the graph endpoint's 404 is an `ErrorResponse`.
+- Field arrays in the graph DTO and `expectedFields` are sorted by key.
+- Validation messages changed (see B24); strict validation of the six HH workflows still passes.
+- Percent-encoded workflow ids in paths work.
+
+Verified at the end: all unit tests, `full_check` 28/28, prod build, app build, SwiftLint 0, production
+server start under strict validation in a sandboxed home.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
@@ -613,4 +671,5 @@ Verified: 44 engine tests, `full_check` 27/27, prod build, SwiftLint 0. Bugs B34
 3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~,
    ~~S5 app view models~~, ~~S6 storage~~ (done). S7 Google auth skipped (user, 2026-10-10: storage, then
    bugfixes): half of its duplication is the unreferenced `ServiceAccountTokenProvider`.
-4. Bug backlog B1–B36 (B7, B9 and B15 already fixed), then the pull request.
+4. ~~Bug backlog B1–B36~~ — done except the five that need a decision (B1, B8, B16, B26, B29) and B6/B36.
+5. Decisions on the leftovers (unreferenced code, marks, B1/B8/B16/B26/B29), then the pull request.
