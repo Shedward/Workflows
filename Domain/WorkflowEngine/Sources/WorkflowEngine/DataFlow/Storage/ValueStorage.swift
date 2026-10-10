@@ -5,27 +5,21 @@
 //  Created by Vlad Maltsev on 03.01.2026.
 //
 
-import os.lock
+import os
 
-final class ValueStorage: @unchecked Sendable {
-    private var _value: Sendable?
-    private var lock = os_unfair_lock_s()
+final class ValueStorage: Sendable {
+    private let storedValue: OSAllocatedUnfairLock<Sendable?>
 
     var value: Sendable? {
         get {
-            os_unfair_lock_lock(&lock)
-            let value = _value
-            os_unfair_lock_unlock(&lock)
-            return value
+            storedValue.withLock { $0 }
         }
         set {
-            os_unfair_lock_lock(&lock)
-            _value = newValue
-            os_unfair_lock_unlock(&lock)
+            storedValue.withLock { $0 = newValue }
         }
     }
 
     init(_ value: Sendable? = nil) {
-        _value = value
+        storedValue = OSAllocatedUnfairLock(initialState: value)
     }
 }
