@@ -87,7 +87,7 @@ The preferred way to define any REST endpoint is as a struct conforming to a ser
 
 ```
 Api (Core/Rest)
-  └── GithubApi (Services/Github)
+  └── WorkflowApi (Domain/API)
   └── GoogleDriveApi (Services/GoogleServices)
   └── GoogleSheetsApi (Services/GoogleServices)
 ```
@@ -96,7 +96,7 @@ Each service protocol adds nothing — it's just a marker for type safety.
 
 ### Endpoint file structure
 
-**One file per endpoint.** See `Services/Github/Sources/Github/Api/Repositories/ListRepositoriesForAuthenticatedUser.swift` as the canonical reference.
+**One file per endpoint.** See `Services/GoogleServices/Sources/GoogleServices/Drive/Api/CopyFile.swift` as the canonical reference.
 
 ```
 // LineOne: URL to official API documentation
