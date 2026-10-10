@@ -24,28 +24,26 @@ struct ErrorResponseMiddleware: RouterMiddleware {
 }
 
 extension ErrorResponse {
-    /// The one table of which error gets which HTTP status and user text.
+    /// The one table of which error gets which HTTP status. The user text is the error's own
+    /// `userDescription`, the same text that `transitionState.failed` stores.
     init?(mappedFrom error: any Error) {
         let status: HTTPResponse.Status
-        let userDescription: String
 
         switch error {
-            case is WorkflowsError.WorkflowNotFound:
-                (status, userDescription) = (.notFound, "Workflow not found")
-            case is WorkflowsError.WorkflowInstanceNotFound:
-                (status, userDescription) = (.notFound, "Workflow instance not found")
-            case is WorkflowsError.TransitionProcessNotFoundForInstance:
-                (status, userDescription) = (.internalServerError, "Transition process not found for instance")
-            case is WorkflowsError.InvalidRouteTarget:
-                (status, userDescription) = (.internalServerError, "Transition routed to an undeclared target state")
+            case is WorkflowsError.WorkflowNotFound, is WorkflowsError.WorkflowInstanceNotFound:
+                status = .notFound
             case is WorkflowsError.InstanceNotAsking:
-                (status, userDescription) = (.conflict, "Workflow instance is not waiting for an answer")
-            case let failure as Failure:
-                (status, userDescription) = (.internalServerError, failure.userDescription)
+                status = .conflict
+            case is WorkflowsError.TransitionProcessNotFoundForInstance, is WorkflowsError.InvalidRouteTarget, is Failure:
+                status = .internalServerError
             default:
                 return nil
         }
 
-        self.init(status: status, userDescription: userDescription, debugDescription: String(describing: error))
+        self.init(
+            status: status,
+            userDescription: (error as? DescriptiveError)?.userDescription ?? String(describing: error),
+            debugDescription: String(describing: error)
+        )
     }
 }

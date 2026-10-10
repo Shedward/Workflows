@@ -412,10 +412,12 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 
 ```json
 {
-  "userDescription": "Workflow not found",
-  "debugDescription": "WorkflowNotFound(id: \"BadId\")"
+  "userDescription": "Workflow 'BadId' is not registered",
+  "debugDescription": "WorkflowNotFound(workflowId: \"BadId\")"
 }
 ```
+
+`userDescription` is the same text the engine stores in `transitionState.failed` for the same error.
 
 ---
 
@@ -423,10 +425,13 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 
 | Error | HTTP Status | userDescription |
 |-------|-------------|-----------------|
-| Workflow not found | 404 | "Workflow not found" |
-| Instance not found | 404 | "Workflow instance not found" |
-| Transition not available from state | 500 | "Transition process not found for instance" |
-| Instance not asking | 409 | "Workflow instance is not waiting for an answer" |
+| Workflow not found | 404 | "Workflow '<id>' is not registered" |
+| Instance not found | 404 | "Workflow instance '<id>' not found" |
+| Transition not available from state | 500 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
+| Instance not asking | 409 | "Workflow instance '<id>' is not waiting for an answer" |
+| Transition failed | 500 | The failure's own description |
+
+Every endpoint answers an unknown workflow or instance with this shape, `GET /workflows/:id/graph` included.
 
 ---
 
