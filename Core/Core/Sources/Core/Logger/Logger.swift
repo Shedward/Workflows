@@ -18,14 +18,15 @@ public extension Logger {
         LoggerScopeStorage.shared.disable(scope)
     }
 
-    init?(subsystem: String = defaultSubsystemPrefix, scope: LoggerScope, prefix: String? = #fileID) {
+    init?(subsystem: String? = nil, scope: LoggerScope, prefix: String? = #fileID) {
         if LoggerScopeStorage.shared.isEnabled(scope) {
             var category = scope.name
             if let prefix {
                 category += "." + prefix
             }
 
-            self.init(subsystem: "\(Logger.defaultSubsystemPrefix).\(subsystem)", category: category)
+            let subsystem = [Logger.defaultSubsystemPrefix, subsystem].compactMap(\.self).joined(separator: ".")
+            self.init(subsystem: subsystem, category: category)
         } else {
             return nil
         }
