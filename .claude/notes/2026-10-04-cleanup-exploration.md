@@ -234,6 +234,18 @@ B33. **Switch mode error handling** (minimality, clarity): `showActiveWorkflows`
     successful `start` does not clear `error` and sets `state` without animation. A replaced `start` silently
     drops an instance the server already created.
 
+B34–B36 come from the storage round (2026-10-10). Read from code, NOT verified by experiment; pre-existing.
+
+B34. **After a restart `all()` is in directory-listing order**, not last-written order: the file storage loads
+    `contentsOfDirectory` in whatever order it comes (clarity, architecture). Noticeable in the app's running
+    list after a server restart.
+B35. **Memory and disk can diverge in the file storage**: `create`, `update` and `finish` put the instance into
+    the table before `save`; if the write throws, the table has it and the file does not (clarity,
+    architecture). The runner then sees a state the next restart will not.
+B36. Small ones (minimality): `finish` or `update` of an unknown id silently adds it; `finish` of an already
+    finished instance overwrites `finishedAt`; with a retention of 0 or less `finish` writes a file and deletes
+    it at once. Tests use retention `-1` for "evict at once"; `0` would be flaky (clarity).
+
 ## Progress log
 
 ### Dead-code sweep — done 2026-10-04
@@ -553,10 +565,52 @@ Why things are the way they are:
 Verified: 23 app tests, all unit tests, `build_app`, SwiftLint 0. NOT verified: the look and animations of the
 HUD on screen; the app was not launched. Bugs B30–B33 above.
 
+### Storage pass (S6) — done 2026-10-10
+
+Commits: `d15d9b4` (14 storage tests), `c54610d` (first version: one instance table behind both storages),
+then "Apply critics-rewrite round to the storages". Storage folder: 196 lines before, 213 after the first
+version, 196 after the round, with the list logic existing once instead of twice.
+
+Safety net: `WorkflowStorageTests.swift` in the engine test target: 7 tests run against both storages, 7
+against the JSON file storage (files, format, reload, skipped files, eviction of files). Retention `-1`
+means "evict at once", so nothing sleeps. Checked by two mutations, stable over three runs.
+
+| Idea | Minimality | Architecture | Clarity | Decision |
+|---|---|---|---|---|
+| Creating an instance and stamping `finishedAt` belong on `WorkflowInstance`, not on the table | on the table (`create`) | yes | yes | applied (2/3): `init(atStartOf:data:)` and the `finished(at:)` modifier in `WorkflowInstance.swift` |
+| Table rows private, `= []`, `init(retentionInterval:)` only | yes (memberwise) | yes | yes | applied (3/3) |
+| `put` is remove-and-append, not filter-and-concatenate | kept | yes | yes | applied (2/3) |
+| No `_ =`: eviction result is discardable | kept `_ =` | `@discardableResult` | no ids returned at all | applied (2/3 against `_ =`) |
+| Load files inside the actor, not a static function with a `logger:` parameter | noted as a finding | yes (in a struct) | yes | applied (2/3): `loadInstanceFiles()` from the async init |
+| Decoder as a stored property beside the encoder | – | yes | yes | applied (2/3) |
+| Eviction as one deadline comparison | yes | no | no | rejected (1/3) |
+| Each actor loops over `expired(at:)` and removes rows itself | no | no | yes | rejected (1/3) |
+| A `WorkflowInstanceDirectory` struct for all file concerns | no | yes | no | rejected (1/3; new entity around four functions) |
+| `fileURL(for:)`, `store(_:)` = put + save | – | one | one | not applied (1/3 each) |
+
+Quotes:
+- Clarity: "The table only knows rows and the retention rule; every scenario is spelled out top-to-bottom in
+  the storage that owns it."
+- Architecture: "The 'evict on finish/all/instance' points stay in the actors because they are the storage
+  contract, not a property of the list."
+- Minimality, on the static load: "`load` is static with a `logger:` parameter only because `table` must be
+  initialized before `self` can be used in the init."
+- Clarity, on the async init: "`JSONFileWorkflowStorage.init` has no `await` inside; its `async` is now
+  load-bearing (it is what makes the init isolated so `loadInstanceFiles` can touch `table`/`logger`)."
+
+Why things are the way they are:
+- `JSONFileWorkflowStorage.init` stays `async` although nothing awaits: an async actor initializer is isolated
+  once every stored property is set, which lets it call the isolated `loadInstanceFiles()`.
+- Eviction points (finish, all, instance) are in both actors on purpose; they are the storage contract.
+- `WorkflowInstance.swift` had kept the header `WorkflowRun.swift` from a rename; fixed in passing.
+
+Verified: 44 engine tests, `full_check` 27/27, prod build, SwiftLint 0. Bugs B34–B36 above.
+
 ## Proposed order
 
 1. ~~Dead-code sweep~~ — done, see progress log.
 2. ~~Architectural pass: A1~~ — done, see progress log. A2 moves into S1.
 3. Subsystems: ~~S1 runner~~, ~~S3 transition kinds and binding~~, ~~S4 server~~, ~~S2 graph validation~~,
-   ~~S5 app view models~~ (done); S6 storage and S7 Google auth if still worthwhile.
-4. Bug backlog B1–B33 (B7, B9 and B15 already fixed), then the pull request.
+   ~~S5 app view models~~, ~~S6 storage~~ (done). S7 Google auth skipped (user, 2026-10-10: storage, then
+   bugfixes): half of its duplication is the unreferenced `ServiceAccountTokenProvider`.
+4. Bug backlog B1–B36 (B7, B9 and B15 already fixed), then the pull request.
