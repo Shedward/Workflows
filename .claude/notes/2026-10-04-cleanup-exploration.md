@@ -685,4 +685,6 @@ server start under strict validation in a sandboxed home.
    28 integration tests).
 
 Open after the PR: B19's environment override of host/port still bypasses the redirect URI; B36 minor
-storage oddities; the HUD was never checked on screen during the app pass.
+storage oddities. The HUD was checked on screen on 2026-10-10 (macOS 27.2): it did not show because the
+`@NSApplicationDelegateAdaptor` lived on the library's `App`, not on the executable's `@main` type; fixed
+in commit 4293545.

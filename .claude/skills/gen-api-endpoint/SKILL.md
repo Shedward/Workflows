@@ -20,7 +20,7 @@ If a documentation URL is provided, fetch it first with WebFetch and use the par
 ## Your task
 
 1. **Identify the service** from the description (e.g. Jira, GitHub, Google Drive, Slack…)
-2. **Check if a service `Api` protocol already exists** — grep `Services/` for `protocol.*Api` to find existing ones (e.g. `GithubApi`, `GoogleDriveApi`)
+2. **Check if a service `Api` protocol already exists** — grep `Services/` for `protocol.*Api` to find existing ones (e.g. `GoogleDriveApi`, `GoogleSheetsApi`)
 3. **Fetch the docs** if a URL was provided — extract every query parameter, body field, path parameter, and their types/descriptions
 4. **Generate the endpoint file** strictly following the rules below
 5. **Print the full file content** so the user can review it, then ask where to save it
@@ -28,7 +28,7 @@ If a documentation URL is provided, fetch it first with WebFetch and use the par
 ## Endpoint file rules
 
 Follow these rules exactly. The reference implementation is at:
-`Services/Github/Sources/Github/Api/Repositories/ListRepositoriesForAuthenticatedUser.swift`
+`Services/GoogleServices/Sources/GoogleServices/Drive/Api/CopyFile.swift`
 
 Full pattern from `Documentation/Architecture.md`:
 
