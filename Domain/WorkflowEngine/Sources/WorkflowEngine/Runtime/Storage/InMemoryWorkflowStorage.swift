@@ -13,7 +13,7 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) -> WorkflowInstance {
-        let instance = WorkflowInstanceTable.newInstance(of: workflow, initialData: initialData)
+        let instance = WorkflowInstance(atStartOf: workflow, data: initialData)
         table.put(instance)
         return instance
     }
@@ -23,17 +23,17 @@ public actor InMemoryWorkflowStorage: WorkflowStorage {
     }
 
     public func finish(_ instance: WorkflowInstance) {
-        _ = table.finish(instance)
-        _ = table.removeExpired()
+        table.put(instance.finished(at: Date()))
+        table.removeExpired()
     }
 
     public func all() -> [WorkflowInstance] {
-        _ = table.removeExpired()
+        table.removeExpired()
         return table.running
     }
 
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
-        _ = table.removeExpired()
+        table.removeExpired()
         return table.instance(id: id)
     }
 }

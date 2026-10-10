@@ -8,30 +8,6 @@ import Foundation
 import os
 
 public actor JSONFileWorkflowStorage: WorkflowStorage {
-    private static func load(from directory: URL, logger: Logger?) throws -> [WorkflowInstance] {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let files = try FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil
-        ).filter { $0.pathExtension == "json" }
-        return files.compactMap { url in
-            let data: Data
-            do {
-                data = try Data(contentsOf: url)
-            } catch {
-                logger?.error("Failed to read instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
-                return nil
-            }
-            do {
-                return try decoder.decode(WorkflowInstance.self, from: data)
-            } catch {
-                logger?.error("Failed to decode instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
-                return nil
-            }
-        }
-    }
-
     private let directory: URL
     private let logger = Logger(scope: .workflow)
     private var table: WorkflowInstanceTable
@@ -43,17 +19,21 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         return encoder
     }()
 
+    private let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+
     public init(directory: URL, retentionInterval: TimeInterval = 3600) async throws {
         self.directory = directory
+        self.table = WorkflowInstanceTable(retentionInterval: retentionInterval)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.table = WorkflowInstanceTable(
-            instances: try Self.load(from: directory, logger: logger),
-            retentionInterval: retentionInterval
-        )
+        try loadInstanceFiles()
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) throws -> WorkflowInstance {
-        let instance = WorkflowInstanceTable.newInstance(of: workflow, initialData: initialData)
+        let instance = WorkflowInstance(atStartOf: workflow, data: initialData)
         table.put(instance)
         try save(instance)
         return instance
@@ -65,7 +45,9 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
     }
 
     public func finish(_ instance: WorkflowInstance) throws {
-        try save(table.finish(instance))
+        let finished = instance.finished(at: Date())
+        table.put(finished)
+        try save(finished)
         removeExpired()
     }
 
@@ -77,6 +59,24 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
         removeExpired()
         return table.instance(id: id)
+    }
+
+    private func loadInstanceFiles() throws {
+        let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+        for file in files where file.pathExtension == "json" {
+            let contents: Data
+            do {
+                contents = try Data(contentsOf: file)
+            } catch {
+                logger?.error("Failed to read instance file \(file.lastPathComponent, privacy: .public): \(error, privacy: .public)")
+                continue
+            }
+            do {
+                table.put(try decoder.decode(WorkflowInstance.self, from: contents))
+            } catch {
+                logger?.error("Failed to decode instance file \(file.lastPathComponent, privacy: .public): \(error, privacy: .public)")
+            }
+        }
     }
 
     private func removeExpired() {
