@@ -117,15 +117,17 @@ needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, 
 | B6 | waits for the decision on the developer marks (both are unused) | – |
 | B36 | left as is (minor) | – |
 | B1 | fixed (user, 2026-10-10: option 1, skip and log; migrations come later), three restart tests | see commit "Resume persisted instances on startup" |
-| B8, B16, B26, B29 | NEED A DECISION, see below | – |
+| B8 | fixed (user, 2026-10-10: notify in `create`; logger signatures fixed) | see commit "Deliver workflowDidStart for every created instance" |
+| B16, B26, B29 | NEED A DECISION, see below | – |
 
 Decisions needed:
 - ~~**B1**~~ Done: `App.main` calls `workflows.run()` before serving; unregistered or other-version instances
   are skipped with a warning and kept. Dry run over a copy of the real directory (144 files: 92 finished
   evicted, 52 orphans of testing workflows skipped and still listed as running) started fine. The warning
   lines could not be captured through `log show` in the sandbox; the skip behavior is covered by unit tests.
-- **B8** Deliver `workflowDidStart` for instances started over REST (today only subflow children get it).
-  Plugin semantics; decide whether listeners expect it.
+- ~~**B8**~~ Done: `WorkflowRunner.create` notifies, so REST starts and subflow children both fire it before
+  any automatic transition. The testing server's `TransitionLogger` had `willTransition`/`didTransition`
+  without `traceId`, so they never matched the protocol; fixed. The integration log now shows all four events.
 - **B16** Answer client mistakes (malformed JSON, missing body, `MissingRequiredInputs`) with 400 and an
   `ErrorResponse` instead of a bare 500. API contract change; one line per error in the table plus the
   body-decoding errors in `API+Route`.

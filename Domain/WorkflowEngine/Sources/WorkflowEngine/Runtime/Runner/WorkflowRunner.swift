@@ -38,15 +38,16 @@ actor WorkflowRunner {
 
     func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         logger?.trace("Create \(workflow.id, privacy: .public)")
-        return try await storage.create(workflow, initialData: initialData)
+        let instance = try await storage.create(workflow, initialData: initialData)
+        await plugins.invoke(WorkflowTransitionListener.self) {
+            $0.workflowDidStart(instance: instance)
+        }
+        return instance
     }
 
     func start(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {
         logger?.trace("Start \(workflow.id, privacy: .public)")
         let instance = try await create(workflow, initialData: initialData)
-        await plugins.invoke(WorkflowTransitionListener.self) {
-            $0.workflowDidStart(instance: instance)
-        }
         return await runAutomaticTransitions(from: instance)
     }
 
