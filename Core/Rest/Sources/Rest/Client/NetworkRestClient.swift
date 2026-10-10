@@ -79,8 +79,14 @@ public actor NetworkRestClient: RestClient {
             }
             responseData = data
 
-            try Failure.wrap("Validating response") {
+            do {
                 try responseValidators.validate(response)
+            } catch {
+                throw ResponseRejected(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: data,
+                    reason: (error as? DescriptiveError)?.userDescription ?? "\(error)"
+                )
             }
 
             let responseBody = try Failure.wrap("Parsing response") {

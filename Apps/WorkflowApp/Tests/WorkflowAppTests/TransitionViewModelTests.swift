@@ -1,4 +1,5 @@
 import API
+import Foundation
 import Rest
 import Testing
 @testable import WorkflowApp
@@ -122,6 +123,29 @@ struct TransitionViewModelTests {
         await eventually("transition is done") { viewModel.runningTransition == nil }
         #expect(focus.activeWorkflow?.state == "working")
         #expect(viewModel.transitions.map(\.processId) == ["Approve"])
+    }
+
+    @Test func aRefusedTakeShowsTheServersExplanation() async {
+        focus.setActiveWorkflow(.stub("w"))
+        let body = Data(#"{"userDescription":"Transition 'Approve' is not available","debugDescription":"..."}"#.utf8)
+        server.on("POST /workflowInstances/w/takeTransition") {
+            throw ResponseRejected(statusCode: 409, body: body, reason: "Wrong status code: 409")
+        }
+
+        viewModel.take(.stub("Approve"))
+
+        await eventually("error is shown") { viewModel.error == "Transition 'Approve' is not available" }
+    }
+
+    @Test func aRefusedTakeWithoutAnErrorBodyShowsTheStatus() async {
+        focus.setActiveWorkflow(.stub("w"))
+        server.on("POST /workflowInstances/w/takeTransition") {
+            throw ResponseRejected(statusCode: 502, body: Data("Bad Gateway".utf8), reason: "Wrong status code: 502")
+        }
+
+        viewModel.take(.stub("Approve"))
+
+        await eventually("error is shown") { viewModel.error == "HTTP 502: Wrong status code: 502" }
     }
 
     @Test func takeIsIgnoredWhileAnotherTransitionIsRunning() async {

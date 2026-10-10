@@ -15,4 +15,8 @@ public extension DescriptiveError {
     var userDescription: String {
         "\(self)"
     }
+
+    var errorDescription: String? {
+        userDescription
+    }
 }

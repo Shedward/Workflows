@@ -6,6 +6,7 @@
 //
 
 import API
+import Foundation
 import Rest
 import SwiftUI
 
@@ -21,27 +22,35 @@ struct WorkflowsService: Sendable {
     }
 
     func getWorkflowInstances() async throws -> [WorkflowInstance] {
-        let request = GetWorkflowsInstances()
-        return try await rest.fetch(request).items
+        try await fetch(GetWorkflowsInstances()).items
     }
 
     func getStartingWorkflows() async throws -> [WorkflowStart] {
-        let request = GetStartingWorkflows()
-        return try await rest.fetch(request).items
+        try await fetch(GetStartingWorkflows()).items
     }
 
     func startWorkflow(_ start: WorkflowStart) async throws -> WorkflowInstance {
-        let request = StartWorkflow(workflowId: start.workflowId, initialData: start.data)
-        return try await rest.fetch(request)
+        try await fetch(StartWorkflow(workflowId: start.workflowId, initialData: start.data))
     }
 
     func getTransitions(instanceId: String) async throws -> [API.Transition] {
-        let request = AvailableTransitions(instanceId: instanceId)
-        return try await rest.fetch(request).items
+        try await fetch(AvailableTransitions(instanceId: instanceId)).items
     }
 
     func takeTransition(instanceId: String, transitionProcessId: String) async throws -> WorkflowInstance {
-        let request = TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId)
-        return try await rest.fetch(request)
+        try await fetch(TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId))
+    }
+
+    /// A refused response whose body is the server's `ErrorResponse` becomes a `ServerError`, so the
+    /// user sees the server's explanation instead of the status code.
+    private func fetch<A: Api>(_ api: A) async throws -> A.ResponseBody {
+        do {
+            return try await rest.fetch(api)
+        } catch let rejected as ResponseRejected {
+            guard let description = try? JSONDecoder().decode(ErrorDescription.self, from: rejected.body) else {
+                throw rejected
+            }
+            throw ServerError(status: rejected.statusCode, description: description)
+        }
     }
 }
