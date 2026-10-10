@@ -50,6 +50,24 @@ main() {
   sleep 1
   assert_http_ok GET "/health"
 
+  # Success responses say what they contain.
+  local content_type
+  content_type="$(curl -sS -D - -o /dev/null "${BASE}/workflows" | tr -d '\r' | grep -i '^content-type:' || true)"
+  if [[ "$content_type" != *"application/json"* ]]; then
+    echo "Expected application/json content type on GET /workflows, got '${content_type:-none}'" >&2
+    exit 1
+  fi
+
+  # An unknown workflow is the same ErrorResponse on every endpoint, the graph one included.
+  local body
+  for path in "/workflows/NoSuchWorkflow/graph" "/workflows/NoSuchWorkflow/starting" "/workflowInstances/no-such-id"; do
+    body="$(curl -sS "${BASE}${path}")"
+    if ! jq -e '.userDescription and .debugDescription' <<<"$body" >/dev/null; then
+      echo "Expected an ErrorResponse for GET $path, got: $body" >&2
+      exit 1
+    fi
+  done
+
   echo "Finished Successfully"
 }
 

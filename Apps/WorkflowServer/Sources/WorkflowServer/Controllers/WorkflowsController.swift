@@ -32,7 +32,7 @@ struct WorkflowsController: Controller {
     private func getWorkflowGraph(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowGraph {
         let workflowId = try context.parameters.requireDecoded("id")
         guard let graph = await workflows.graph(for: workflowId) else {
-            throw HTTPError(.notFound, message: "Workflow not found: \(workflowId)")
+            throw WorkflowsError.WorkflowNotFound(workflowId: workflowId)
         }
         return API.WorkflowGraph(model: graph)
     }

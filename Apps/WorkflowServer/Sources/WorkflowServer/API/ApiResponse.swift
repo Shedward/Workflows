@@ -13,6 +13,10 @@ struct ApiResponse<ResponseBody: DataEncodable>: ResponseGenerator {
 
     func response(from request: Request, context: some RequestContext) throws -> Response {
         let body = try responseBody.data().map { Hummingbird.ResponseBody(byteBuffer: ByteBuffer(data: $0)) } ?? .init()
-        return Response(status: .ok, body: body)
+        var headers = HTTPFields()
+        if let contentType = responseBody.contentType {
+            headers[.contentType] = contentType
+        }
+        return Response(status: .ok, headers: headers, body: body)
     }
 }

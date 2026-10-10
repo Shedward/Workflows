@@ -8,6 +8,10 @@
 public enum WorkflowsError {
     public struct WorkflowNotFound: Swift.Error {
         public let workflowId: WorkflowID
+
+        public init(workflowId: WorkflowID) {
+            self.workflowId = workflowId
+        }
     }
 
     public struct WorkflowInstanceNotFound: Swift.Error {

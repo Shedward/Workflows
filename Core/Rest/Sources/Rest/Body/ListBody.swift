@@ -18,6 +18,10 @@ public struct ListBody<Item> {
 extension ListBody: Sendable where Item: Sendable {}
 
 extension ListBody: DataEncodable where Item: Encodable {
+    public var contentType: String? {
+        "application/json"
+    }
+
     public func data() throws -> Data? {
         try JSONEncoder().encode(items)
     }
