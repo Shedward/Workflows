@@ -156,6 +156,7 @@ If the workflow has automatic transitions from `_start`, they execute inline. Th
 
 | Status | Condition |
 |--------|-----------|
+| 400 | Body is not valid JSON for this endpoint, or `initialData` lacks a key the workflow declares as `@Input` |
 | 404 | Workflow ID not found |
 
 ---
@@ -215,9 +216,9 @@ If subsequent automatic transitions exist from the new state, they also execute 
 
 | Status | Condition |
 |--------|-----------|
+| 400 | Body is not valid JSON for this endpoint |
 | 404 | Instance not found |
-| 404 | Transition ID not found in workflow definition |
-| 500 | Transition not available from the instance's current state |
+| 409 | Transition not available from the instance's current state (unknown id, or defined from another state) |
 | 500 | Transition action threw an error |
 
 When a transition fails, the instance remains in its original state but `transitionState` is set to `failed` with error details.
@@ -425,11 +426,15 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 
 | Error | HTTP Status | userDescription |
 |-------|-------------|-----------------|
+| Request body cannot be decoded | 400 | "Request body is not a valid <type>: ..." |
+| Required initial data missing | 400 | "Workflow '<id>' requires initial data for: <keys>" |
 | Workflow not found | 404 | "Workflow '<id>' is not registered" |
 | Instance not found | 404 | "Workflow instance '<id>' not found" |
-| Transition not available from state | 500 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
+| Transition not available from state | 409 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
 | Instance not asking | 409 | "Workflow instance '<id>' is not waiting for an answer" |
 | Transition failed | 500 | The failure's own description |
+
+Statuses: 400 means the request itself is wrong, 404 that its target does not exist, 409 that the instance's current state does not allow it, 500 that the workflow or the server failed.
 
 Every endpoint answers an unknown workflow or instance with this shape, `GET /workflows/:id/graph` included.
 

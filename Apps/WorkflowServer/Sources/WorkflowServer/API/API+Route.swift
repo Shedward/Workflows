@@ -31,7 +31,12 @@ extension RouteCollection where Context == AppRequestContext {
         let responder = CallbackResponder<Context> { request, context in
             let bytesBuffer = try await request.body.collect(upTo: context.maxUploadSize)
             let data = Data(buffer: bytesBuffer)
-            let body = try Api.RequestBody(data: data)
+            let body: Api.RequestBody
+            do {
+                body = try Api.RequestBody(data: data)
+            } catch {
+                throw InvalidRequestBody(expected: String(describing: Api.RequestBody.self), underlying: error)
+            }
             let output = try await closure(request, body, context)
             return try output.response(from: request, context: context)
         }

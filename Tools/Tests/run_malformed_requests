@@ -4,21 +4,47 @@ set -euo pipefail
 . "$(dirname "$0")/../Lib/request.sh"
 . "$(dirname "$0")/../Lib/workflow.sh"
 
+# Asserts the status of a raw request and that its body is an ErrorResponse
+# whose userDescription contains the given text.
+assert_error() {
+  local method="$1"
+  local path="$2"
+  local expected_status="$3"
+  local expected_text="$4"
+  local body="${5:-}"
+  local response status
+  response=$(curl -sS -X "$method" "${BASE}${path}" \
+    ${body:+-H "Content-Type: application/json" -d "$body"} \
+    -w "\n%{http_code}")
+  status="${response##*$'\n'}"
+  response="${response%$'\n'*}"
+  if [[ "$status" != "$expected_status" ]]; then
+    echo "Expected $expected_status for $method $path, got $status: $response" >&2
+    exit 1
+  fi
+  if ! jq -e --arg text "$expected_text" '.userDescription | contains($text)' <<<"$response" >/dev/null; then
+    echo "Expected userDescription containing '$expected_text' for $method $path, got: $response" >&2
+    exit 1
+  fi
+}
+
 main() {
-  # POST /workflowInstances with empty body
-  assert_fails request POST "/workflowInstances"
+  # A body the endpoint cannot decode is the client's mistake: 400.
+  assert_error POST "/workflowInstances" 400 "Request body is not a valid"
+  assert_error POST "/workflowInstances" 400 "Request body is not a valid" '{}'
+  assert_error POST "/workflowInstances" 400 "Request body is not a valid" 'not json'
 
-  # POST /workflowInstances with missing workflowId
-  assert_fails request POST "/workflowInstances" '{}'
+  # Missing initial data names the missing keys.
+  assert_error POST "/workflowInstances" 400 "requires initial data for: greeting" '{"workflowId":"InitialDataWorkflow"}'
 
-  # Start a real instance to test takeTransition with bad bodies
   start_workflow "SimpleWorkflow"
 
-  # POST takeTransition with empty body
-  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition"
+  assert_error POST "/workflowInstances/$INSTANCE_ID/takeTransition" 400 "Request body is not a valid"
+  assert_error POST "/workflowInstances/$INSTANCE_ID/takeTransition" 400 "Request body is not a valid" '{}'
 
-  # POST takeTransition with missing transitionProcessId
-  assert_fails request POST "/workflowInstances/$INSTANCE_ID/takeTransition" '{}'
+  # A transition that cannot be taken from the current state conflicts with it: 409.
+  assert_error POST "/workflowInstances/$INSTANCE_ID/takeTransition" 409 "is not available" '{"transitionProcessId":"StartB"}'
+  assert_error POST "/workflowInstances/$INSTANCE_ID/takeTransition" 409 "is not available" '{"transitionProcessId":"NoSuchTransition"}'
 
   echo "Finished Successfully"
 }

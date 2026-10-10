@@ -30,11 +30,13 @@ extension ErrorResponse {
         let status: HTTPResponse.Status
 
         switch error {
+            case is InvalidRequestBody, is WorkflowsError.MissingRequiredInputs:
+                status = .badRequest
             case is WorkflowsError.WorkflowNotFound, is WorkflowsError.WorkflowInstanceNotFound:
                 status = .notFound
-            case is WorkflowsError.InstanceNotAsking:
+            case is WorkflowsError.TransitionProcessNotFoundForInstance, is WorkflowsError.InstanceNotAsking:
                 status = .conflict
-            case is WorkflowsError.TransitionProcessNotFoundForInstance, is WorkflowsError.InvalidRouteTarget, is Failure:
+            case is WorkflowsError.InvalidRouteTarget, is Failure:
                 status = .internalServerError
             default:
                 return nil

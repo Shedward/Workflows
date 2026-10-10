@@ -118,7 +118,8 @@ needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, 
 | B36 | left as is (minor) | – |
 | B1 | fixed (user, 2026-10-10: option 1, skip and log; migrations come later), three restart tests | see commit "Resume persisted instances on startup" |
 | B8 | fixed (user, 2026-10-10: notify in `create`; logger signatures fixed) | see commit "Deliver workflowDidStart for every created instance" |
-| B16, B26, B29 | NEED A DECISION, see below | – |
+| B16 | fixed (user, 2026-10-10: option 2, "keep error types clean and semantic") | see commit "Semantic HTTP statuses for client mistakes" |
+| B26, B29 | NEED A DECISION, see below | – |
 
 Decisions needed:
 - ~~**B1**~~ Done: `App.main` calls `workflows.run()` before serving; unregistered or other-version instances
@@ -128,9 +129,9 @@ Decisions needed:
 - ~~**B8**~~ Done: `WorkflowRunner.create` notifies, so REST starts and subflow children both fire it before
   any automatic transition. The testing server's `TransitionLogger` had `willTransition`/`didTransition`
   without `traceId`, so they never matched the protocol; fixed. The integration log now shows all four events.
-- **B16** Answer client mistakes (malformed JSON, missing body, `MissingRequiredInputs`) with 400 and an
-  `ErrorResponse` instead of a bare 500. API contract change; one line per error in the table plus the
-  body-decoding errors in `API+Route`.
+- ~~**B16**~~ Done: `InvalidRequestBody` (new server error, 400) wraps body decoding failures in `API+Route`;
+  `MissingRequiredInputs` is 400; a transition not available from the current state is 409 (was 500).
+  `run_malformed_requests` asserts statuses and texts; `Documentation/API.md` explains the four statuses.
 - **B26** The duplicate-id check in `WorkflowRegistry.init` cannot fire. Make it real (compare before
   deduplication) or drop `throws` from the initializer (touches `Workflows.swift` and the tests).
 - **B29** Validation ignores a `DataBindable` process that is not `Defaultable`, while the runtime binds it.
