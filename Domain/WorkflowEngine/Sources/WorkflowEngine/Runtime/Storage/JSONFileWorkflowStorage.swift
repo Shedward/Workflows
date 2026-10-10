@@ -34,20 +34,20 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) throws -> WorkflowInstance {
         let instance = WorkflowInstance(atStartOf: workflow, data: initialData)
-        table.put(instance)
         try save(instance)
+        table.put(instance)
         return instance
     }
 
     public func update(_ instance: WorkflowInstance) throws {
-        table.put(instance)
         try save(instance)
+        table.put(instance)
     }
 
     public func finish(_ instance: WorkflowInstance) throws {
         let finished = instance.finished(at: Date())
-        table.put(finished)
         try save(finished)
+        table.put(finished)
         removeExpired()
     }
 
@@ -61,9 +61,13 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
         return table.instance(id: id)
     }
 
+    /// Files in the order they were last written, so `all()` keeps its order across a restart.
     private func loadInstanceFiles() throws {
-        let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
-        for file in files where file.pathExtension == "json" {
+        let files = try FileManager.default
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey])
+            .filter { $0.pathExtension == "json" }
+            .sorted { modificationDate(of: $0) < modificationDate(of: $1) }
+        for file in files {
             let contents: Data
             do {
                 contents = try Data(contentsOf: file)
@@ -77,6 +81,10 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
                 logger?.error("Failed to decode instance file \(file.lastPathComponent, privacy: .public): \(error, privacy: .public)")
             }
         }
+    }
+
+    private func modificationDate(of file: URL) -> Date {
+        (try? file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
     }
 
     private func removeExpired() {

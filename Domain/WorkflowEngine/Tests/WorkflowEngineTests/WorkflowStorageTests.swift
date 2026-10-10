@@ -185,6 +185,34 @@ struct JSONFileStorageTests {
         #expect(try await second.instance(id: finished.id)?.finishedAt != nil)
     }
 
+    @Test func aNewStorageKeepsTheLastWrittenOrder() async throws {
+        let first = try await JSONFileWorkflowStorage(directory: directory)
+        let older = try await first.create(LinearWorkflow(), initialData: WorkflowData())
+        let newer = try await first.create(LinearWorkflow(), initialData: WorkflowData())
+        try await Task.sleep(for: .milliseconds(20))
+        try await first.update(older.moveToState("middle"))
+
+        let second = try await JSONFileWorkflowStorage(directory: directory)
+
+        #expect(try await second.all().map(\.id) == [newer.id, older.id])
+    }
+
+    @Test func aFailedWriteLeavesTheStorageUnchanged() async throws {
+        let storage = try await JSONFileWorkflowStorage(directory: directory)
+        let instance = try await storage.create(LinearWorkflow(), initialData: WorkflowData())
+        try FileManager.default.removeItem(at: directory)
+
+        await #expect(throws: (any Error).self) {
+            try await storage.create(LinearWorkflow(), initialData: WorkflowData())
+        }
+        await #expect(throws: (any Error).self) {
+            try await storage.update(instance.moveToState("middle"))
+        }
+
+        #expect(try await storage.all().map(\.id) == [instance.id])
+        #expect(try await storage.instance(id: instance.id)?.state == "_start")
+    }
+
     @Test func unreadableAndForeignFilesAreSkippedOnLoad() async throws {
         let first = try await JSONFileWorkflowStorage(directory: directory)
         let instance = try await first.create(LinearWorkflow(), initialData: WorkflowData())
