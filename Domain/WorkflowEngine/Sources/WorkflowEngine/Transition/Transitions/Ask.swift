@@ -34,7 +34,7 @@ public extension Asking {
             try ask.bind(BindInputs(data: context.instance.data))
         }
 
-        let expectedFields = ask.collectMetadata().asks.map { field in
+        let expectedFields = ask.collectMetadata().asks.sortedByKey().map { field in
             Waiting.AskField(key: field.key, valueType: field.valueType)
         }
 
