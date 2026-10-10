@@ -42,6 +42,7 @@ public struct App {
             .map(\.endpoints)
 
         let app = try buildApplication(reader: reader, pluginRoutes: pluginRoutes)
+        try await workflows.run()
         try await app.runService()
     }
 

@@ -213,3 +213,26 @@ struct ProducesOptional: Action {
         maybe = nil
     }
 }
+
+/// Parks at `parked` after a manual step; the automatic step out of it is what a restart must pick up.
+@DataBindable
+struct ResumableWorkflow: Workflow {
+    enum State: String, WorkflowState {
+        case parked
+        case done
+    }
+
+    var transitions: Transitions {
+        onStart {
+            GoNextStep.to(.parked)
+        }
+
+        after(.parked) {
+            GoNextStep.to(.done)
+        }
+
+        on(.done) {
+            Finalize.toFinish()
+        }
+    }
+}

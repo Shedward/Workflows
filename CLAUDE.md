@@ -152,12 +152,12 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 ### Known Issues
 
-- **Open bug backlog from the 2026-10 cleanup** (resume on startup never runs, `workflowDidStart` not delivered for REST-started instances, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
+- **Open bug backlog from the 2026-10 cleanup** (`workflowDidStart` not delivered for REST-started instances, and more): see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
 - **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
 - **`@Input`/`@Output` crash risk**: Property wrappers trap (`preconditionFailure`, `fatalError` for `@Ask`) on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
 - **Manual vs automatic failure behavior**: Both manual and automatic transition failures now persist `transitionState.failed`. Manual failures additionally propagate as HTTP 500.
-- **No migration mechanism** — if a workflow's `version` is bumped, persisted instances with the old version will cause `WorkflowVersionMismatch` on startup; they must be deleted manually.
+- **No migration mechanism** — on startup `Workflows.run()` resumes persisted instances; one whose workflow is not registered or whose `version` differs is skipped with a warning and stays on disk until deleted by hand. Taking a transition on it still fails with `WorkflowVersionMismatch`.
 - **No retry mechanism** for failed transitions.
 - **No timeout** for wait transitions.
 - **Subflow data isolation is opt-in** — a subflow that declares `@Input` properties receives only those keys from the parent, and its declared `@Output` keys are merged back when it finishes. A subflow that declares no `@Input` still receives the full parent `WorkflowData`.

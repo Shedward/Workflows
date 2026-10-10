@@ -16,15 +16,15 @@ private struct AutomaticStepSignature: Hashable {
 }
 
 actor WorkflowRunner {
-    private let storage: WorkflowStorage
-    private let registry: WorkflowRegistry
+    let storage: WorkflowStorage
+    let registry: WorkflowRegistry
     private let dependencies: DependenciesContainer
     private let plugins: Plugins
 
-    private lazy var scheduler = WaitScheduler { [weak self] instanceId, reason in
+    lazy var scheduler = WaitScheduler { [weak self] instanceId, reason in
         await self?.resumeWaiting(instanceId: instanceId, reason: reason)
     }
-    private let logger = Logger(scope: .workflow)
+    let logger = Logger(scope: .workflow)
 
     /// Per-instance serialization queue. See `WorkflowRunner+InstanceLock.swift`.
     var inflight: [WorkflowInstanceID: Task<Void, Never>] = [:]
@@ -34,18 +34,6 @@ actor WorkflowRunner {
         self.registry = registry
         self.dependencies = dependencies
         self.plugins = plugins
-    }
-
-    func resume() async throws {
-        let instances = try await storage.all()
-        logger?.trace("Resume runner (\(instances.count) instances)")
-        await scheduler.rebuild(from: instances)
-        for instance in instances {
-            if let workflow = await registry.workflow(instance: instance) {
-                try checkVersion(of: instance, against: workflow)
-            }
-            await runAutomaticTransitions(from: instance)
-        }
     }
 
     func create(_ workflow: AnyWorkflow, initialData: WorkflowData) async throws -> WorkflowInstance {

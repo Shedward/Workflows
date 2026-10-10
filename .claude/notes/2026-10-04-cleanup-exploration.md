@@ -116,11 +116,14 @@ needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, 
 | B21 | closed without change: `instance(id:)` only throws after eviction, and retention (3600 s) is longer than the longest timeout (600 s) | – |
 | B6 | waits for the decision on the developer marks (both are unused) | – |
 | B36 | left as is (minor) | – |
-| B1, B8, B16, B26, B29 | NEED A DECISION, see below | – |
+| B1 | fixed (user, 2026-10-10: option 1, skip and log; migrations come later), three restart tests | see commit "Resume persisted instances on startup" |
+| B8, B16, B26, B29 | NEED A DECISION, see below | – |
 
 Decisions needed:
-- **B1** Wire `Workflows.run()` so persisted waits are rescheduled after a restart. It throws on instances
-  whose workflow version changed; decide: skip and log them, move them aside, or fail startup.
+- ~~**B1**~~ Done: `App.main` calls `workflows.run()` before serving; unregistered or other-version instances
+  are skipped with a warning and kept. Dry run over a copy of the real directory (144 files: 92 finished
+  evicted, 52 orphans of testing workflows skipped and still listed as running) started fine. The warning
+  lines could not be captured through `log show` in the sandbox; the skip behavior is covered by unit tests.
 - **B8** Deliver `workflowDidStart` for instances started over REST (today only subflow children get it).
   Plugin semantics; decide whether listeners expect it.
 - **B16** Answer client mistakes (malformed JSON, missing body, `MissingRequiredInputs`) with 400 and an
