@@ -27,6 +27,7 @@ enum App {
         Logger.enable(.workflow)
 
         let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
+        let config = Config(certificatesDirectory: workflowsConfigDir.appending(path: "certs"))
 
         let authRegistry = AuthRegistry()
 
@@ -41,7 +42,7 @@ enum App {
                 "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/spreadsheets"
             ],
-            redirectURI: "https://127.0.0.1:8443/auth/google/callback"
+            redirectURI: config.authCallbackURL(service: "google")
         )
         await authRegistry.register(googleTokenProvider)
 
@@ -53,8 +54,6 @@ enum App {
         let storage = try await JSONFileWorkflowStorage(
             directory: workflowsConfigDir.appending(path: "instances")
         )
-
-        let config = Config(certificatesDirectory: workflowsConfigDir.appending(path: "certs"))
 
         let workflows = try await Workflows(
             storage: storage,

@@ -28,6 +28,10 @@ struct AuthController: Controller {
         let url: String
     }
 
+    // MARK: - Routes
+
+    static let callbackRoute = "auth/:service/callback"
+
     // MARK: - Properties
 
     let registry: AuthRegistry
@@ -36,7 +40,7 @@ struct AuthController: Controller {
         RouteCollection(context: AppRequestContext.self)
             .get("auth", use: listProviders)
             .get("auth/:service", use: authorizationURL)
-            .get("auth/:service/callback", use: handleCallback)
+            .get(RouterPath(Self.callbackRoute), use: handleCallback)
     }
 
     private let successHTML = """

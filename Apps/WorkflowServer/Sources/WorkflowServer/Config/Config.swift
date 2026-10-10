@@ -13,6 +13,10 @@ public struct Config {
     public var tlsCertificatePath: String
     public var tlsPrivateKeyPath: String
 
+    public var baseURL: String {
+        "https://\(hostname):\(port)"
+    }
+
     public init(
         hostname: String = "127.0.0.1",
         port: Int = 8443,
@@ -33,5 +37,10 @@ public struct Config {
             tlsCertificatePath: certificatesDirectory.appending(path: "localhost+2.pem").path(),
             tlsPrivateKeyPath: certificatesDirectory.appending(path: "localhost+2-key.pem").path()
         )
+    }
+
+    /// The absolute URL an OAuth provider must redirect to on this server.
+    public func authCallbackURL(service: String) -> String {
+        baseURL + "/" + AuthController.callbackRoute.replacingOccurrences(of: ":service", with: service)
     }
 }
