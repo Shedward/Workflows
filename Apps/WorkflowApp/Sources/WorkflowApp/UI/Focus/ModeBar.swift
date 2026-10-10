@@ -17,7 +17,6 @@ struct ModeBar: View {
                     modeButton(id: mode, entry: bar)
                 }
             }
-            placeholderButton(systemImage: "doc.text")
         }
         .imageScale(.small)
         .opacity(0.5)
@@ -32,10 +31,5 @@ struct ModeBar: View {
         }
         .keyboardShortcut(entry.shortcut, modifiers: .command)
         .buttonStyle(.plain)
-    }
-
-    private func placeholderButton(systemImage: String) -> some View {
-        Image(systemName: systemImage)
-            .opacity(0.5)
     }
 }
