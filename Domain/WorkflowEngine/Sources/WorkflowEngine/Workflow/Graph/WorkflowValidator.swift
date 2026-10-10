@@ -7,8 +7,7 @@
 
 public struct WorkflowValidator: Sendable {
 
-    /// Validates one workflow. Subflows must have been validated with the same `graphBuilder`
-    /// before, so their required inputs are known.
+    /// Validates one workflow. `graphBuilder` caches the graphs built along the way.
     public static func validate(
         workflow: AnyWorkflow,
         dependencies: DependenciesContainer,
@@ -21,7 +20,6 @@ public struct WorkflowValidator: Sendable {
             declaredOutputs: built.declaredOutputs,
             topology: built.topology,
             availability: built.availability,
-            alreadyBuilt: graphBuilder,
             registeredDependencies: dependencies.keys
         )
 
@@ -37,7 +35,6 @@ public struct WorkflowValidator: Sendable {
     private let declaredOutputs: Set<DataField>
     private let topology: GraphTopology
     private let availability: DataAvailability
-    private let alreadyBuilt: WorkflowGraphBuilder
     private let registeredDependencies: Set<String>
 
     private var errors: [ValidationError] {
@@ -135,18 +132,21 @@ private extension WorkflowValidator {
         var errors: [ValidationError] = []
         for transition in graph.transitions where topology.reachable.contains(transition.from) {
             let availableTypes = availability.types(at: transition.from)
-            let alreadyReported = availability.conflictingTypes(at: transition.from)
+            let reportedAsConditional = availability.keysMissingOnSomeBranches(at: transition.from)
+            let reportedAsSubflowInput = transition.subflowId != nil
 
             for input in transition.metadata.inputs {
                 if let availableType = availableTypes[input.key] {
-                    if availableType != input.valueType, alreadyReported[input.key] == nil {
-                        errors.append(.typeMismatch(
+                    if availableType != input.valueType, !availability.hasConflictingTypes(input.key, at: transition.from) {
+                        errors.append(.inputTypeMismatch(
                             key: input.key,
-                            types: [availableType, input.valueType],
+                            processId: transition.processId,
+                            expected: input.valueType,
+                            available: availableType,
                             atState: transition.from
                         ))
                     }
-                } else if !declaredInputKeys.contains(input.key) {
+                } else if !declaredInputKeys.contains(input.key), !reportedAsConditional.contains(input.key), !reportedAsSubflowInput {
                     errors.append(.undeclaredWorkflowInput(key: input.key, processId: transition.processId))
                 }
             }
@@ -156,9 +156,17 @@ private extension WorkflowValidator {
 
     var undeclaredOutputs: [ValidationError] {
         let typesAtFinish = availability.types(at: workflow.finishId)
-        return declaredOutputs
-            .filter { typesAtFinish[$0.key] == nil }
-            .map { .undeclaredWorkflowOutput(key: $0.key) }
+        var errors: [ValidationError] = []
+        for output in declaredOutputs {
+            guard let produced = typesAtFinish[output.key] else {
+                errors.append(.undeclaredWorkflowOutput(key: output.key))
+                continue
+            }
+            if produced != output.valueType {
+                errors.append(.outputTypeMismatch(key: output.key, declared: output.valueType, produced: produced))
+            }
+        }
+        return errors
     }
 
     var unusedInputs: [ValidationWarning] {
@@ -188,9 +196,8 @@ private extension WorkflowValidator {
             }
 
             let availableTypes = availability.types(at: transition.from)
-            let requiredInputs = alreadyBuilt.cachedGraph(for: subflowId)?.requiredInputs ?? []
 
-            for field in requiredInputs where availableTypes[field.key] == nil {
+            for field in transition.metadata.inputs where availableTypes[field.key] == nil {
                 errors.append(.unsatisfiedSubflowInput(
                     key: field.key,
                     subflowId: subflowId,

@@ -20,7 +20,7 @@ struct StructureValidationTests {
     @Test func declaredStateThatIsNeverUsed() {
         expect(
             validate(UnreachableStateWorkflow()),
-            warnings: ["State 'phantom' is declared but never used in any transition"]
+            warnings: ["State 'phantom' cannot be reached from start"]
         )
     }
 
@@ -28,7 +28,7 @@ struct StructureValidationTests {
         expect(
             validate(AutomaticCycleWorkflow()),
             errors: [
-                "Cycle involving states loopA → loopB has only automatic transitions and no manual exit",
+                "Cycle involving states loopA → loopB has no manual transition leaving it",
                 "No path from start to finish exists"
             ],
             warnings: ["Cycle detected involving states: loopA → loopB"]
@@ -71,10 +71,14 @@ struct DataFlowValidationTests {
     @Test func inputProducedOnOnlyOneBranch() {
         expect(
             validate(ConditionalInputWorkflow()),
-            errors: [
-                "Input 'data' required by 'ConsumeString' at state 'merge' is only available on some branches",
-                "Input 'data' required by 'ConsumeString' is not produced by any transition and not declared as workflow input"
-            ]
+            errors: ["Input 'data' required by 'ConsumeString' at state 'merge' is only available on some branches"]
+        )
+    }
+
+    @Test func transitionFromAnUnreachableStateDoesNotSpoilAMerge() {
+        expect(
+            validate(DeadBranchIntoMergeWorkflow()),
+            warnings: ["State 'phantom' cannot be reached from start"]
         )
     }
 
@@ -96,10 +100,24 @@ struct DataFlowValidationTests {
         )
     }
 
+    @Test func aConflictAtAMergeIsReportedOnceNotAgainDownstream() {
+        expect(
+            validate(ConflictCarriedDownstreamWorkflow()),
+            errors: ["Data key 'data' has conflicting types Int, String at state 'merge'"]
+        )
+    }
+
     @Test func consumerExpectsAnotherTypeThanProduced() {
         expect(
             validate(WrongInputTypeWorkflow()),
-            errors: ["Data key 'data' has conflicting types Int, String at state 'produced'"]
+            errors: ["Input 'data' required by 'ConsumeString' at state 'produced' is produced as Int but ConsumeString expects String"]
+        )
+    }
+
+    @Test func declaredOutputReachesFinishAsAnotherType() {
+        expect(
+            validate(WrongOutputTypeWorkflow()),
+            errors: ["Declared workflow output 'data' is Int but reaches finish as String"]
         )
     }
 
@@ -142,10 +160,7 @@ struct SubflowValidationTests {
     @Test func subflowInputParentDoesNotProvide() {
         expect(
             validate(UnsatisfiedSubflowInputWorkflow(), after: [NeedySubflow()]),
-            errors: [
-                "Input 'requiredData' required by 'NeedySubflow' is not produced by any transition and not declared as workflow input",
-                "Subflow 'NeedySubflow' requires input 'requiredData' which is not available at state 'beforeSubflow'"
-            ]
+            errors: ["Subflow 'NeedySubflow' requires input 'requiredData' which is not available at state 'beforeSubflow'"]
         )
     }
 
