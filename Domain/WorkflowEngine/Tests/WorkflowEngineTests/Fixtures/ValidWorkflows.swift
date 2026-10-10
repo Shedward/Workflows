@@ -204,3 +204,12 @@ struct NeedyProviderWorkflow: Workflow {
         }
     }
 }
+
+@DataBindable
+struct ProducesOptional: Action {
+    @Output var maybe: String?
+
+    func run() {
+        maybe = nil
+    }
+}

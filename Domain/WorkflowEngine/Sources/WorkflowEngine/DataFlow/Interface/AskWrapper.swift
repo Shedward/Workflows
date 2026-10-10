@@ -30,7 +30,7 @@ public struct Ask<Value: WorkflowValue>: Sendable {
                 preconditionFailure("Ask<\(Value.self)> set before CreateOutputStorage ran (engine bug)")
             }
 
-            storage.value = newValue
+            storage.value = newValue as any Sendable
         }
     }
 

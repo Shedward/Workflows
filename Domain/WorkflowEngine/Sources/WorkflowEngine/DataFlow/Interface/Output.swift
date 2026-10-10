@@ -21,7 +21,7 @@ public struct Output<Value: WorkflowValue>: Sendable {
             guard let storage else {
                 preconditionFailure("Output<\(Value.self)> written before CreateOutputStorage ran (engine bug)")
             }
-            storage.value = newValue
+            storage.value = newValue as any Sendable
         }
     }
 
