@@ -120,7 +120,7 @@ needs (`Workflows.run()` / `WorkflowRunner.resume()` / `WaitScheduler.rebuild`, 
 | B8 | fixed (user, 2026-10-10: notify in `create`; logger signatures fixed) | see commit "Deliver workflowDidStart for every created instance" |
 | B16 | fixed (user, 2026-10-10: option 2, "keep error types clean and semantic") | see commit "Semantic HTTP statuses for client mistakes" |
 | B26 | fixed (user, 2026-10-10: option 1, make the check real) | see commit "Refuse two workflow types with one id" |
-| B29 | NEED A DECISION, see below | – |
+| B29 | fixed (user, 2026-10-10: option 1, drop `Defaultable` from the casts) | see commit "Validate every DataBindable process" | – |
 
 Decisions needed:
 - ~~**B1**~~ Done: `App.main` calls `workflows.run()` before serving; unregistered or other-version instances
@@ -135,9 +135,9 @@ Decisions needed:
   `run_malformed_requests` asserts statuses and texts; `Documentation/API.md` explains the four statuses.
 - ~~**B26**~~ Done: the registry walk throws `WorkflowsError.DuplicateWorkflowID(workflowId, types)` when a
   second type claims an id; the same type given twice is fine. Two registry tests.
-- **B29** Validation ignores a `DataBindable` process that is not `Defaultable`, while the runtime binds it.
-  Decide whether `Defaultable` is required for every process (then enforce at the type level) or drop it
-  from the metadata cast.
+- ~~**B29**~~ Done: metadata collection casts to `any DataBindable` only; `declaredMetadata` copies the value
+  and never calls `init()`. Fixture `HandWrittenProcessWorkflow` (a process against the bare protocols) pins
+  it. All five decisions of 2026-10-10 are applied; the backlog is closed except B6 (marks) and B36 (minor).
 
 B1. **`Workflows.run()` is never called**, and never was in git history. So `WorkflowRunner.resume()` never
     runs: after a restart, persisted time waits and subflow waits are not rescheduled, and the

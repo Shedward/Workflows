@@ -28,7 +28,7 @@ public struct WorkflowGraphBuilder: Sendable {
         }
 
         let transitions = transitions(of: workflow)
-        let declared = (workflow as? any DataBindable & Defaultable)?.declaredMetadata(processId: workflow.id)
+        let declared = (workflow as? any DataBindable)?.declaredMetadata(processId: workflow.id)
             ?? .empty(processId: workflow.id)
         let topology = GraphTopology(transitions: transitions, start: workflow.startId)
         let availability = DataAvailability(in: topology, declaredInputs: declared.inputs)

@@ -247,3 +247,30 @@ struct WrongOutputTypeWorkflow: Workflow {
         }
     }
 }
+
+// MARK: - A process written against the bare protocols, not Defaultable, is validated like any other
+
+@DataBindable
+struct HandWrittenConsumer: TransitionProcess, DataBindable {
+    @Input var ghost: String
+    let marker: Int
+
+    func start(context: inout WorkflowContext) -> TransitionResult {
+        .completed
+    }
+}
+
+@DataBindable
+struct HandWrittenProcessWorkflow: Workflow {
+    enum State: String, WorkflowState {
+        case done
+    }
+
+    var transitions: Transitions {
+        Transition(from: State.start, targets: [State.done.id], process: HandWrittenConsumer(marker: 1), workflow: self, trigger: .manual)
+
+        on(.done) {
+            Finalize.toFinish()
+        }
+    }
+}

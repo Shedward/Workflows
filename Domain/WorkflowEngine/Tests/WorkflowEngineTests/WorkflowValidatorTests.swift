@@ -75,6 +75,15 @@ struct DataFlowValidationTests {
         )
     }
 
+    @Test func aHandWrittenProcessIsValidatedLikeAnyOther() {
+        expect(
+            validate(HandWrittenProcessWorkflow()),
+            errors: [
+                "Input 'ghost' required by 'HandWrittenConsumer' is not produced by any transition and not declared as workflow input"
+            ]
+        )
+    }
+
     @Test func transitionFromAnUnreachableStateDoesNotSpoilAMerge() {
         expect(
             validate(DeadBranchIntoMergeWorkflow()),

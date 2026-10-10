@@ -75,7 +75,7 @@ extension DataBindable {
 
 extension TransitionProcess {
     func collectMetadata() -> TransitionMetadata {
-        guard let bindable = self as? any DataBindable & Defaultable else {
+        guard let bindable = self as? any DataBindable else {
             return .empty(processId: id)
         }
         return bindable.declaredMetadata(processId: id)
