@@ -13,7 +13,7 @@ public protocol Condition: TransitionProcess, DataBindable, Sendable, Defaultabl
 
 public extension Condition {
     static func branching() -> ToTransition<State> {
-        assert(!possibleTargets.isEmpty, "Condition \(Self.self) must declare at least one possibleTarget")
+        precondition(!possibleTargets.isEmpty, "Condition \(Self.self) must declare at least one possibleTarget")
         return ToTransition(process: Self(), targets: possibleTargets.map(\.id))
     }
 

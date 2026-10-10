@@ -57,9 +57,9 @@ extension Workflow {
         var currentStateId = initial
 
         return steps.map { step in
-            assert(
-                step.targets.count <= 1,
-                "Branching transitions cannot be used in chains. Use on() instead of \(builderName)()."
+            precondition(
+                step.targets.count == 1,
+                "A chain step must lead to exactly one state; \(step.process.id) leads to \(step.targets). Use on() instead of \(builderName)()."
             )
             defer { currentStateId = step.targets[0] }
             return step.transition(from: currentStateId, trigger: .automatic, in: self)
