@@ -10,6 +10,17 @@ import Foundation
 import Hummingbird
 import Rest
 
+extension Parameters {
+    /// Path parameters arrive percent-encoded; every production workflow id is Cyrillic.
+    func requireDecoded(_ name: String) throws -> String {
+        let raw = try require(name)
+        guard let decoded = raw.removingPercentEncoding else {
+            throw HTTPError(.badRequest, message: "Parameter '\(name)' is not valid percent-encoding: \(raw)")
+        }
+        return decoded
+    }
+}
+
 extension RouteCollection where Context == AppRequestContext {
     @discardableResult
     public func on<Api: WorkflowApi>(

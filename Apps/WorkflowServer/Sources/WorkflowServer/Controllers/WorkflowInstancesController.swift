@@ -33,7 +33,7 @@ struct WorkflowInstancesController: Controller {
     }
 
     private func getInstance(request: Request, body: EmptyBody, context: Context) async throws -> Response {
-        let instanceId = try context.parameters.require("id")
+        let instanceId = try context.parameters.requireDecoded("id")
         let instance = try await workflows.instance(id: instanceId)
         var response = try context.responseEncoder.encode(API.WorkflowInstance(model: instance), from: request, context: context)
         if instance.finishedAt != nil {
@@ -52,7 +52,7 @@ struct WorkflowInstancesController: Controller {
     }
 
     private func takeTransition(request: Request, body: TakeTransition.RequestBody, context: Context) async throws -> API.WorkflowInstance {
-        let instanceId = try context.parameters.require("id")
+        let instanceId = try context.parameters.requireDecoded("id")
         let transitionProcessId = body.transitionProcessId
 
         return try await instanceResponse(for: instanceId, request: request) { [workflows] in
@@ -61,7 +61,7 @@ struct WorkflowInstancesController: Controller {
     }
 
     private func answerAsk(request: Request, body: AnswerAsk.RequestBody, context: Context) async throws -> API.WorkflowInstance {
-        let instanceId = try context.parameters.require("id")
+        let instanceId = try context.parameters.requireDecoded("id")
         let data = WorkflowEngine.WorkflowData(api: body.data)
 
         return try await instanceResponse(for: instanceId, request: request) { [workflows] in
@@ -74,7 +74,7 @@ struct WorkflowInstancesController: Controller {
         body: EmptyBody,
         context: Context
     ) async throws -> ListBody<API.Transition> {
-        let instanceId = try context.parameters.require("id")
+        let instanceId = try context.parameters.requireDecoded("id")
         let transitions = try await workflows.transitions(for: instanceId)
         return ListBody(items: transitions.map { API.Transition(model: $0) })
     }

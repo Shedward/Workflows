@@ -26,5 +26,6 @@ public let workflows: [any Workflow] = [
     AskNameWorkflow(),
     AskWithDataWorkflow(),
     AutomaticLoopWorkflow(),
-    CountingLoopWorkflow()
+    CountingLoopWorkflow(),
+    UnicodeIdWorkflow()
 ]

@@ -67,7 +67,7 @@ struct AuthController: Controller {
     }
 
     private func requireProvider(context: Context) async throws -> any OAuthProvider {
-        let serviceID = try context.parameters.require("service")
+        let serviceID = try context.parameters.requireDecoded("service")
         guard let provider = await registry.provider(for: serviceID) else {
             throw HTTPError(.notFound, message: "Unknown auth service: \(serviceID)")
         }

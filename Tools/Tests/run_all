@@ -31,6 +31,7 @@ readonly TEST_SCRIPTS=(
   run_ask
   run_concurrent_transitions
   run_automatic_loop
+  run_unicode_workflow_id
 )
 
 readonly GREEN='\033[0;32m'
