@@ -148,4 +148,39 @@ struct TransitionViewModelTests {
         #expect(viewModel.runningTransition == nil)
         #expect(server.requests.isEmpty)
     }
+
+    @Test func twoTakesInOneTurnSendOneRequest() async {
+        focus.setActiveWorkflow(.stub("w"))
+        server.on("POST /workflowInstances/w/takeTransition") { WorkflowInstance.stub("w", finished: true) }
+
+        viewModel.take(.stub("Approve"))
+        viewModel.take(.stub("Reject"))
+
+        #expect(viewModel.runningTransition?.processId == "Approve")
+        await eventually("transition is done") { viewModel.runningTransition == nil }
+        #expect(server.requests == ["POST /workflowInstances/w/takeTransition"])
+    }
+
+    @Test func clearingTheActiveWorkflowDropsAnInFlightRefreshAndTheError() async {
+        focus.setActiveWorkflow(.stub("w"))
+        server.on("GET /workflowInstances/w/transitions") { throw Boom() }
+        viewModel.refresh()
+        await eventually("error is shown") { viewModel.error == "boom" }
+        let staleResponse = Gate()
+        server.on("GET /workflowInstances/w/transitions") {
+            await staleResponse.wait()
+            return ListBody(items: [API.Transition.stub("Stale")])
+        }
+        viewModel.refresh()
+        await eventually("request is sent") { server.requests.count == 2 }
+
+        focus.setActiveWorkflow(nil)
+        viewModel.refresh()
+        staleResponse.open()
+        await eventually("stale request is answered") { server.answered == 2 }
+        await settle()
+
+        #expect(viewModel.transitions.isEmpty)
+        #expect(viewModel.error == nil)
+    }
 }

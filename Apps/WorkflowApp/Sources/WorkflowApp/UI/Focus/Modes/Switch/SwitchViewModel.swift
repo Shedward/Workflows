@@ -17,12 +17,12 @@ final class SwitchViewModel: ErrorPresenting {
     private(set) var state: State = .activeWorkflows
     private(set) var activeWorkflows: [WorkflowInstance] = []
     private(set) var newWorkflows: [WorkflowStart] = []
+    private(set) var isStarting = false
     var error: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var pickerTask: Task<Void, Never>?
-    @ObservationIgnored private var startTask: Task<Void, Never>?
 
     init(focus: FocusViewModel) {
         self.focus = focus
@@ -50,6 +50,7 @@ final class SwitchViewModel: ErrorPresenting {
     }
 
     func showActiveWorkflows() {
+        error = nil
         withAnimation(.snappy) {
             state = .activeWorkflows
         }
@@ -61,11 +62,22 @@ final class SwitchViewModel: ErrorPresenting {
     }
 
     func start(_ start: WorkflowStart) {
-        startTask = latest(replacing: startTask) { [self] in
-            let instance = try await focus.service.startWorkflow(start)
-            try Task.checkCancellation()
-            state = .activeWorkflows
-            activate(instance)
+        guard !isStarting else {
+            return
+        }
+        isStarting = true
+        Task {
+            do {
+                let instance = try await focus.service.startWorkflow(start)
+                error = nil
+                withAnimation(.snappy) {
+                    state = .activeWorkflows
+                }
+                activate(instance)
+            } catch {
+                self.error = error.localizedDescription
+            }
+            isStarting = false
         }
     }
 }

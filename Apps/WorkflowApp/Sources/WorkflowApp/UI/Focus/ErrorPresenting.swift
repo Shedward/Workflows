@@ -19,9 +19,10 @@ extension ErrorPresenting {
         return Task {
             do {
                 try await work()
-            } catch is CancellationError {
-                return
             } catch {
+                guard !Task.isCancelled else {
+                    return
+                }
                 self.error = error.localizedDescription
             }
         }

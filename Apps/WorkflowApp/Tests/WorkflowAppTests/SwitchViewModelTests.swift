@@ -143,4 +143,58 @@ struct SwitchViewModelTests {
         #expect(focus.activeWorkflow == nil)
         #expect(focus.currentMode == .switching)
     }
+
+    @Test func aReplacedRequestThatFailsDoesNotShowAnError() async {
+        let staleResponse = Gate()
+        server.on("GET /workflowInstances") {
+            await staleResponse.wait()
+            throw Boom()
+        }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("fresh")]) }
+
+        viewModel.refresh()
+        await eventually("first request is sent") { server.requests.count == 1 }
+        viewModel.refresh()
+        await eventually("newer response is shown") { viewModel.activeWorkflows.map(\.id) == ["fresh"] }
+        staleResponse.open()
+        await eventually("stale request is answered") { server.answered == 2 }
+        await settle()
+
+        #expect(viewModel.error == nil)
+    }
+
+    @Test func goingBackFromThePickerClearsTheError() async {
+        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        server.on("GET /startingWorkflows") { ListBody(items: [start]) }
+        server.on("POST /workflowInstances") { throw Boom() }
+        viewModel.showNewWorkflow()
+        await eventually("picker is shown") { viewModel.state == .newWorkflow }
+        viewModel.start(start)
+        await eventually("error is shown") { viewModel.error == "boom" }
+
+        viewModel.showActiveWorkflows()
+
+        #expect(viewModel.error == nil)
+        #expect(viewModel.state == .activeWorkflows)
+    }
+
+    @Test func aSecondStartWhileOneIsInFlightIsIgnored() async {
+        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        let createResponse = Gate()
+        server.on("POST /workflowInstances") {
+            await createResponse.wait()
+            return WorkflowInstance.stub("created")
+        }
+
+        viewModel.start(start)
+        viewModel.start(start)
+        await eventually("request is sent") { server.requests.count == 1 }
+        viewModel.start(start)
+        createResponse.open()
+        await eventually("created instance is active") { focus.activeWorkflow?.id == "created" }
+        await settle()
+
+        #expect(server.requests == ["POST /workflowInstances"])
+        #expect(!viewModel.isStarting)
+    }
 }

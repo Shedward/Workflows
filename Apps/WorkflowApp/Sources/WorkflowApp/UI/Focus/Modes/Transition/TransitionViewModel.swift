@@ -15,7 +15,6 @@ final class TransitionViewModel: ErrorPresenting {
 
     @ObservationIgnored unowned let focus: FocusViewModel
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
-    @ObservationIgnored private var takeTask: Task<Void, Never>?
 
     init(focus: FocusViewModel) {
         self.focus = focus
@@ -23,7 +22,9 @@ final class TransitionViewModel: ErrorPresenting {
 
     func refresh() {
         guard let workflow = focus.activeWorkflow else {
+            refreshTask?.cancel()
             transitions = []
+            error = nil
             return
         }
         refreshTask = latest(replacing: refreshTask) { [self] in
@@ -38,24 +39,18 @@ final class TransitionViewModel: ErrorPresenting {
         guard let workflow = focus.activeWorkflow, runningTransition == nil else {
             return
         }
-        takeTask?.cancel()
-        takeTask = Task {
-            withAnimation(.snappy) {
-                runningTransition = transition
-            }
+        withAnimation(.snappy) {
+            runningTransition = transition
+        }
+        Task {
             do {
                 let updated = try await focus.service.takeTransition(
                     instanceId: workflow.id,
                     transitionProcessId: transition.processId
                 )
-                guard !Task.isCancelled else {
-                    return
-                }
                 focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
                 error = nil
                 refresh()
-            } catch is CancellationError {
-                return
             } catch {
                 self.error = error.localizedDescription
             }
