@@ -291,16 +291,11 @@ Google 3-legged OAuth actor. Key points:
 UserOAuthTokenProvider(
     credentials: oauthCredentials,
     scopes: ["https://www.googleapis.com/auth/drive", ...],
-    redirectURI: "http://localhost:8080/auth/google/callback"
+    redirectURI: config.authCallbackURL(service: "google")
 )
 ```
 
-### `ServiceAccountTokenProvider`
-
-Google service account JWT bearer actor. Key points:
-- Loads PEM key via `SecItemImport` — handles PKCS#8 natively, no manual DER parsing
-- Signs with `SecKeyCreateSignature(.rsaSignatureMessagePKCS1v15SHA256)`
-- **Cannot access personal Google Drive** — no storage quota; use `UserOAuthTokenProvider` for Drive
+A service-account provider (JWT bearer, `SecItemImport` + `SecKeyCreateSignature`) existed until October 2026 and was removed unused; it is in git history under `ServiceAccountTokenProvider`. A service account cannot access a personal Drive anyway.
 
 ### `AuthRegistry` + `AuthController`
 
