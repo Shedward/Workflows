@@ -6,57 +6,34 @@
 //
 
 public struct WorkflowGraphBuilder: Sendable {
-    /// A workflow's graph together with the facts its validation is based on.
-    struct Built: Sendable {
-        let graph: WorkflowGraph
-        let declaredOutputs: Set<DataField>
-        let topology: GraphTopology
-        let availability: DataAvailability
-    }
-
-    private var cache: [WorkflowID: Built] = [:]
+    private var cache: [WorkflowID: WorkflowGraph] = [:]
 
     public init() {}
 
     public mutating func build(from workflow: AnyWorkflow) -> WorkflowGraph {
-        built(from: workflow).graph
-    }
-
-    mutating func built(from workflow: AnyWorkflow) -> Built {
         if let cached = cache[workflow.id] {
             return cached
         }
 
         let transitions = transitions(of: workflow)
-        let declared = (workflow as? any DataBindable)?.declaredMetadata(processId: workflow.id)
-            ?? .empty(processId: workflow.id)
+        let declared = workflow.declaredMetadata
         let topology = GraphTopology(transitions: transitions, start: workflow.startId)
-        let availability = DataAvailability(in: topology, declaredInputs: declared.inputs)
-        let typesAtFinish = availability.types(at: workflow.finishId)
+        let typesAtFinish = DataAvailability(in: topology, declaredInputs: declared.inputs).types(at: workflow.finishId)
 
-        let built = Built(
-            graph: WorkflowGraph(
-                workflowId: workflow.id,
-                version: workflow.version,
-                states: states(of: workflow),
-                transitions: transitions,
-                requiredInputs: declared.inputs,
-                producedOutputs: Set(
-                    declared.outputs.compactMap { output in
-                        typesAtFinish[output.key].map { DataField(key: output.key, valueType: $0) }
-                    }
-                )
-            ),
-            declaredOutputs: declared.outputs,
-            topology: topology,
-            availability: availability
+        let graph = WorkflowGraph(
+            workflowId: workflow.id,
+            version: workflow.version,
+            states: states(of: workflow),
+            transitions: transitions,
+            requiredInputs: declared.inputs,
+            producedOutputs: Set(
+                declared.outputs.compactMap { output in
+                    typesAtFinish[output.key].map { DataField(key: output.key, valueType: $0) }
+                }
+            )
         )
-        cache[workflow.id] = built
-        return built
-    }
-
-    func cachedGraph(for workflowId: WorkflowID) -> WorkflowGraph? {
-        cache[workflowId]?.graph
+        cache[workflow.id] = graph
+        return graph
     }
 
     private func states(of workflow: AnyWorkflow) -> [WorkflowGraph.State] {

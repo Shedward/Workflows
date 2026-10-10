@@ -13,13 +13,14 @@ public struct WorkflowValidator: Sendable {
         dependencies: DependenciesContainer,
         graphBuilder: inout WorkflowGraphBuilder
     ) -> WorkflowValidationResult {
-        let built = graphBuilder.built(from: workflow)
+        let graph = graphBuilder.build(from: workflow)
+        let topology = GraphTopology(transitions: graph.transitions, start: workflow.startId)
         let validator = WorkflowValidator(
             workflow: workflow,
-            graph: built.graph,
-            declaredOutputs: built.declaredOutputs,
-            topology: built.topology,
-            availability: built.availability,
+            graph: graph,
+            declaredOutputs: workflow.declaredMetadata.outputs,
+            topology: topology,
+            availability: DataAvailability(in: topology, declaredInputs: graph.requiredInputs),
             registeredDependencies: dependencies.keys
         )
 
@@ -44,7 +45,7 @@ public struct WorkflowValidator: Sendable {
             deadEndStates,
             conflictsBetweenBranches,
             unsatisfiedInputs,
-            undeclaredOutputs,
+            declaredOutputsNotProduced,
             missingDependencies,
             unsatisfiedSubflowInputs,
             missingProviderDependencies
@@ -154,16 +155,16 @@ private extension WorkflowValidator {
         return errors
     }
 
-    var undeclaredOutputs: [ValidationError] {
+    var declaredOutputsNotProduced: [ValidationError] {
         let typesAtFinish = availability.types(at: workflow.finishId)
         var errors: [ValidationError] = []
         for output in declaredOutputs {
-            guard let produced = typesAtFinish[output.key] else {
+            if let produced = typesAtFinish[output.key] {
+                if produced != output.valueType {
+                    errors.append(.outputTypeMismatch(key: output.key, declared: output.valueType, produced: produced))
+                }
+            } else {
                 errors.append(.undeclaredWorkflowOutput(key: output.key))
-                continue
-            }
-            if produced != output.valueType {
-                errors.append(.outputTypeMismatch(key: output.key, declared: output.valueType, produced: produced))
             }
         }
         return errors

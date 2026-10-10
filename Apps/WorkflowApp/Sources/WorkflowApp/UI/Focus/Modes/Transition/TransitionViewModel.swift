@@ -27,7 +27,7 @@ final class TransitionViewModel: ErrorPresenting {
             error = nil
             return
         }
-        refreshTask = latest(replacing: refreshTask) { [self] in
+        refreshTask = run(cancelling: refreshTask) { [self] in
             let result = try await focus.service.getTransitions(instanceId: workflow.id)
             try Task.checkCancellation()
             transitions = result
@@ -48,7 +48,11 @@ final class TransitionViewModel: ErrorPresenting {
                     instanceId: workflow.id,
                     transitionProcessId: transition.processId
                 )
-                focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
+                if updated.finishedAt == nil {
+                    focus.setActiveWorkflow(updated)
+                } else {
+                    focus.setActiveWorkflow(nil)
+                }
                 error = nil
                 refresh()
             } catch {

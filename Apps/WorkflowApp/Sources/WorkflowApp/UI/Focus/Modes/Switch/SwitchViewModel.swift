@@ -29,7 +29,7 @@ final class SwitchViewModel: ErrorPresenting {
     }
 
     func refresh() {
-        refreshTask = latest(replacing: refreshTask) { [self] in
+        refreshTask = run(cancelling: refreshTask) { [self] in
             let result = try await focus.service.getWorkflowInstances()
             try Task.checkCancellation()
             activeWorkflows = result
@@ -38,7 +38,7 @@ final class SwitchViewModel: ErrorPresenting {
     }
 
     func showNewWorkflow() {
-        pickerTask = latest(replacing: pickerTask) { [self] in
+        pickerTask = run(cancelling: pickerTask) { [self] in
             let result = try await focus.service.getStartingWorkflows()
             try Task.checkCancellation()
             newWorkflows = result

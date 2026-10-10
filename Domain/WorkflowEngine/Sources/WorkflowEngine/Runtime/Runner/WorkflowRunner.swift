@@ -93,7 +93,7 @@ actor WorkflowRunner {
         _ transition: AnyTransition,
         on instance: WorkflowInstance,
         of workflow: AnyWorkflow,
-        resumeReason: WaitScheduler.ResumeReason? = nil
+        resumeReason: ResumeReason? = nil
     ) async throws -> WorkflowInstance {
         let next = try await executeTransitionLocked(transition, on: instance, of: workflow, resumeReason: resumeReason)
         return await runAutomaticTransitionsLocked(from: next)
@@ -107,7 +107,7 @@ actor WorkflowRunner {
         _ transition: AnyTransition,
         on instance: WorkflowInstance,
         of workflow: AnyWorkflow,
-        resumeReason: WaitScheduler.ResumeReason? = nil
+        resumeReason: ResumeReason? = nil
     ) async throws -> WorkflowInstance {
         logger?.trace("Take transition \(transition.id.debugDescription, privacy: .public) for \(workflow.id, privacy: .public)")
 
@@ -207,7 +207,7 @@ actor WorkflowRunner {
 
     // MARK: - Waiting
 
-    private func resumeWaiting(instanceId: WorkflowInstanceID, reason: WaitScheduler.ResumeReason) async {
+    private func resumeWaiting(instanceId: WorkflowInstanceID, reason: ResumeReason) async {
         logger?.trace("Resume waiting \(instanceId.debugDescription, privacy: .public)")
         do {
             if try await resumeTransition(on: instanceId, reason: reason) == nil {
@@ -219,10 +219,11 @@ actor WorkflowRunner {
     }
 
     /// Takes the transition recorded in the instance's `transitionState` again, under the lock.
-    /// Returns `nil` when the instance or that transition can no longer be resolved.
+    /// Returns `nil` when the instance is gone, is not waiting for `reason`, or its workflow or
+    /// transition can no longer be resolved.
     private func resumeTransition(
         on instanceId: WorkflowInstanceID,
-        reason: WaitScheduler.ResumeReason
+        reason: ResumeReason
     ) async throws -> WorkflowInstance? {
         try await withInstanceLock(instanceId) { [self] in
             guard

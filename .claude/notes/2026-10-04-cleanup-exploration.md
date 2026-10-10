@@ -688,3 +688,18 @@ Open after the PR: B19's environment override of host/port still bypasses the re
 storage oddities. The HUD was checked on screen on 2026-10-10 (macOS 27.2): it did not show because the
 `@NSApplicationDelegateAdaptor` lived on the library's `App`, not on the executable's `@main` type; fixed
 in commit 4293545.
+
+### 2026-10-11 — critics round on the whole branch
+
+Three agents (minimality / architecture / clarity) rewrote the full `main...cleanup` diff. Taken
+(2/3 convergence or no-cost clarity): `WorkflowGraphBuilder` caches only `WorkflowGraph`, the validator
+derives `GraphTopology`/`DataAvailability` itself, the `Built` bundle and the unused `cachedGraph(for:)`
+are gone; `ResumeReason` is a top-level enum next to `WorkflowContext` (the scheduler never produces
+`.answered`); the auth callback route lives in `Config`, so the controller depends on config and not the
+other way round; `DataAvailability` names `conflictsFoundHere` / `conflictedKeys`; `ErrorPresenting.run(
+cancelling:)`; a few `??`/`flatMap`/ternary decisions written as `if`. Rejected: the minimality agent's
+proposal to return the transition kinds, runner take path, `ValueStorage`, `FromTransition`, the macro and
+the server controller to `main` (−711 diff lines): it undoes the S1/S3/S4 passes and their critics rounds,
+the B12/B14 fixes, and restores misleading controller names; the closure-wired view models (architecture)
+and the `+` chain of validator checks (clarity) as form changes without a reading gain. Checks: lint clean,
+95 unit tests, 28 integration scripts, app builds.

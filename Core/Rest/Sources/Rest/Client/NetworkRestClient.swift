@@ -17,13 +17,16 @@ public actor NetworkRestClient: RestClient {
         at endpoint: Endpoint
     ) throws -> URLRequest {
         var url = endpoint.host
-        if let path = request.path {
-            url = URL(string: url.absoluteString + path) ?? url
+        if let path = request.path, let urlWithPath = URL(string: endpoint.host.absoluteString + path) {
+            url = urlWithPath
         }
 
-        let queryItems = request.query.values
-            .sorted { $0.key < $1.key }
-            .compactMap { key, value in value.queryValue.map { URLQueryItem(name: key, value: $0) } }
+        var queryItems: [URLQueryItem] = []
+        for (key, value) in request.query.values.sorted(by: { $0.key < $1.key }) {
+            if let queryValue = value.queryValue {
+                queryItems.append(URLQueryItem(name: key, value: queryValue))
+            }
+        }
         if !queryItems.isEmpty {
             url.append(queryItems: queryItems)
         }

@@ -11,8 +11,8 @@ protocol ErrorPresenting: AnyObject {
 }
 
 extension ErrorPresenting {
-    func latest(
-        replacing previous: Task<Void, Never>?,
+    func run(
+        cancelling previous: Task<Void, Never>?,
         _ work: @escaping @MainActor () async throws -> Void
     ) -> Task<Void, Never> {
         previous?.cancel()

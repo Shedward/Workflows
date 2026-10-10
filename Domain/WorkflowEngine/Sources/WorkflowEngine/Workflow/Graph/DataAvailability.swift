@@ -12,8 +12,8 @@ struct DataAvailability: Sendable {
 
     private struct StateData: Sendable {
         var types: TypeMap = [:]
-        var conflictingTypes: [String: [String]] = [:]
-        var keysWithConflictingTypes: Set<String> = []
+        var conflictsFoundHere: [String: [String]] = [:]
+        var conflictedKeys: Set<String> = []
         var keysMissingOnSomeBranches: Set<String> = []
     }
 
@@ -36,12 +36,12 @@ struct DataAvailability: Sendable {
 
     /// Keys whose branches disagree on the type at this state; reported once, here.
     func conflictingTypes(at state: StateID) -> [String: [String]] {
-        dataAtState[state]?.conflictingTypes ?? [:]
+        dataAtState[state]?.conflictsFoundHere ?? [:]
     }
 
     /// Keys with a conflict here or at a state before, so consumers are not reported a second time.
     func hasConflictingTypes(_ key: String, at state: StateID) -> Bool {
-        dataAtState[state]?.keysWithConflictingTypes.contains(key) ?? false
+        dataAtState[state]?.conflictedKeys.contains(key) ?? false
     }
 
     func keysMissingOnSomeBranches(at state: StateID) -> Set<String> {
@@ -49,14 +49,14 @@ struct DataAvailability: Sendable {
     }
 
     private func merged(from incoming: [WorkflowGraph.Transition]) -> StateData {
-        let branches = incoming.map { transition -> (types: TypeMap, conflicted: Set<String>) in
+        let branches = incoming.map { transition -> (types: TypeMap, conflictedKeys: Set<String>) in
             var types = types(at: transition.from)
-            var conflicted = dataAtState[transition.from]?.keysWithConflictingTypes ?? []
+            var conflictedKeys = dataAtState[transition.from]?.conflictedKeys ?? []
             for output in transition.metadata.outputs {
                 types[output.key] = output.valueType
-                conflicted.remove(output.key)
+                conflictedKeys.remove(output.key)
             }
-            return (types, conflicted)
+            return (types, conflictedKeys)
         }
         let keysOnAnyBranch = Set(branches.flatMap(\.types.keys))
         let keysOnEveryBranch = keysOnAnyBranch.filter { key in
@@ -66,12 +66,12 @@ struct DataAvailability: Sendable {
         var data = StateData(keysMissingOnSomeBranches: keysOnAnyBranch.subtracting(keysOnEveryBranch))
         for key in keysOnEveryBranch {
             let typesAcrossBranches = Set(branches.compactMap { $0.types[key] }).sorted()
-            data.types[key] = typesAcrossBranches.first
+            data.types[key] = typesAcrossBranches[0]
             if typesAcrossBranches.count > 1 {
-                data.conflictingTypes[key] = typesAcrossBranches
-                data.keysWithConflictingTypes.insert(key)
-            } else if branches.contains(where: { $0.conflicted.contains(key) }) {
-                data.keysWithConflictingTypes.insert(key)
+                data.conflictsFoundHere[key] = typesAcrossBranches
+                data.conflictedKeys.insert(key)
+            } else if branches.contains(where: { $0.conflictedKeys.contains(key) }) {
+                data.conflictedKeys.insert(key)
             }
         }
         return data

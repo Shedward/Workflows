@@ -102,7 +102,8 @@ struct WorkflowInstancesController: Controller {
     /// so `nan`, `inf` or `1e30` from a client would otherwise take the whole server down.
     private func timeout(from request: Request) -> Double {
         guard
-            let seconds = request.uri.queryParameters["timeout"].flatMap({ Double($0) }),
+            let raw = request.uri.queryParameters["timeout"],
+            let seconds = Double(raw),
             seconds.isFinite
         else {
             return Self.defaultTimeout

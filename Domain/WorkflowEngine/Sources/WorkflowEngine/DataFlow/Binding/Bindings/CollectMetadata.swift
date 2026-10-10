@@ -81,3 +81,12 @@ extension TransitionProcess {
         return bindable.declaredMetadata(processId: id)
     }
 }
+
+extension AnyWorkflow {
+    var declaredMetadata: TransitionMetadata {
+        guard let bindable = self as? any DataBindable else {
+            return .empty(processId: id)
+        }
+        return bindable.declaredMetadata(processId: id)
+    }
+}
