@@ -7,6 +7,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 
 PACKAGES=(
   Core/Core
+  Core/Rest
   Domain/WorkflowEngine
   Apps/WorkflowApp
 )

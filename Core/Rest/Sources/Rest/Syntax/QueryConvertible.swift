@@ -11,7 +11,7 @@ public protocol QueryConvertible: Sendable {
 
 extension String: QueryConvertible {
     public var queryValue: String? {
-        addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        self
     }
 }
 
