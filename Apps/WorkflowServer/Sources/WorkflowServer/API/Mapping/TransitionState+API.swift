@@ -23,11 +23,11 @@ extension API.TransitionState.State {
             case .executing:
                 self = .executing
             case .failed(let error):
-                self = .failed(error: ErrorDescription(error: error))
+                self = .failed(error: ErrorDescription(model: error))
             case .waiting(.time(let time)):
                 self = .waitingTime(date: time.date)
             case .waiting(.workflowFinished(let finished)):
-                self = .waitingWorkflow(workflowId: finished.instanceId)
+                self = .waitingWorkflow(instanceId: finished.instanceId)
             case .waiting(.asking(let asking)):
                 self = .asking(
                     prompt: asking.prompt,

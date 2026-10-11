@@ -17,7 +17,7 @@ main() {
 
   # Extract child instance ID from the take_transition response
   local child_id
-  child_id="$(response_field '.transitionState.state.waitingWorkflow.workflowId')"
+  child_id="$(response_field '.transitionState.state.waitingWorkflow.instanceId')"
   if [[ -z "$child_id" || "$child_id" == "null" ]]; then
     echo "Could not extract child instance ID from response" >&2
     exit 1

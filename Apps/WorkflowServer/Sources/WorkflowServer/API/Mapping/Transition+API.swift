@@ -14,7 +14,7 @@ extension API.Transition {
             processId: model.id.processId,
             fromState: model.id.from,
             targets: model.targets,
-            trigger: model.trigger.rawValue
+            trigger: model.trigger.apiValue
         )
     }
 }

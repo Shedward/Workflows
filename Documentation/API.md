@@ -36,7 +36,7 @@ List all registered workflow definitions.
 [
   {
     "id": "SimpleWorkflow",
-    "stateId": ["a", "b"],
+    "states": ["a", "b"],
     "transitions": [
       {
         "processId": "StartA",
@@ -52,7 +52,7 @@ List all registered workflow definitions.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Workflow type identifier |
-| `stateId` | [string] | User-defined states (excludes implicit `_start` and `_finish`) |
+| `states` | [string] | User-defined states (excludes implicit `_start` and `_finish`) |
 | `transitions` | [Transition] | All transitions defined for this workflow |
 
 ---
@@ -334,7 +334,7 @@ The `state` field is one of:
 
 **Waiting for subflow:**
 ```json
-{ "waitingWorkflow": { "workflowId": "child-instance-uuid" } }
+{ "waitingWorkflow": { "instanceId": "child-instance-uuid" } }
 ```
 
 **Asking for user input:**

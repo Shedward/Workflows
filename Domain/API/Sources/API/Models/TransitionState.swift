@@ -23,7 +23,7 @@ extension TransitionState {
     public enum State: JSONBody {
         case executing
         case waitingTime(date: Date)
-        case waitingWorkflow(workflowId: String)
+        case waitingWorkflow(instanceId: String)
         case asking(prompt: String?, expectedFields: [AskField])
         case failed(error: ErrorDescription)
     }
