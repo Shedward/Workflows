@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: medium
+impact: low
 ---
 
 # Storage `update`/`finish` silently accept unknown ids and re-finish finished instances
@@ -28,3 +30,5 @@ PR #18 (`Domain/WorkflowEngine/Sources/WorkflowEngine/Runtime/Storage/WorkflowIn
 
 - Заведено из «Bug backlog» B36 в `.claude/notes/2026-10-04-cleanup-exploration.md`
   при переносе беклога в `Tasks/`.
+- Оценено effort medium (таблица, семантика retention 0, тесты), impact low
+  (последствий не наблюдали).

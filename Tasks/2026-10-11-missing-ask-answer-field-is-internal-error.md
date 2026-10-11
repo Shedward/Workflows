@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: low
+impact: medium
 ---
 
 # An answer that lacks an expected `@Ask` field fails as an internal error, not as an invalid request
@@ -30,3 +32,5 @@ client mistakes`).
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort low (один тип ошибки по образцу B16 плюс тест), impact
+  medium (клиент получает 500 и текст движка на свою ошибку).

@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: low
+impact: low
 ---
 
 # Share the common server setup between the two entry points
@@ -28,3 +30,5 @@ the change: ~10 lines; cost of leaving it: every config change is made twice.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort low (около 10 строк), impact low (экономит дубль при
+  каждой правке конфига).

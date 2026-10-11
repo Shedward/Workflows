@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: medium
+impact: low
 ---
 
 # Graph validation compares value types by `String(describing:)`
@@ -28,3 +30,5 @@ actually bridges `String?` to `String` at runtime is not verified.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (замена сравнения, фикстура, проверить bridging
+  `String?`), impact low (ложных срабатываний не видели).

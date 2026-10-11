@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: high
+impact: medium
 ---
 
 # An `Ask` that branches on the answer
@@ -31,3 +33,5 @@ possible, Asking + Condition aren't mutually exclusive"). Sources:
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort high (новый вид перехода через граф, API и app), impact
+  medium (сахар; пар Ask → Condition пока мало).

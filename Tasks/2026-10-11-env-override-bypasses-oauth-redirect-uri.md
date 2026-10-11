@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: low
+impact: low
 ---
 
 # Environment override of host/port leaves the OAuth redirect URI on the default address
@@ -27,3 +29,5 @@ server and `AuthController`.
 
 - Заведено из «Bug backlog» B19 в `.claude/notes/2026-10-04-cleanup-exploration.md`
   при переносе беклога в `Tasks/`.
+- Оценено effort low (собрать `Config` один раз после всех провайдеров),
+  impact low (порт через окружение сейчас никто не переопределяет).

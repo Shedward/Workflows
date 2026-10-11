@@ -1,6 +1,8 @@
 ---
 type: decision
 status: open
+effort: low
+impact: medium
 ---
 
 # Should a subflow that declares no `@Input` keep receiving the whole parent `WorkflowData`?
@@ -38,3 +40,5 @@ records the current behaviour as "Subflow data isolation is opt-in". Source:
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort low (варианты расписаны, осталось выбрать), impact medium
+  (определяет контракт всех subflow и точность валидации).

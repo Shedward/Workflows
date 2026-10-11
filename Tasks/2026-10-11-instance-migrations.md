@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: high
+impact: high
 ---
 
 # Migrate persisted instances when a workflow changes
@@ -38,3 +40,5 @@ Sources: `Workflows.run()`, `WorkflowRunner.resume()`,
 
 - Заведено при сканировании заметок 2026-10-11; выбран полный механизм, а не
   только карантин, потому что идея давно назрела и будет сделана.
+- Оценено effort high (отдельная сессия с дизайном механизма), impact high
+  (каждый bump версии теряет инстансы, 52 сироты уже лежат).

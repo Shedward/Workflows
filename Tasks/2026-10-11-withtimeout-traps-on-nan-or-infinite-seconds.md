@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: low
+impact: low
 ---
 
 # `Core.withTimeout` traps on `nan` or infinite `seconds`
@@ -25,3 +27,5 @@ task does not touch that.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort low (precondition плюс юнит-тест), impact low
+  (единственный вызов уже защищён clamp'ом).

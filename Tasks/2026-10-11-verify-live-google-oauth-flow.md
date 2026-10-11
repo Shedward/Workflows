@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: medium
+impact: high
 ---
 
 # Run the Google OAuth flow and one Drive/Sheets call against the real endpoints
@@ -35,3 +37,5 @@ Unblocks `2026-10-11-oauth-token-provider-through-rest-client`.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (нужны пользователь и GCP-консоль, код готов),
+  impact high (прод с Google ни разу не работал).

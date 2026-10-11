@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: medium
+impact: low
 ---
 
 # `@DataBindable` matches property wrappers by bare attribute name
@@ -30,3 +32,5 @@ Not reproduced; read from the macro source.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (правка макроса и тесты), impact low
+  (квалифицированные имена обёрток никто не пишет).

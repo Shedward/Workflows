@@ -1,6 +1,8 @@
 ---
 type: bug
 status: open
+effort: medium
+impact: low
 ---
 
 # `@Ask` declared on an `Action` / `Condition` / `Wait` silently acts as an output
@@ -27,3 +29,5 @@ Side finding of the cleanup critics
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (проверка в валидаторе плюс фикстура), impact low
+  (ошибка авторская, в проде не встречалась).

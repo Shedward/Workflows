@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: medium
+impact: high
 ---
 
 # Let the user retry a failed transition
@@ -32,3 +34,5 @@ this endpoint clears).
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (runner, endpoint, кнопка в app, интеграционный
+  тест), impact high (сетевой сбой на пятом шаге сейчас = перезапуск руками).

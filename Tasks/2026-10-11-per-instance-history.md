@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: high
+impact: medium
 ---
 
 # Keep a per-instance history of executed transitions
@@ -26,3 +28,5 @@ while there are one or two production workflows and `log show` is bearable.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort high (персист, endpoint, таймлайн в app), impact medium
+  (при одном-двух прод-воркфлоу хватает `log show`).

@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: medium
+impact: low
 ---
 
 # Persist a failed transition in one place of `WorkflowRunner`
@@ -32,3 +34,5 @@ B7 (chain loop) and B10 (race) fixes, so keep the lock discipline intact.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (реструктуризация раннера с сохранением локов),
+  impact low (двойная запись безвредна, сбой storage редок).

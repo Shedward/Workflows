@@ -1,6 +1,8 @@
 ---
 type: task
 status: open
+effort: medium
+impact: low
 depends-on: [2026-10-11-verify-live-google-oauth-flow]
 ---
 
@@ -32,3 +34,5 @@ cannot be checked without it.
 ## Changelog
 
 - Заведено при сканировании заметок 2026-10-11.
+- Оценено effort medium (переписать на `Request` плюс тест с fake client),
+  impact low (внутренняя консистентность).
