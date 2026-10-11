@@ -46,8 +46,8 @@ import Testing
     #expect(await flag.operationFinished)
 }
 
-@Test(arguments: [Double.nan, .infinity, -.infinity])
-func withTimeoutTreatsNonFiniteSecondsAsNoDeadline(seconds: Double) async {
+@Test(arguments: [Double.infinity, -.infinity])
+func withTimeoutTreatsInfiniteSecondsAsNoDeadline(seconds: Double) async {
     let result = await withTimeout(seconds: seconds) {
         try? await Task.sleep(for: .milliseconds(20))
         return 42

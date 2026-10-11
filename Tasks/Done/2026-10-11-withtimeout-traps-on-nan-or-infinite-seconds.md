@@ -24,11 +24,15 @@ Source: `Core/Core/Sources/Core/Concurrency/WithTimeout.swift`. Not
 cancelling the operation on timeout is intentional and documented there; this
 task does not touch that.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort low (precondition плюс юнит-тест), impact low
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort low (precondition плюс юнит-тест), impact low
   (единственный вызов уже защищён clamp'ом).
-- Сделано: non-finite `seconds` означает «без дедлайна» (таймер не
-  запускается), параметризованный тест в `CoreTests`. Clamp в контроллере
+- 2026-10-11: Сделано: non-finite `seconds` означает «без дедлайна» (таймер
+  не запускается), параметризованный тест в `CoreTests`. Clamp в контроллере
   остаётся: он ещё защищает от огромных конечных значений вроде `1e30`.
+- 2026-10-11: Пересмотрено по замечанию ревью: `nan` — баг вызывающего и
+  должен падать, а не молча ждать вечно. Теперь `precondition` на `nan`,
+  «без дедлайна» только для `±infinity`; тест параметризован по
+  бесконечностям.
