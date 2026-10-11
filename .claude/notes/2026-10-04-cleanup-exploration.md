@@ -737,3 +737,14 @@ effect: every `DescriptiveError` now gets an `ErrorResponse` body (500 by defaul
 used to fall through to Hummingbird's bare 500. Four groups and not three because 404 and 409 are part of
 the API contract (`API.md`, `run_finished_instance`, `run_malformed_requests`). `Ask` keeps
 `preconditionFailure` (user, 2026-10-11).
+
+Commands (user's design, after discussing `Loading<Void>`, `Command<Input>` and an enum state): a
+`Command` (`UI/Loading/Command.swift`) is a user action that runs once at a time, `isRunning` from the
+moment `run` is called and `error` until the next run or `reset`. No generic: which row was tapped is
+the view's knowledge (`TransitionView.tappedProcessId`), so the "transition X is running" check moved
+from the view model tests to the view. Rejected: `Loading<Void>` for commands (its `.loading` is delayed,
+the double-tap guard needs an immediate flag); a policy flag on `Loading` (one method with a mode); an
+enum state for `Command` (nobody switches over it yet). Names considered and rejected: `Query`/`Mutation`,
+`Query`/`Command` (Query reads as database selectors in Swift), `Loader`/`Runner`, `Fetcher`/`Executor`
+(Swift Concurrency clash). The view models now hold only `Loading`, `Command` and `state`; no `Task`.
+39 app tests.

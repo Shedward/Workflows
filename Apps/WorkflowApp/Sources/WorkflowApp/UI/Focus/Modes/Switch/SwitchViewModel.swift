@@ -16,9 +16,8 @@ final class SwitchViewModel {
 
     let activeWorkflows = Loading<[WorkflowInstance]>()
     let newWorkflows = Loading<[WorkflowStart]>()
+    let starting = Command()
     private(set) var state: State = .activeWorkflows
-    private(set) var isStarting = false
-    private(set) var startError: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
 
@@ -42,7 +41,7 @@ final class SwitchViewModel {
     }
 
     func showActiveWorkflows() {
-        startError = nil
+        starting.reset()
         withAnimation(.snappy) {
             state = .activeWorkflows
         }
@@ -54,22 +53,12 @@ final class SwitchViewModel {
     }
 
     func start(_ start: WorkflowStart) {
-        guard !isStarting else {
-            return
-        }
-        isStarting = true
-        Task {
-            do {
-                let instance = try await focus.service.startWorkflow(start)
-                startError = nil
-                withAnimation(.snappy) {
-                    state = .activeWorkflows
-                }
-                activate(instance)
-            } catch {
-                startError = error.localizedDescription
+        starting.run { [self] in
+            let instance = try await focus.service.startWorkflow(start)
+            withAnimation(.snappy) {
+                state = .activeWorkflows
             }
-            isStarting = false
+            activate(instance)
         }
     }
 }

@@ -13,8 +13,8 @@ struct SwitchView: View {
 
     var body: some View {
         Group {
-            if let error = viewModel.startError {
-                DrawerMessage(text: error)
+            if let error = viewModel.starting.error {
+                DrawerMessage(text: error.localizedDescription)
             } else {
                 switch viewModel.state {
                     case .activeWorkflows:

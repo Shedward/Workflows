@@ -10,11 +10,12 @@ struct TransitionView: View {
     let viewModel: TransitionViewModel
 
     @Environment(\.theme) private var theme
+    @State private var tappedProcessId: String?
 
     var body: some View {
         Group {
-            if let error = viewModel.takeError {
-                DrawerMessage(text: error)
+            if let error = viewModel.taking.error {
+                DrawerMessage(text: error.localizedDescription)
             } else {
                 LoadingView(viewModel.transitions) { transitions in
                     if transitions.isEmpty {
@@ -27,6 +28,7 @@ struct TransitionView: View {
                         }
                         .frame(maxHeight: 400)
                         .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
+                        .animation(.snappy, value: viewModel.taking.isRunning)
                     }
                 }
             }
@@ -39,7 +41,7 @@ struct TransitionView: View {
     @ViewBuilder
     private func row(for transition: API.Transition) -> some View {
         Group {
-            if viewModel.runningTransition?.processId == transition.processId {
+            if viewModel.taking.isRunning, tappedProcessId == transition.processId {
                 runningRow(for: transition)
             } else {
                 idleRow(for: transition)
@@ -63,6 +65,7 @@ struct TransitionView: View {
 
     private func idleRow(for transition: API.Transition) -> some View {
         Button {
+            tappedProcessId = transition.processId
             viewModel.take(transition)
         } label: {
             Card {
@@ -78,7 +81,7 @@ struct TransitionView: View {
             }
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.runningTransition != nil)
+        .disabled(viewModel.taking.isRunning)
         .transition(.opacity.combined(with: .scale))
     }
 }

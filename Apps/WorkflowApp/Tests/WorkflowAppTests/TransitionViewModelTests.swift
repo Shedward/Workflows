@@ -92,13 +92,13 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("transition is running") { viewModel.runningTransition?.processId == "Approve" }
+        await eventually("transition is running") { viewModel.taking.isRunning }
         #expect(focus.activeWorkflow?.state == "working")
         takeResponse.open()
-        await eventually("transition is done") { viewModel.runningTransition == nil }
+        await eventually("transition is done") { !viewModel.taking.isRunning }
         #expect(focus.activeWorkflow?.state == "approved")
         await eventually("next transitions are loaded") { loadedProcessIds == ["Publish"] }
-        #expect(viewModel.takeError == nil)
+        #expect(viewModel.taking.error == nil)
     }
 
     @Test func takeThatFinishesTheWorkflowClearsTheActiveWorkflow() async {
@@ -109,9 +109,9 @@ struct TransitionViewModelTests {
         viewModel.take(.Mock.simple(processId: "Finish"))
 
         await eventually("workflow is no longer active") { focus.activeWorkflow == nil }
-        await eventually("transition is done") { viewModel.runningTransition == nil }
+        await eventually("transition is done") { !viewModel.taking.isRunning }
         #expect(loadedProcessIds == nil)
-        #expect(viewModel.takeError == nil)
+        #expect(viewModel.taking.error == nil)
     }
 
     @Test func failedTakeShowsTheErrorAndKeepsTheWorkflow() async {
@@ -121,8 +121,8 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.takeError == TestError.message }
-        await eventually("transition is done") { viewModel.runningTransition == nil }
+        await eventually("error is shown") { viewModel.taking.error?.localizedDescription == TestError.message }
+        await eventually("transition is done") { !viewModel.taking.isRunning }
         #expect(focus.activeWorkflow?.state == "working")
         #expect(loadedProcessIds == ["Approve"])
     }
@@ -136,7 +136,7 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.takeError == "Transition 'Approve' is not available" }
+        await eventually("error is shown") { viewModel.taking.error?.localizedDescription == "Transition 'Approve' is not available" }
     }
 
     @Test func aRefusedTakeWithoutAnErrorBodyShowsTheStatus() async {
@@ -147,7 +147,7 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.takeError == "HTTP 502: Wrong status code: 502" }
+        await eventually("error is shown") { viewModel.taking.error?.localizedDescription == "HTTP 502: Wrong status code: 502" }
     }
 
     @Test func takeIsIgnoredWhileAnotherTransitionIsRunning() async {
@@ -159,10 +159,10 @@ struct TransitionViewModelTests {
         }
 
         viewModel.take(.Mock.simple(processId: "Approve"))
-        await eventually("transition is running") { viewModel.runningTransition?.processId == "Approve" }
+        await eventually("transition is running") { viewModel.taking.isRunning }
         viewModel.take(.Mock.simple(processId: "Reject"))
         takeResponse.open()
-        await eventually("transition is done") { viewModel.runningTransition == nil }
+        await eventually("transition is done") { !viewModel.taking.isRunning }
 
         #expect(server.requests == ["POST /workflowInstances/w/takeTransition"])
     }
@@ -171,7 +171,7 @@ struct TransitionViewModelTests {
         viewModel.take(.Mock.simple(processId: "Approve"))
 
         await settle()
-        #expect(viewModel.runningTransition == nil)
+        #expect(!viewModel.taking.isRunning)
         #expect(server.requests.isEmpty)
     }
 
@@ -182,8 +182,8 @@ struct TransitionViewModelTests {
         viewModel.take(.Mock.simple(processId: "Approve"))
         viewModel.take(.Mock.simple(processId: "Reject"))
 
-        #expect(viewModel.runningTransition?.processId == "Approve")
-        await eventually("transition is done") { viewModel.runningTransition == nil }
+        #expect(viewModel.taking.isRunning)
+        await eventually("transition is done") { !viewModel.taking.isRunning }
         #expect(server.requests == ["POST /workflowInstances/w/takeTransition"])
     }
 

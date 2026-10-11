@@ -10,8 +10,7 @@ import SwiftUI
 @MainActor
 final class TransitionViewModel {
     let transitions = Loading<[API.Transition]>()
-    private(set) var runningTransition: API.Transition?
-    private(set) var takeError: String?
+    let taking = Command()
 
     @ObservationIgnored unowned let focus: FocusViewModel
 
@@ -30,31 +29,16 @@ final class TransitionViewModel {
     }
 
     func take(_ transition: API.Transition) {
-        guard let workflow = focus.activeWorkflow, runningTransition == nil else {
+        guard let workflow = focus.activeWorkflow else {
             return
         }
-        withAnimation(.snappy) {
-            runningTransition = transition
-        }
-        Task {
-            do {
-                let updated = try await focus.service.takeTransition(
-                    instanceId: workflow.id,
-                    transitionProcessId: transition.processId
-                )
-                if updated.finishedAt == nil {
-                    focus.setActiveWorkflow(updated)
-                } else {
-                    focus.setActiveWorkflow(nil)
-                }
-                takeError = nil
-                refresh()
-            } catch {
-                takeError = error.localizedDescription
-            }
-            withAnimation(.snappy) {
-                runningTransition = nil
-            }
+        taking.run { [self] in
+            let updated = try await focus.service.takeTransition(
+                instanceId: workflow.id,
+                transitionProcessId: transition.processId
+            )
+            focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
+            refresh()
         }
     }
 }

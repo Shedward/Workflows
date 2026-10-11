@@ -112,7 +112,7 @@ struct SwitchViewModelTests {
         await eventually("created instance is active") { focus.activeWorkflow?.id == "created" }
         #expect(viewModel.state == .activeWorkflows)
         #expect(focus.currentMode == .initial)
-        #expect(viewModel.startError == nil)
+        #expect(viewModel.starting.error == nil)
     }
 
     @Test func failedStartShowsTheErrorAndStaysInThePicker() async {
@@ -124,7 +124,7 @@ struct SwitchViewModelTests {
 
         viewModel.start(start)
 
-        await eventually("error is shown") { viewModel.startError == TestError.message }
+        await eventually("error is shown") { viewModel.starting.error?.localizedDescription == TestError.message }
         #expect(viewModel.state == .newWorkflow)
         #expect(focus.activeWorkflow == nil)
         #expect(focus.currentMode == .switching)
@@ -156,11 +156,11 @@ struct SwitchViewModelTests {
         server.on("POST /workflowInstances") { throw TestError() }
         viewModel.showNewWorkflow()
         viewModel.start(start)
-        await eventually("error is shown") { viewModel.startError == TestError.message }
+        await eventually("error is shown") { viewModel.starting.error?.localizedDescription == TestError.message }
 
         viewModel.showActiveWorkflows()
 
-        #expect(viewModel.startError == nil)
+        #expect(viewModel.starting.error == nil)
         #expect(viewModel.state == .activeWorkflows)
     }
 
@@ -181,6 +181,6 @@ struct SwitchViewModelTests {
         await settle()
 
         #expect(server.requests == ["POST /workflowInstances"])
-        #expect(!viewModel.isStarting)
+        #expect(!viewModel.starting.isRunning)
     }
 }
