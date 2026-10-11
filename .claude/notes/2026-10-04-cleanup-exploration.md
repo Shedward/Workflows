@@ -707,8 +707,11 @@ and the `+` chain of validator checks (clarity) as form changes without a readin
 ### 2026-10-11 — review round 1 (user, plannotator on `main...cleanup`)
 
 Applied: the `ResponseRejected` → `ServerError` mapping moved from `WorkflowsService` into the API
-package as `RestClient.fetch(_: some WorkflowApi)`, which takes precedence over Rest's `fetch(_ api:)`
-by being the more constrained overload; `ServerError` is now a public `DescriptiveError` in API. The auth
+package, first as an overload `RestClient.fetch(_: some WorkflowApi)` and then, after a side note that
+overload resolution is static (a generic `A: Api` helper or a file without `import API` would silently
+pick Rest's version), as the client decorator `WorkflowServerClient` (`API/Client/`), which wraps any
+`RestClient` and has `init(endpoint:)` as the one entry point; `WorkflowsService` always wraps what it
+gets, so `FakeServer` goes through it too. `ServerError` is a public `DescriptiveError` in API. The auth
 callback route is a literal in `AuthController` again, `AuthController.callbackURL(service:on:)` builds
 the redirect URI (the controller is public for that), `Config` keeps only `baseURL`. Test support: `Boom`
 → `TestError` with a `message`, `eventually` takes `within:`/`polling:` (5 s / 10 ms), the stubs moved
