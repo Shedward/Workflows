@@ -28,6 +28,7 @@ being added as a manual action
 (`2026-10-11-manual-retry-of-failed-transition`). Reopen when the first
 trigger appears, starting from the design notes above.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11 и сразу закрыто: нет триггера.
+- 2026-10-11: Заведено при сканировании заметок и сразу закрыто: нет
+  триггера.

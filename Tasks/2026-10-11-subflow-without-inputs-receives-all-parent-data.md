@@ -37,8 +37,8 @@ records the current behaviour as "Subflow data isolation is opt-in". Source:
 `Domain/WorkflowEngine/Sources/WorkflowEngine/Transition/Transitions/Subflow.swift`
 (`filteredData`, `declaredInputKeys.isEmpty` guard).
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort low (варианты расписаны, осталось выбрать), impact medium
-  (определяет контракт всех subflow и точность валидации).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort low (варианты расписаны, осталось выбрать),
+  impact medium (определяет контракт всех subflow и точность валидации).

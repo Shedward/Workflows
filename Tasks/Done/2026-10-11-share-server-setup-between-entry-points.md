@@ -27,12 +27,12 @@ A5 from the cleanup exploration
 already caused B19 (host, port and certificate path written twice). Cost of
 the change: ~10 lines; cost of leaving it: every config change is made twice.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort low (около 10 строк), impact low (экономит дубль при
-  каждой правке конфига).
-- Сделано вместе с `env-override-bypasses-oauth-redirect-uri`: общая часть
-  — `Config.load()` (`~/.workflows`, сертификаты, env). В точках входа
-  остались `Logger.enable`, storage, набор workflow и провайдеры; тестовая
-  берёт `AuthRegistry` по умолчанию из `App.init`.
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort low (около 10 строк), impact low (экономит
+  дубль при каждой правке конфига).
+- 2026-10-11: Сделано вместе с `env-override-bypasses-oauth-redirect-uri`:
+  общая часть — `Config.load()` (`~/.workflows`, сертификаты, env). В точках
+  входа остались `Logger.enable`, storage, набор workflow и провайдеры;
+  тестовая берёт `AuthRegistry` по умолчанию из `App.init`.

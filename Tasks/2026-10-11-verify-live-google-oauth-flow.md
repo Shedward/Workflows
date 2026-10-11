@@ -34,8 +34,8 @@ Sources: `Services/GoogleServices/.../GoogleOAuthCredentials.swift`
 (`redirectURI: AuthController.callbackURL(service: "google", on: config)`).
 Unblocks `2026-10-11-oauth-token-provider-through-rest-client`.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (нужны пользователь и GCP-консоль, код готов),
-  impact high (прод с Google ни разу не работал).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (нужны пользователь и GCP-консоль, код
+  готов), impact high (прод с Google ни разу не работал).

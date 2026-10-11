@@ -26,9 +26,10 @@ B36 from the 2026-10 storage round, read from code and not reproduced by
 experiment. Left out of the cleanup as minor; still true on `main` after
 PR #18 (`Domain/WorkflowEngine/Sources/WorkflowEngine/Runtime/Storage/WorkflowInstanceTable.swift`).
 
-## Changelog
+## Logs
 
-- Заведено из «Bug backlog» B36 в `.claude/notes/2026-10-04-cleanup-exploration.md`
-  при переносе беклога в `Tasks/`.
-- Оценено effort medium (таблица, семантика retention 0, тесты), impact low
-  (последствий не наблюдали).
+- 2026-10-11: Заведено из «Bug backlog» B36 в
+  `.claude/notes/2026-10-04-cleanup-exploration.md` при переносе беклога в
+  `Tasks/`.
+- 2026-10-11: Оценено effort medium (таблица, семантика retention 0, тесты),
+  impact low (последствий не наблюдали).

@@ -30,8 +30,8 @@ possible, Asking + Condition aren't mutually exclusive"). Sources:
 `Transition/Transitions/Ask.swift` (`Asking`), `Condition.swift`
 (`possibleTargets`, `routedTarget`).
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort high (новый вид перехода через граф, API и app), impact
-  medium (сахар; пар Ask → Condition пока мало).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort high (новый вид перехода через граф, API и
+  app), impact medium (сахар; пар Ask → Condition пока мало).

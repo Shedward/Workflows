@@ -20,8 +20,8 @@ dependencies and the package path in `dependencies`.
 From the cleanup side findings
 (`.claude/notes/2026-10-04-cleanup-exploration.md:358`).
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Сделано в тот же день: `Core` добавлен в `dependencies` и в продукты таргета
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Сделано: `Core` добавлен в `dependencies` и в продукты таргета
   `Apps/WorkflowServer/Package.swift`.

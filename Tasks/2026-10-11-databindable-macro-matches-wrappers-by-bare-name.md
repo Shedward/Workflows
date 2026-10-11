@@ -29,8 +29,8 @@ was not applied). Source:
 (`bindingMethods`, `extractField`, access-level computation in `expansion`).
 Not reproduced; read from the macro source.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (правка макроса и тесты), impact low
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (правка макроса и тесты), impact low
   (квалифицированные имена обёрток никто не пишет).

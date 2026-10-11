@@ -25,13 +25,16 @@ the provider-order part was left open. Candidate fix: build `Config` from the
 `ConfigReader` once, after all providers, and hand that `Config` to both the
 server and `AuthController`.
 
-## Changelog
+## Logs
 
-- Заведено из «Bug backlog» B19 в `.claude/notes/2026-10-04-cleanup-exploration.md`
-  при переносе беклога в `Tasks/`.
-- Оценено effort low (собрать `Config` один раз после всех провайдеров),
-  impact low (порт через окружение сейчас никто не переопределяет).
-- Сделано: `Config.load()` читает `HTTP_HOSTNAME`/`HTTP_PORT`/`LOG_LEVEL`
-  из окружения и `.env` один раз; Hummingbird получает адрес из того же
-  `Config`, что и `baseURL`. `ConfigReader` в `App` больше нет. Не покрыто
-  интеграционным тестом: скрипты поднимают сервер только на 8443.
+- 2026-10-11: Заведено из «Bug backlog» B19 в
+  `.claude/notes/2026-10-04-cleanup-exploration.md` при переносе беклога в
+  `Tasks/`.
+- 2026-10-11: Оценено effort low (собрать `Config` один раз после всех
+  провайдеров), impact low (порт через окружение сейчас никто не
+  переопределяет).
+- 2026-10-11: Сделано: `Config.load()` читает
+  `HTTP_HOSTNAME`/`HTTP_PORT`/`LOG_LEVEL` из окружения и `.env` один раз;
+  Hummingbird получает адрес из того же `Config`, что и `baseURL`.
+  `ConfigReader` в `App` больше нет. Не покрыто интеграционным тестом:
+  скрипты поднимают сервер только на 8443.

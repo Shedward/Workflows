@@ -31,11 +31,11 @@ client mistakes`). Whether the pre-fix path also persisted
 verified by experiment; the new `run_ask` case asserts the instance stays
 asking after a rejected answer.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort low (один тип ошибки по образцу B16 плюс тест), impact
-  medium (клиент получает 500 и текст движка на свою ошибку).
-- Сделано в тот же день: проверка ключей до resume в `answerAsk`, новый тип
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort low (один тип ошибки по образцу B16 плюс тест),
+  impact medium (клиент получает 500 и текст движка на свою ошибку).
+- 2026-10-11: Сделано: проверка ключей до resume в `answerAsk`, новый тип
   ошибки, случай в `run_ask`, строки в `API.md`. Тело переписано: ошибка
   возникала внутри исполнения перехода, а не только маппилась в 500.

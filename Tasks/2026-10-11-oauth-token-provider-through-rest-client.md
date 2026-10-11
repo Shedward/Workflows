@@ -31,8 +31,8 @@ Blocked on a verified live flow: this is the only code that talks to Google
 and it has never been exercised against the real endpoint, so a rewrite
 cannot be checked without it.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (переписать на `Request` плюс тест с fake client),
-  impact low (внутренняя консистентность).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (переписать на `Request` плюс тест с
+  fake client), impact low (внутренняя консистентность).

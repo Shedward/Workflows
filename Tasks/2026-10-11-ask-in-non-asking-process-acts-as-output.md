@@ -26,8 +26,8 @@ Side finding of the cleanup critics
 `Transition/Transitions/TransitionBody.swift` (`runBody`),
 `CollectMetadata.ask` inserting the field into `outputs`. Not reproduced.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (проверка в валидаторе плюс фикстура), impact low
-  (ошибка авторская, в проде не встречалась).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (проверка в валидаторе плюс фикстура),
+  impact low (ошибка авторская, в проде не встречалась).

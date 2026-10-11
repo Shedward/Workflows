@@ -31,8 +31,9 @@ one failure on step five currently means restarting the workflow by hand.
 Related: `2026-10-11-unify-failure-persistence-in-runner` (the failed state
 this endpoint clears).
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (runner, endpoint, кнопка в app, интеграционный
-  тест), impact high (сетевой сбой на пятом шаге сейчас = перезапуск руками).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (runner, endpoint, кнопка в app,
+  интеграционный тест), impact high (сетевой сбой на пятом шаге сейчас =
+  перезапуск руками).

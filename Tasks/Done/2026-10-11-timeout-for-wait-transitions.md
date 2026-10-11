@@ -22,7 +22,7 @@ not fail) and may be considered later as their own task.
 CLAUDE.md Known Issues lists "No timeout for wait transitions"; that line
 describes a design choice, not a gap.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11 (идея из
+- 2026-10-11: Заведено при сканировании заметок (идея из
   `.claude/notes/2026-03-29-improvements.md:65`) и сразу закрыто как won't fix.

@@ -25,8 +25,8 @@ From the multi-lens review (`.claude/notes/2026-04-07-multi-lens-review.md:86,11
 which already sees every event this needs but persists nothing. Low priority
 while there are one or two production workflows and `log show` is bearable.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort high (персист, endpoint, таймлайн в app), impact medium
-  (при одном-двух прод-воркфлоу хватает `log show`).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort high (персист, endpoint, таймлайн в app),
+  impact medium (при одном-двух прод-воркфлоу хватает `log show`).

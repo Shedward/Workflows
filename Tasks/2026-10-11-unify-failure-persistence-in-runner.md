@@ -31,8 +31,8 @@ symmetry). Sources:
 the `do { try await storage.update(failed) }` blocks. This is the area of the
 B7 (chain loop) and B10 (race) fixes, so keep the lock discipline intact.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (реструктуризация раннера с сохранением локов),
-  impact low (двойная запись безвредна, сбой storage редок).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (реструктуризация раннера с сохранением
+  локов), impact low (двойная запись безвредна, сбой storage редок).

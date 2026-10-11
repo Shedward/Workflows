@@ -27,8 +27,8 @@ Known since the graph validation note
 and the `DataField` type above it. Not reproduced; whether the engine
 actually bridges `String?` to `String` at runtime is not verified.
 
-## Changelog
+## Logs
 
-- Заведено при сканировании заметок 2026-10-11.
-- Оценено effort medium (замена сравнения, фикстура, проверить bridging
-  `String?`), impact low (ложных срабатываний не видели).
+- 2026-10-11: Заведено при сканировании заметок.
+- 2026-10-11: Оценено effort medium (замена сравнения, фикстура, проверить
+  bridging `String?`), impact low (ложных срабатываний не видели).
