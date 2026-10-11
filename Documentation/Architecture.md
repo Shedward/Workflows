@@ -1,6 +1,6 @@
 # Architecture & Code Style Guide
 
-Reference for Claude sessions working on this codebase. Covers the REST framework, API endpoint DSL, core syntax utilities, and auth system.
+Reference for Claude sessions working on this codebase. Covers the REST framework, API endpoint DSL, workflow DSL conventions, core syntax utilities, and auth system.
 
 ---
 
@@ -198,6 +198,19 @@ public final class ExampleClient: Sendable {
 ```
 
 `RestClient` already has `fetch<A: Api>` via the extension in `Core/Rest/Sources/Rest/Api/RestClient+Api.swift`.
+
+---
+
+## Workflow DSL — state conventions
+
+A workflow's `State` enum lists only the user-defined states. Two more exist on every workflow and are never declared:
+
+- `_start` — where every instance begins. `onStart { }` / `afterStart { }` build the transitions out of it; `.toStart()` leads back into it (a restart).
+- `_finish` — where an instance ends. `.toFinish()` leads into it; reaching it finishes the instance.
+
+Both are provided by `WorkflowState` (`Domain/WorkflowEngine/Sources/WorkflowEngine/Workflow/WorkflowState.swift`); declaring a case with either raw value is a mistake. The REST API lists them as values of an instance's `state` and as `fromState` / targets of transitions, but leaves them out of a workflow's `states` list (see `Documentation/API.md`).
+
+State ids are the enum's `rawValue` and go onto the wire as they are. Cyrillic identifiers are fine (`HHWorkflows` relies on it), but renaming a case changes the REST and persisted ids of that workflow; treat it as a `version` bump.
 
 ---
 
