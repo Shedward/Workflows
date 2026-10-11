@@ -729,3 +729,11 @@ models keep no `Task` fields and no cancellation checks; `ErrorPresenting` is go
 a later topic. Deliberate UX change: `showNewWorkflow` opens the picker at once and the picker shows the
 starts loading or failing, instead of staying on the list until the starts arrive. Tests: `LoadingTests`
 cover the box, the view model tests follow the new state; 35 app tests.
+
+B16 revised (user): `DescriptiveError` gained `kind: ErrorKind` (`Core`), four groups by who has to act:
+`invalidRequest`, `notFound`, `conflict`, `internal` (default). Each error declares its kind next to its
+`userDescription`; `ErrorResponseMiddleware` only maps kind → status and no longer lists types. Side
+effect: every `DescriptiveError` now gets an `ErrorResponse` body (500 by default) where unlisted ones
+used to fall through to Hummingbird's bare 500. Four groups and not three because 404 and 409 are part of
+the API contract (`API.md`, `run_finished_instance`, `run_malformed_requests`). `Ask` keeps
+`preconditionFailure` (user, 2026-10-11).

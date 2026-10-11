@@ -13,4 +13,8 @@ struct InvalidRequestBody: DescriptiveError {
     var userDescription: String {
         "Request body is not a valid \(expected): \(underlying)"
     }
+
+    var kind: ErrorKind {
+        .invalidRequest
+    }
 }

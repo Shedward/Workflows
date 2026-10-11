@@ -434,7 +434,7 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 | Instance not asking | 409 | "Workflow instance '<id>' is not waiting for an answer" |
 | Transition failed | 500 | The failure's own description |
 
-Statuses: 400 means the request itself is wrong, 404 that its target does not exist, 409 that the instance's current state does not allow it, 500 that the workflow or the server failed.
+The status comes from the error's `ErrorKind` (`Core`), which says who has to act: `invalidRequest` → 400, the caller fixes the request; `notFound` → 404, the caller checks the id; `conflict` → 409, the caller re-reads the instance state; `internal` → 500, the workflow or the server failed. Every `DescriptiveError` without an explicit kind is `internal`.
 
 Every endpoint answers an unknown workflow or instance with this shape, `GET /workflows/:id/graph` included.
 

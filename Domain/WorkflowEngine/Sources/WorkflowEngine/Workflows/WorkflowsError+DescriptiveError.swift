@@ -10,6 +10,10 @@ extension WorkflowsError.WorkflowNotFound: DescriptiveError {
     public var userDescription: String {
         "Workflow '\(workflowId)' is not registered"
     }
+
+    public var kind: ErrorKind {
+        .notFound
+    }
 }
 
 extension WorkflowsError.DuplicateWorkflowID: DescriptiveError {
@@ -22,12 +26,20 @@ extension WorkflowsError.WorkflowInstanceNotFound: DescriptiveError {
     public var userDescription: String {
         "Workflow instance '\(instanceId)' not found"
     }
+
+    public var kind: ErrorKind {
+        .notFound
+    }
 }
 
 extension WorkflowsError.TransitionProcessNotFoundForInstance: DescriptiveError {
     public var userDescription: String {
         let available = availableTransitions.map(\.processId).joined(separator: ", ")
         return "Transition '\(transitionId)' is not available for instance '\(instance)' of '\(workflow)'; available: \(available)"
+    }
+
+    public var kind: ErrorKind {
+        .conflict
     }
 }
 
@@ -40,6 +52,10 @@ extension WorkflowsError.WorkflowVersionMismatch: DescriptiveError {
 extension WorkflowsError.MissingRequiredInputs: DescriptiveError {
     public var userDescription: String {
         "Workflow '\(workflowId)' requires initial data for: \(missingKeys.sorted().joined(separator: ", "))"
+    }
+
+    public var kind: ErrorKind {
+        .invalidRequest
     }
 }
 
@@ -58,6 +74,10 @@ extension WorkflowsError.InvalidRouteTarget: DescriptiveError {
 extension WorkflowsError.InstanceNotAsking: DescriptiveError {
     public var userDescription: String {
         "Workflow instance '\(instanceId)' is not waiting for an answer"
+    }
+
+    public var kind: ErrorKind {
+        .conflict
     }
 }
 
