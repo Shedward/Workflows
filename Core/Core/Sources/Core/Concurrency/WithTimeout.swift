@@ -20,10 +20,15 @@ public enum TimeoutResult<T: Sendable>: Sendable {
 /// cancelled. This is intentional: callers (e.g. HTTP handlers) use this to
 /// bound how long they wait for a response while letting the underlying work
 /// finish on its own.
+///
+/// An infinite `seconds` means no deadline: the result is always `.completed`.
+/// `nan` is a caller's bug (`0 / 0` and the like) and traps with a message
+/// instead of silently waiting forever.
 public func withTimeout<T: Sendable>(
     seconds: Double,
     operation: @Sendable @escaping () async throws -> T
 ) async -> TimeoutResult<Result<T, any Error>> {
+    precondition(!seconds.isNaN, "withTimeout(seconds:) got nan; pass .infinity for no deadline")
     let state = TimeoutContinuationState<T>()
 
     Task {
@@ -35,9 +40,11 @@ public func withTimeout<T: Sendable>(
         }
     }
 
-    Task {
-        try? await Task.sleep(for: .seconds(seconds))
-        await state.resume(with: .timedOut)
+    if seconds.isFinite {
+        Task {
+            try? await Task.sleep(for: .seconds(seconds))
+            await state.resume(with: .timedOut)
+        }
     }
 
     return await withCheckedContinuation { continuation in

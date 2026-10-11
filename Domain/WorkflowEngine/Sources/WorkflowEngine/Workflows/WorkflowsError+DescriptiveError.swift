@@ -81,6 +81,16 @@ extension WorkflowsError.InstanceNotAsking: DescriptiveError {
     }
 }
 
+extension WorkflowsError.MissingAskAnswers: DescriptiveError {
+    public var userDescription: String {
+        "Workflow instance '\(instanceId)' expects an answer for: \(missingKeys.sorted().joined(separator: ", "))"
+    }
+
+    public var kind: ErrorKind {
+        .invalidRequest
+    }
+}
+
 extension WorkflowsError.InputBindingFailed: DescriptiveError {
     public var userDescription: String {
         switch reason {

@@ -25,23 +25,15 @@ enum App {
     private static func runServer() async throws {
         Logger.enable(.workflow)
 
-        let dependencies = DependenciesContainer()
-
-        let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
-
-        let authRegistry = AuthRegistry()
-
-        let storage = InMemoryWorkflowStorage()
-
-        let config = Config(certificatesDirectory: workflowsConfigDir.appending(path: "certs"))
+        let config = try await Config.load()
 
         let plugins = Plugins {
             WorkflowTransitionUpdatesPlugin()
         }
 
         let workflows = try await Workflows(
-            storage: storage,
-            dependencies: dependencies,
+            storage: InMemoryWorkflowStorage(),
+            dependencies: DependenciesContainer(),
             validation: .strict,
             plugins: plugins
         ) {
@@ -50,7 +42,6 @@ enum App {
 
         let app = WorkflowServer.App(
             workflows: workflows,
-            authRegistry: authRegistry,
             config: config,
             plugins: plugins
         )

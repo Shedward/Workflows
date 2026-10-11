@@ -36,7 +36,7 @@ List all registered workflow definitions.
 [
   {
     "id": "SimpleWorkflow",
-    "stateId": ["a", "b"],
+    "states": ["a", "b"],
     "transitions": [
       {
         "processId": "StartA",
@@ -52,7 +52,7 @@ List all registered workflow definitions.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string | Workflow type identifier |
-| `stateId` | [string] | User-defined states (excludes implicit `_start` and `_finish`) |
+| `states` | [string] | User-defined states (excludes implicit `_start` and `_finish`) |
 | `transitions` | [Transition] | All transitions defined for this workflow |
 
 ---
@@ -334,7 +334,7 @@ The `state` field is one of:
 
 **Waiting for subflow:**
 ```json
-{ "waitingWorkflow": { "workflowId": "child-instance-uuid" } }
+{ "waitingWorkflow": { "instanceId": "child-instance-uuid" } }
 ```
 
 **Asking for user input:**
@@ -428,6 +428,7 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 |-------|-------------|-----------------|
 | Request body cannot be decoded | 400 | "Request body is not a valid <type>: ..." |
 | Required initial data missing | 400 | "Workflow '<id>' requires initial data for: <keys>" |
+| Answer lacks an expected field | 400 | "Workflow instance '<id>' expects an answer for: <keys>" |
 | Workflow not found | 404 | "Workflow '<id>' is not registered" |
 | Instance not found | 404 | "Workflow instance '<id>' not found" |
 | Transition not available from state | 409 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
@@ -480,6 +481,7 @@ Ask transitions suspend the instance waiting for user-provided data:
 - The ask's `process()` method runs with the provided data, producing outputs.
 - `@Ask` fields are automatically persisted as outputs to the workflow data.
 - Answering a non-asking instance returns 409 Conflict.
+- An answer missing any of `expectedFields` returns 400 Bad Request and the instance stays asking; nothing is executed.
 
 ### Finished Instances
 

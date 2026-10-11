@@ -1,4 +1,3 @@
-import Configuration
 import Hummingbird
 import HummingbirdTLS
 import Logging
@@ -27,43 +26,26 @@ public struct App {
     }
 
     public func main() async throws {
-        let reader = try await ConfigReader(providers: [
-            EnvironmentVariablesProvider(),
-            EnvironmentVariablesProvider(environmentFilePath: ".env", allowMissing: true),
-            InMemoryProvider(values: [
-                "http.hostname": ConfigValue(stringLiteral: config.hostname),
-                "http.port": ConfigValue(integerLiteral: config.port),
-                "http.serverName": "workflow-server"
-            ])
-        ])
-
         let pluginRoutes = await plugins
             .all(PluginController.self)
             .map(\.endpoints)
 
-        let app = try buildApplication(reader: reader, pluginRoutes: pluginRoutes)
+        let app = try buildApplication(pluginRoutes: pluginRoutes)
         try await workflows.run()
         try await app.runService()
     }
 
-    func buildApplication(
-        reader: ConfigReader,
-        pluginRoutes: [RouteCollection<AppRequestContext>]
-    ) throws -> some ApplicationProtocol {
-        let logger = {
-            var logger = Logger(label: "workflow-server")
-            logger.logLevel = reader.string(forKey: "log.level", as: Logger.Level.self, default: .info)
-            return logger
-        }()
-
-        let router = buildRouter(pluginRoutes: pluginRoutes)
-
-        let tls = try buildTls()
+    func buildApplication(pluginRoutes: [RouteCollection<AppRequestContext>]) throws -> some ApplicationProtocol {
+        var logger = Logger(label: "workflow-server")
+        logger.logLevel = config.logLevel
 
         return Application(
-            router: router,
-            server: try .tls(configuration: tls),
-            configuration: ApplicationConfiguration(reader: reader.scoped(to: "http")),
+            router: buildRouter(pluginRoutes: pluginRoutes),
+            server: try .tls(configuration: buildTls()),
+            configuration: ApplicationConfiguration(
+                address: .hostname(config.hostname, port: config.port),
+                serverName: "workflow-server"
+            ),
             logger: logger
         )
     }

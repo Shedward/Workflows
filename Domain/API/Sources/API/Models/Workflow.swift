@@ -9,12 +9,12 @@ import Rest
 
 public struct Workflow: JSONBody, Identifiable {
     public let id: String
-    public let stateId: [String]
+    public let states: [String]
     public let transitions: [Transition]
 
-    public init(id: String, stateId: [String], transitions: [Transition]) {
+    public init(id: String, states: [String], transitions: [Transition]) {
         self.id = id
-        self.stateId = stateId
+        self.states = states
         self.transitions = transitions
     }
 }

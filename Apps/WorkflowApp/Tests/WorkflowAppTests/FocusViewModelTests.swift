@@ -38,6 +38,7 @@ struct FocusViewModelTests {
         server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Approve")]) }
         server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Reject")]) }
         focus.setActiveWorkflow(.Mock.simple(id: "w"))
+        await eventually("transitions are loaded") { focus.transitionVM.transitions.value?.map(\.processId) == ["Approve"] }
 
         focus.enter(.transition)
 

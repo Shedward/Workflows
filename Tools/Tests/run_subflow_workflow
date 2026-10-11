@@ -11,7 +11,7 @@ main() {
   take_transition "SimpleWorkflow"
 
   local subflow_id
-  subflow_id="$(response_field '.transitionState.state.waitingWorkflow.workflowId')"
+  subflow_id="$(response_field '.transitionState.state.waitingWorkflow.instanceId')"
 
   assert_state "beforeSubflow"
   take_transition "StartA" "$subflow_id"

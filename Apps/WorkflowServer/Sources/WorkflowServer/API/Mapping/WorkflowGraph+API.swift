@@ -34,7 +34,7 @@ extension API.WorkflowGraph.Transition {
             from: model.from,
             targets: model.targets,
             processId: model.processId,
-            trigger: model.trigger.rawValue,
+            trigger: model.trigger.apiValue,
             metadata: API.WorkflowGraph.TransitionMetadata(model: model.metadata),
             subflowId: model.subflowId
         )
