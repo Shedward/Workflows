@@ -1,6 +1,6 @@
 ---
 type: task
-status: open
+status: done
 effort: low
 impact: low
 ---
@@ -32,3 +32,7 @@ the change: ~10 lines; cost of leaving it: every config change is made twice.
 - Заведено при сканировании заметок 2026-10-11.
 - Оценено effort low (около 10 строк), impact low (экономит дубль при
   каждой правке конфига).
+- Сделано вместе с `env-override-bypasses-oauth-redirect-uri`: общая часть
+  — `Config.load()` (`~/.workflows`, сертификаты, env). В точках входа
+  остались `Logger.enable`, storage, набор workflow и провайдеры; тестовая
+  берёт `AuthRegistry` по умолчанию из `App.init`.

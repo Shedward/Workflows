@@ -26,12 +26,11 @@ enum App {
     private static func runServer() async throws {
         Logger.enable(.workflow)
 
-        let workflowsConfigDir = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".workflows")
-        let config = Config(certificatesDirectory: workflowsConfigDir.appending(path: "certs"))
+        let config = try await Config.load()
 
         let authRegistry = AuthRegistry()
 
-        let oauthClientPath = workflowsConfigDir
+        let oauthClientPath = config.workflowsDirectory
             .appending(path: "google_cloud")
             .appending(path: "oauth_client.json")
         let googleCredentials = try GoogleOAuthCredentials.load(from: oauthClientPath)
@@ -52,7 +51,7 @@ enum App {
         ])
 
         let storage = try await JSONFileWorkflowStorage(
-            directory: workflowsConfigDir.appending(path: "instances")
+            directory: config.workflowsDirectory.appending(path: "instances")
         )
 
         let workflows = try await Workflows(
