@@ -178,6 +178,47 @@ struct TransitionViewModelTests {
         #expect(server.requests == ["GET /workflowInstances/w/transitions", "POST /workflowInstances/w/takeTransition"])
     }
 
+    private func activateFailed(_ instanceId: String) async {
+        server.on("GET /workflowInstances/\(instanceId)/transitions") {
+            ListBody(items: [API.Transition.Mock.simple(processId: "Upload")])
+        }
+        focus.setActiveWorkflow(.Mock.failed(id: instanceId, error: "Network is unreachable"))
+        await eventually("transitions are loaded") { loadedProcessIds == ["Upload"] }
+    }
+
+    @Test func retryUpdatesTheWorkflowAndClearsTheFailure() async {
+        await activateFailed("w")
+        server.on("POST /workflowInstances/w/retry") { WorkflowInstance.Mock.simple(id: "w", state: "uploaded") }
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Publish")]) }
+
+        viewModel.retry()
+
+        await eventually("transition is done") { !viewModel.taking.isRunning && focus.activeWorkflow?.state == "uploaded" }
+        #expect(viewModel.failure() == nil)
+        await eventually("next transitions are loaded") { loadedProcessIds == ["Publish"] }
+        #expect(viewModel.taking.error == nil)
+    }
+
+    @Test func retryThatFailsAgainKeepsTheFailureAndShowsTheNewError() async {
+        await activateFailed("w")
+        server.on("POST /workflowInstances/w/retry") { throw TestError() }
+
+        viewModel.retry()
+
+        await eventually("error is shown") { viewModel.taking.error?.localizedDescription == TestError.message }
+        await eventually("transition is done") { !viewModel.taking.isRunning }
+        #expect(viewModel.failure()?.userDescription == "Network is unreachable")
+    }
+
+    @Test func retryWithoutAFailureDoesNothing() async {
+        await activate("w", with: ["Approve"])
+
+        viewModel.retry()
+
+        await settle()
+        #expect(server.requests == ["GET /workflowInstances/w/transitions"])
+    }
+
     @Test func clearingTheActiveWorkflowDropsAnInFlightRefreshAndTheError() async {
         server.on("GET /workflowInstances/w/transitions") { throw TestError() }
         focus.setActiveWorkflow(.Mock.simple(id: "w"))

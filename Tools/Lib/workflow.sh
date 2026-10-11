@@ -32,6 +32,17 @@ try_take_transition() {
     "{\"transitionProcessId\":\"$transition\"}" >/dev/null
 }
 
+retry() {
+  local instance="${1:-$INSTANCE_ID}"
+  LAST_RESPONSE="$(request POST "/workflowInstances/$instance/retry")"
+}
+
+# Like retry but propagates HTTP errors (for use with assert_fails)
+try_retry() {
+  local instance="${1:-$INSTANCE_ID}"
+  request POST "/workflowInstances/$instance/retry" >/dev/null
+}
+
 assert_state() {
   local expected="${1:?expected state required}"
   local instance="${2:-$INSTANCE_ID}"

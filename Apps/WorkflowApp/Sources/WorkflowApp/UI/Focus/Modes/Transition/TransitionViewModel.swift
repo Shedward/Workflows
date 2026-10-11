@@ -40,4 +40,21 @@ final class TransitionViewModel {
             focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
         }
     }
+
+    func failure() -> ErrorDescription? {
+        guard case .failed(let error) = focus.activeWorkflow?.transitionState?.state else {
+            return nil
+        }
+        return error
+    }
+
+    func retry() {
+        guard let workflow = focus.activeWorkflow, failure() != nil else {
+            return
+        }
+        taking.run { [self] in
+            let updated = try await focus.service.retryTransition(instanceId: workflow.id)
+            focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
+        }
+    }
 }

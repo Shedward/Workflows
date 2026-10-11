@@ -28,5 +28,18 @@ extension WorkflowInstance {
                 finishedAt: finished ? Date() : nil
             )
         }
+
+        static func failed(id: String = "failed-mock", error: String = "Network is unreachable") -> WorkflowInstance {
+            WorkflowInstance(
+                id: id,
+                workflowId: "Workflow",
+                state: "working",
+                transitionState: TransitionState(
+                    id: TransitionID(workflow: "Workflow", processId: "Upload", from: "working"),
+                    state: .failed(error: ErrorDescription(userDescription: error, debugDescription: error))
+                ),
+                data: WorkflowData()
+            )
+        }
     }
 }

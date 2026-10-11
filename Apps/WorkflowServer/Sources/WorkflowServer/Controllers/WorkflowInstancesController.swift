@@ -23,6 +23,7 @@ struct WorkflowInstancesController: Controller {
             .on(StartWorkflow.self, use: startWorkflow)
             .on(GetWorkflowInstance.self, use: getInstance)
             .on(TakeTransition.self, use: takeTransition)
+            .on(RetryTransition.self, use: retryTransition)
             .on(AvailableTransitions.self, use: availableTransitions)
             .on(AnswerAsk.self, use: answerAsk)
     }
@@ -57,6 +58,14 @@ struct WorkflowInstancesController: Controller {
 
         return try await instanceResponse(for: instanceId, request: request) { [workflows] in
             try await workflows.takeTransition(processId: transitionProcessId, on: instanceId)
+        }
+    }
+
+    private func retryTransition(request: Request, body: EmptyBody, context: Context) async throws -> API.WorkflowInstance {
+        let instanceId = try context.parameters.requireDecoded("id")
+
+        return try await instanceResponse(for: instanceId, request: request) { [workflows] in
+            try await workflows.retry(instanceId)
         }
     }
 

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+main() {
+  # FailOnceAction fails the first time it sees an attemptKey, so a fresh key
+  # per run makes the automatic step fail once and pass on retry.
+  local attempt_key="retry-$$-$RANDOM"
+  start_workflow_with_data "FlakyWorkflow" "$(jq -n --arg k "$attempt_key" '{attemptKey: ($k | tojson)}')"
+
+  # The automatic chain stopped on the failure; nothing else can move it
+  assert_state "_start"
+  assert_transition_failed
+
+  # Retry runs the same transition with the same data and continues the chain
+  retry
+  assert_state "recovered"
+  assert_data "attemptKey" "\"$attempt_key\""
+
+  # Nothing to retry once the transition succeeded
+  assert_fails try_retry
+
+  take_transition "GoNextStep"
+  assert_finished
+
+  # A failed manual transition is retried the same way; FailAction fails again
+  start_workflow "FailingWorkflow"
+  take_transition "GoNextStep"
+  assert_fails try_take_transition "FailAction"
+  assert_transition_failed
+  assert_fails try_retry
+  assert_state "shouldFail"
+  assert_transition_failed
+
+  # Retry of an unknown instance is a 404, not a crash
+  assert_fails try_retry "no-such-instance"
+
+  echo "Finished Successfully"
+}
+
+main "$@"

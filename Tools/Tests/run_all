@@ -21,6 +21,7 @@ readonly TEST_SCRIPTS=(
   run_malformed_requests
   run_finished_instance
   run_failed_transition
+  run_retry_transition
   run_subflow_lifecycle
   run_http_edge_cases
   run_slow_workflow

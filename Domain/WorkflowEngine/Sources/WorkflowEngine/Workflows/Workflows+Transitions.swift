@@ -19,6 +19,11 @@ extension Workflows {
     }
 
     @discardableResult
+    public func retry(_ instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
+        try await runner.retry(instanceId: instanceId)
+    }
+
+    @discardableResult
     public func answer(to instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
         try await runner.answerAsk(instanceId: instanceId, data: data)
     }

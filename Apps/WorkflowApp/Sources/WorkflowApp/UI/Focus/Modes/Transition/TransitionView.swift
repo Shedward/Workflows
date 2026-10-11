@@ -14,7 +14,9 @@ struct TransitionView: View {
 
     var body: some View {
         Group {
-            if let error = viewModel.taking.error {
+            if let failure = viewModel.failure() {
+                failedRow(message: viewModel.taking.error?.localizedDescription ?? failure.userDescription)
+            } else if let error = viewModel.taking.error {
                 DrawerMessage(text: error.localizedDescription)
             } else {
                 LoadingView(viewModel.transitions) { transitions in
@@ -58,6 +60,28 @@ struct TransitionView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .transition(.opacity.combined(with: .scale))
+    }
+
+    private func failedRow(message: String) -> some View {
+        Card {
+            VStack(alignment: .leading, spacing: theme.spacing.m) {
+                Text(message)
+                    .themeFont(\.body)
+                    .themeColor(\.content.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button {
+                    viewModel.retry()
+                } label: {
+                    if viewModel.taking.isRunning {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Text("Retry")
+                    }
+                }
+                .disabled(viewModel.taking.isRunning)
+            }
+        }
+        .padding(theme.spacing.xl)
     }
 
     private func idleRow(for transition: API.Transition) -> some View {
