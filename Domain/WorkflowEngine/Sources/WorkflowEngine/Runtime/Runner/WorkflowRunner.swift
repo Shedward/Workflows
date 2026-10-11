@@ -196,8 +196,12 @@ actor WorkflowRunner {
     @discardableResult
     func answerAsk(instanceId: WorkflowInstanceID, data: WorkflowData) async throws -> WorkflowInstance {
         let snapshot = try await loadInstance(instanceId)
-        guard case .waiting(.asking) = snapshot.transitionState?.state else {
+        guard case .waiting(.asking(let asking)) = snapshot.transitionState?.state else {
             throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)
+        }
+        let missingKeys = Set(asking.expectedFields.map(\.key)).subtracting(data.data.keys)
+        guard missingKeys.isEmpty else {
+            throw WorkflowsError.MissingAskAnswers(instanceId: instanceId, missingKeys: missingKeys)
         }
         guard let instance = try await resumeTransition(on: instanceId, reason: .answered(data: data)) else {
             throw WorkflowsError.InstanceNotAsking(instanceId: instanceId)

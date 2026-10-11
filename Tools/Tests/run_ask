@@ -60,6 +60,28 @@ main() {
   # Instance is not asking — should fail
   assert_fails try_answer_ask '{"name":"\"Alice\""}'
 
+  # ── Error: answer without an expected field ───────────────────────────────
+  take_transition "AskName"
+  assert_asking
+
+  local raw status body
+  raw="$(request_raw POST "/workflowInstances/$INSTANCE_ID/answer" '{"data":{"data":{}}}')"
+  status="$(head -n1 <<<"$raw")"
+  body="$(tail -n +2 <<<"$raw")"
+  if [[ "$status" != "400" ]]; then
+    echo "Expected 400 for an answer without 'name', got $status: $body" >&2
+    exit 1
+  fi
+  if ! grep -q "expects an answer for: name" <<<"$body"; then
+    echo "Expected the missing field in userDescription, got: $body" >&2
+    exit 1
+  fi
+
+  # The rejected answer leaves the instance asking, not failed
+  assert_asking
+  answer_ask '{"name":"\"Alice\""}'
+  assert_state "done"
+
   echo "Finished Successfully"
 }
 

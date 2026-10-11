@@ -60,6 +60,11 @@ public enum WorkflowsError {
         public let instanceId: WorkflowInstanceID
     }
 
+    public struct MissingAskAnswers: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let missingKeys: Set<String>
+    }
+
     public struct AutomaticLoopDetected: Swift.Error {
         public let instanceId: WorkflowInstanceID
         public let state: StateID
