@@ -8,49 +8,41 @@ import SwiftUI
 
 @Observable
 @MainActor
-final class SwitchViewModel: ErrorPresenting {
+final class SwitchViewModel {
     enum State {
         case activeWorkflows
         case newWorkflow
     }
 
+    let activeWorkflows = Loading<[WorkflowInstance]>()
+    let newWorkflows = Loading<[WorkflowStart]>()
     private(set) var state: State = .activeWorkflows
-    private(set) var activeWorkflows: [WorkflowInstance] = []
-    private(set) var newWorkflows: [WorkflowStart] = []
     private(set) var isStarting = false
-    var error: String?
+    private(set) var startError: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
-    @ObservationIgnored private var pickerTask: Task<Void, Never>?
 
     init(focus: FocusViewModel) {
         self.focus = focus
     }
 
     func refresh() {
-        refreshTask = run(cancelling: refreshTask) { [self] in
-            let result = try await focus.service.getWorkflowInstances()
-            try Task.checkCancellation()
-            activeWorkflows = result
-            error = nil
+        activeWorkflows.load { [service = focus.service] in
+            try await service.getWorkflowInstances()
         }
     }
 
     func showNewWorkflow() {
-        pickerTask = run(cancelling: pickerTask) { [self] in
-            let result = try await focus.service.getStartingWorkflows()
-            try Task.checkCancellation()
-            newWorkflows = result
-            error = nil
-            withAnimation(.snappy) {
-                state = .newWorkflow
-            }
+        withAnimation(.snappy) {
+            state = .newWorkflow
+        }
+        newWorkflows.load { [service = focus.service] in
+            try await service.getStartingWorkflows()
         }
     }
 
     func showActiveWorkflows() {
-        error = nil
+        startError = nil
         withAnimation(.snappy) {
             state = .activeWorkflows
         }
@@ -69,13 +61,13 @@ final class SwitchViewModel: ErrorPresenting {
         Task {
             do {
                 let instance = try await focus.service.startWorkflow(start)
-                error = nil
+                startError = nil
                 withAnimation(.snappy) {
                     state = .activeWorkflows
                 }
                 activate(instance)
             } catch {
-                self.error = error.localizedDescription
+                startError = error.localizedDescription
             }
             isStarting = false
         }

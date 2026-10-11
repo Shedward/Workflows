@@ -14,6 +14,10 @@ struct TransitionViewModelTests {
         focus.transitionVM
     }
 
+    var loadedProcessIds: [String]? {
+        viewModel.transitions.value?.map(\.processId)
+    }
+
     init() {
         focus = FocusViewModel(service: WorkflowsService(rest: server))
     }
@@ -23,7 +27,7 @@ struct TransitionViewModelTests {
             ListBody(items: processIds.map { API.Transition.Mock.simple(processId: $0) })
         }
         viewModel.refresh()
-        await eventually("transitions are loaded") { viewModel.transitions.map(\.processId) == processIds }
+        await eventually("transitions are loaded") { loadedProcessIds == processIds }
     }
 
     @Test func refreshLoadsTransitionsOfTheActiveWorkflow() async {
@@ -31,7 +35,6 @@ struct TransitionViewModelTests {
 
         await loadTransitions(["Approve", "Reject"], of: "w")
 
-        #expect(viewModel.error == nil)
         #expect(server.requests == ["GET /workflowInstances/w/transitions"])
     }
 
@@ -42,20 +45,19 @@ struct TransitionViewModelTests {
 
         viewModel.refresh()
 
-        #expect(viewModel.transitions.isEmpty)
+        #expect(loadedProcessIds == nil)
         await settle()
         #expect(server.requests.count == 1)
     }
 
-    @Test func failedRefreshShowsTheErrorAndKeepsTransitions() async {
+    @Test func failedRefreshShowsTheError() async {
         focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Approve"], of: "w")
         server.on("GET /workflowInstances/w/transitions") { throw TestError() }
 
         viewModel.refresh()
 
-        await eventually("error is shown") { viewModel.error == TestError.message }
-        #expect(viewModel.transitions.map(\.processId) == ["Approve"])
+        await eventually("error is shown") { viewModel.transitions.error?.localizedDescription == TestError.message }
     }
 
     @Test func staleRefreshDoesNotOverwriteANewerOne() async {
@@ -70,12 +72,12 @@ struct TransitionViewModelTests {
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
         viewModel.refresh()
-        await eventually("newer response is shown") { viewModel.transitions.map(\.processId) == ["Fresh"] }
+        await eventually("newer response is shown") { loadedProcessIds == ["Fresh"] }
         staleResponse.open()
         await eventually("stale request is answered") { server.answered == 2 }
         await settle()
 
-        #expect(viewModel.transitions.map(\.processId) == ["Fresh"])
+        #expect(loadedProcessIds == ["Fresh"])
     }
 
     @Test func takeMarksTheTransitionRunningThenUpdatesTheWorkflowAndItsTransitions() async {
@@ -95,8 +97,8 @@ struct TransitionViewModelTests {
         takeResponse.open()
         await eventually("transition is done") { viewModel.runningTransition == nil }
         #expect(focus.activeWorkflow?.state == "approved")
-        await eventually("next transitions are loaded") { viewModel.transitions.map(\.processId) == ["Publish"] }
-        #expect(viewModel.error == nil)
+        await eventually("next transitions are loaded") { loadedProcessIds == ["Publish"] }
+        #expect(viewModel.takeError == nil)
     }
 
     @Test func takeThatFinishesTheWorkflowClearsTheActiveWorkflow() async {
@@ -108,8 +110,8 @@ struct TransitionViewModelTests {
 
         await eventually("workflow is no longer active") { focus.activeWorkflow == nil }
         await eventually("transition is done") { viewModel.runningTransition == nil }
-        #expect(viewModel.transitions.isEmpty)
-        #expect(viewModel.error == nil)
+        #expect(loadedProcessIds == nil)
+        #expect(viewModel.takeError == nil)
     }
 
     @Test func failedTakeShowsTheErrorAndKeepsTheWorkflow() async {
@@ -119,10 +121,10 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.error == TestError.message }
+        await eventually("error is shown") { viewModel.takeError == TestError.message }
         await eventually("transition is done") { viewModel.runningTransition == nil }
         #expect(focus.activeWorkflow?.state == "working")
-        #expect(viewModel.transitions.map(\.processId) == ["Approve"])
+        #expect(loadedProcessIds == ["Approve"])
     }
 
     @Test func aRefusedTakeShowsTheServersExplanation() async {
@@ -134,7 +136,7 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.error == "Transition 'Approve' is not available" }
+        await eventually("error is shown") { viewModel.takeError == "Transition 'Approve' is not available" }
     }
 
     @Test func aRefusedTakeWithoutAnErrorBodyShowsTheStatus() async {
@@ -145,7 +147,7 @@ struct TransitionViewModelTests {
 
         viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.error == "HTTP 502: Wrong status code: 502" }
+        await eventually("error is shown") { viewModel.takeError == "HTTP 502: Wrong status code: 502" }
     }
 
     @Test func takeIsIgnoredWhileAnotherTransitionIsRunning() async {
@@ -189,7 +191,7 @@ struct TransitionViewModelTests {
         focus.setActiveWorkflow(.Mock.simple(id: "w"))
         server.on("GET /workflowInstances/w/transitions") { throw TestError() }
         viewModel.refresh()
-        await eventually("error is shown") { viewModel.error == TestError.message }
+        await eventually("error is shown") { viewModel.transitions.error != nil }
         let staleResponse = Gate()
         server.on("GET /workflowInstances/w/transitions") {
             await staleResponse.wait()
@@ -204,7 +206,7 @@ struct TransitionViewModelTests {
         await eventually("stale request is answered") { server.answered == 2 }
         await settle()
 
-        #expect(viewModel.transitions.isEmpty)
-        #expect(viewModel.error == nil)
+        #expect(loadedProcessIds == nil)
+        #expect(viewModel.transitions.error == nil)
     }
 }

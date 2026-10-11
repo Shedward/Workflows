@@ -13,18 +13,22 @@ struct TransitionView: View {
 
     var body: some View {
         Group {
-            if let error = viewModel.error {
+            if let error = viewModel.takeError {
                 DrawerMessage(text: error)
-            } else if viewModel.transitions.isEmpty {
-                DrawerMessage(text: "No available transitions")
             } else {
-                ScrollView {
-                    ForEach(viewModel.transitions, id: \.processId) { transition in
-                        row(for: transition)
+                LoadingView(viewModel.transitions) { transitions in
+                    if transitions.isEmpty {
+                        DrawerMessage(text: "No available transitions")
+                    } else {
+                        ScrollView {
+                            ForEach(transitions, id: \.processId) { transition in
+                                row(for: transition)
+                            }
+                        }
+                        .frame(maxHeight: 400)
+                        .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
                     }
                 }
-                .frame(maxHeight: 400)
-                .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
             }
         }
         .task(id: viewModel.focus.activeWorkflow?.id) {

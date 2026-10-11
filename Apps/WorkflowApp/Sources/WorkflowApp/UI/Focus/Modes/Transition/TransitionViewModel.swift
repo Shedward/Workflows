@@ -8,13 +8,12 @@ import SwiftUI
 
 @Observable
 @MainActor
-final class TransitionViewModel: ErrorPresenting {
-    private(set) var transitions: [API.Transition] = []
+final class TransitionViewModel {
+    let transitions = Loading<[API.Transition]>()
     private(set) var runningTransition: API.Transition?
-    var error: String?
+    private(set) var takeError: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
 
     init(focus: FocusViewModel) {
         self.focus = focus
@@ -22,16 +21,11 @@ final class TransitionViewModel: ErrorPresenting {
 
     func refresh() {
         guard let workflow = focus.activeWorkflow else {
-            refreshTask?.cancel()
-            transitions = []
-            error = nil
+            transitions.reset()
             return
         }
-        refreshTask = run(cancelling: refreshTask) { [self] in
-            let result = try await focus.service.getTransitions(instanceId: workflow.id)
-            try Task.checkCancellation()
-            transitions = result
-            error = nil
+        transitions.load { [service = focus.service] in
+            try await service.getTransitions(instanceId: workflow.id)
         }
     }
 
@@ -53,10 +47,10 @@ final class TransitionViewModel: ErrorPresenting {
                 } else {
                     focus.setActiveWorkflow(nil)
                 }
-                error = nil
+                takeError = nil
                 refresh()
             } catch {
-                self.error = error.localizedDescription
+                takeError = error.localizedDescription
             }
             withAnimation(.snappy) {
                 runningTransition = nil

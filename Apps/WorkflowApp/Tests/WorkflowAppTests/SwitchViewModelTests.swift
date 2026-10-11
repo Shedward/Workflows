@@ -22,33 +22,27 @@ struct SwitchViewModelTests {
 
         viewModel.refresh()
 
-        await eventually("running workflows are loaded") { viewModel.activeWorkflows.map(\.id) == ["a", "b"] }
-        #expect(viewModel.error == nil)
+        await eventually("running workflows are loaded") { viewModel.activeWorkflows.value?.map(\.id) == ["a", "b"] }
         #expect(viewModel.state == .activeWorkflows)
     }
 
-    @Test func failedRefreshShowsTheErrorAndKeepsTheList() async {
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a")]) }
+    @Test func failedRefreshShowsTheError() async {
         server.on("GET /workflowInstances") { throw TestError() }
 
         viewModel.refresh()
-        await eventually("running workflows are loaded") { viewModel.activeWorkflows.map(\.id) == ["a"] }
-        viewModel.refresh()
 
-        await eventually("error is shown") { viewModel.error == TestError.message }
-        #expect(viewModel.activeWorkflows.map(\.id) == ["a"])
+        await eventually("error is shown") { viewModel.activeWorkflows.error?.localizedDescription == TestError.message }
     }
 
-    @Test func successfulRefreshClearsTheError() async {
+    @Test func successfulRefreshReplacesTheError() async {
         server.on("GET /workflowInstances") { throw TestError() }
         server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a")]) }
 
         viewModel.refresh()
-        await eventually("error is shown") { viewModel.error == TestError.message }
+        await eventually("error is shown") { viewModel.activeWorkflows.error != nil }
         viewModel.refresh()
 
-        await eventually("error is cleared") { viewModel.error == nil }
-        #expect(viewModel.activeWorkflows.map(\.id) == ["a"])
+        await eventually("workflows are shown") { viewModel.activeWorkflows.value?.map(\.id) == ["a"] }
     }
 
     @Test func staleRefreshDoesNotOverwriteANewerOne() async {
@@ -62,39 +56,35 @@ struct SwitchViewModelTests {
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
         viewModel.refresh()
-        await eventually("newer response is shown") { viewModel.activeWorkflows.map(\.id) == ["fresh"] }
+        await eventually("newer response is shown") { viewModel.activeWorkflows.value?.map(\.id) == ["fresh"] }
         staleResponse.open()
         await eventually("stale request is answered") { server.answered == 2 }
         await settle()
 
-        #expect(viewModel.activeWorkflows.map(\.id) == ["fresh"])
-        #expect(viewModel.error == nil)
+        #expect(viewModel.activeWorkflows.value?.map(\.id) == ["fresh"])
     }
 
-    @Test func showNewWorkflowLoadsStartsAndOpensThePicker() async {
+    @Test func showNewWorkflowOpensThePickerAndLoadsStarts() async {
         server.on("GET /startingWorkflows") { ListBody(items: [WorkflowStart.Mock.simple(id: "s1", title: "Review PR")]) }
 
         viewModel.showNewWorkflow()
 
-        await eventually("picker is shown") { viewModel.state == .newWorkflow }
-        #expect(viewModel.newWorkflows.map(\.id) == ["s1"])
-        #expect(viewModel.error == nil)
+        #expect(viewModel.state == .newWorkflow)
+        await eventually("starts are loaded") { viewModel.newWorkflows.value?.map(\.id) == ["s1"] }
     }
 
-    @Test func failedShowNewWorkflowShowsTheErrorAndStaysOnTheList() async {
+    @Test func failedShowNewWorkflowShowsTheErrorInThePicker() async {
         server.on("GET /startingWorkflows") { throw TestError() }
 
         viewModel.showNewWorkflow()
 
-        await eventually("error is shown") { viewModel.error == TestError.message }
-        #expect(viewModel.state == .activeWorkflows)
-        #expect(viewModel.newWorkflows.isEmpty)
+        await eventually("error is shown") { viewModel.newWorkflows.error?.localizedDescription == TestError.message }
+        #expect(viewModel.state == .newWorkflow)
     }
 
-    @Test func showActiveWorkflowsLeavesThePicker() async {
+    @Test func showActiveWorkflowsLeavesThePicker() {
         server.on("GET /startingWorkflows") { ListBody(items: [WorkflowStart]()) }
         viewModel.showNewWorkflow()
-        await eventually("picker is shown") { viewModel.state == .newWorkflow }
 
         viewModel.showActiveWorkflows()
 
@@ -116,14 +106,13 @@ struct SwitchViewModelTests {
         server.on("POST /workflowInstances") { WorkflowInstance.Mock.simple(id: "created") }
         focus.enter(.switching)
         viewModel.showNewWorkflow()
-        await eventually("picker is shown") { viewModel.state == .newWorkflow }
 
         viewModel.start(start)
 
         await eventually("created instance is active") { focus.activeWorkflow?.id == "created" }
         #expect(viewModel.state == .activeWorkflows)
         #expect(focus.currentMode == .initial)
-        #expect(viewModel.error == nil)
+        #expect(viewModel.startError == nil)
     }
 
     @Test func failedStartShowsTheErrorAndStaysInThePicker() async {
@@ -132,11 +121,10 @@ struct SwitchViewModelTests {
         server.on("POST /workflowInstances") { throw TestError() }
         focus.enter(.switching)
         viewModel.showNewWorkflow()
-        await eventually("picker is shown") { viewModel.state == .newWorkflow }
 
         viewModel.start(start)
 
-        await eventually("error is shown") { viewModel.error == TestError.message }
+        await eventually("error is shown") { viewModel.startError == TestError.message }
         #expect(viewModel.state == .newWorkflow)
         #expect(focus.activeWorkflow == nil)
         #expect(focus.currentMode == .switching)
@@ -153,26 +141,26 @@ struct SwitchViewModelTests {
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
         viewModel.refresh()
-        await eventually("newer response is shown") { viewModel.activeWorkflows.map(\.id) == ["fresh"] }
+        await eventually("newer response is shown") { viewModel.activeWorkflows.value?.map(\.id) == ["fresh"] }
         staleResponse.open()
         await eventually("stale request is answered") { server.answered == 2 }
         await settle()
 
-        #expect(viewModel.error == nil)
+        #expect(viewModel.activeWorkflows.error == nil)
+        #expect(viewModel.activeWorkflows.value?.map(\.id) == ["fresh"])
     }
 
-    @Test func goingBackFromThePickerClearsTheError() async {
+    @Test func goingBackFromThePickerClearsTheStartError() async {
         let start = WorkflowStart.Mock.simple(id: "s1")
         server.on("GET /startingWorkflows") { ListBody(items: [start]) }
         server.on("POST /workflowInstances") { throw TestError() }
         viewModel.showNewWorkflow()
-        await eventually("picker is shown") { viewModel.state == .newWorkflow }
         viewModel.start(start)
-        await eventually("error is shown") { viewModel.error == TestError.message }
+        await eventually("error is shown") { viewModel.startError == TestError.message }
 
         viewModel.showActiveWorkflows()
 
-        #expect(viewModel.error == nil)
+        #expect(viewModel.startError == nil)
         #expect(viewModel.state == .activeWorkflows)
     }
 

@@ -719,3 +719,13 @@ Answered, not changed: task cancellation in the view models exists on `main` too
 response (HUD reopened, active workflow switched) from overwriting a newer one; `Ask` uses
 `preconditionFailure` to match `Input`/`Output`/`Dependency` (B5). Open for the user: whether the HTTP
 status table stays in `ErrorResponseMiddleware` (B16 decision) or each error declares an `ErrorKind`.
+
+Follow-up on the cancellation question (user's design): fetched data in the app is a `Loading<Value>`
+(`UI/Loading/Loading.swift`): `.idle` / `.loading` / `.loaded` / `.failed`, the last `load` wins, a stale
+or cancelled result is dropped inside the box, `.loading` appears only after `loadingDelay` (300 ms) so a
+quick refresh keeps the previous content. `LoadingView` renders the four states for a drawer. The view
+models keep no `Task` fields and no cancellation checks; `ErrorPresenting` is gone. Command errors
+(`start`, `take`) stay in `startError` / `takeError` for now; a `Loading<Void>`-like box for commands is
+a later topic. Deliberate UX change: `showNewWorkflow` opens the picker at once and the picker shows the
+starts loading or failing, instead of staying on the list until the starts arrive. Tests: `LoadingTests`
+cover the box, the view model tests follow the new state; 35 app tests.
