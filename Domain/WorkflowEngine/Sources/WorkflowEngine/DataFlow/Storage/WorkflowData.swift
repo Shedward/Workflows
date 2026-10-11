@@ -12,7 +12,7 @@ import Foundation
 // which keys a "seen" set on `(state, transitionId, data)` to detect
 // no-progress automatic loops.
 public struct WorkflowData: Sendable, Codable, Hashable {
-    internal var data: [String: String]
+    public internal(set) var data: [String: String]
 
     public init(data: [String: String] = [:]) {
         self.data = data

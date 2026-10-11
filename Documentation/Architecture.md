@@ -87,7 +87,7 @@ The preferred way to define any REST endpoint is as a struct conforming to a ser
 
 ```
 Api (Core/Rest)
-  └── GithubApi (Services/Github)
+  └── WorkflowApi (Domain/API)
   └── GoogleDriveApi (Services/GoogleServices)
   └── GoogleSheetsApi (Services/GoogleServices)
 ```
@@ -96,7 +96,7 @@ Each service protocol adds nothing — it's just a marker for type safety.
 
 ### Endpoint file structure
 
-**One file per endpoint.** See `Services/Github/Sources/Github/Api/Repositories/ListRepositoriesForAuthenticatedUser.swift` as the canonical reference.
+**One file per endpoint.** See `Services/GoogleServices/Sources/GoogleServices/Drive/Api/CopyFile.swift` as the canonical reference.
 
 ```
 // LineOne: URL to official API documentation
@@ -291,16 +291,11 @@ Google 3-legged OAuth actor. Key points:
 UserOAuthTokenProvider(
     credentials: oauthCredentials,
     scopes: ["https://www.googleapis.com/auth/drive", ...],
-    redirectURI: "http://localhost:8080/auth/google/callback"
+    redirectURI: AuthController.callbackURL(service: "google", on: config)
 )
 ```
 
-### `ServiceAccountTokenProvider`
-
-Google service account JWT bearer actor. Key points:
-- Loads PEM key via `SecItemImport` — handles PKCS#8 natively, no manual DER parsing
-- Signs with `SecKeyCreateSignature(.rsaSignatureMessagePKCS1v15SHA256)`
-- **Cannot access personal Google Drive** — no storage quota; use `UserOAuthTokenProvider` for Drive
+A service-account provider (JWT bearer, `SecItemImport` + `SecKeyCreateSignature`) existed until October 2026 and was removed unused; it is in git history under `ServiceAccountTokenProvider`. A service account cannot access a personal Drive anyway.
 
 ### `AuthRegistry` + `AuthController`
 

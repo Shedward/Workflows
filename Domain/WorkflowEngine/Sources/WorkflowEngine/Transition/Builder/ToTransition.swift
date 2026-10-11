@@ -15,6 +15,10 @@ public struct ToTransition<State: WorkflowState> {
         self.process = process
         self.targets = targets
     }
+
+    func transition(from state: StateID, trigger: TransitionTrigger, in workflow: AnyWorkflow) -> Transition<State> {
+        Transition(from: state, targets: targets, process: process, workflow: workflow, trigger: trigger)
+    }
 }
 
 public extension TransitionProcess {
@@ -33,14 +37,14 @@ public extension TransitionProcess {
 
 public extension TransitionProcess where Self: Defaultable {
     static func to<State: WorkflowState>(_ nextState: State) -> ToTransition<State> {
-        ToTransition(process: Self(), targets: [nextState.id])
+        Self().to(nextState)
     }
 
     static func toStart<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: Self(), targets: [State.start])
+        Self().toStart()
     }
 
     static func toFinish<State: WorkflowState>() -> ToTransition<State> {
-        ToTransition(process: Self(), targets: [State.finish])
+        Self().toFinish()
     }
 }

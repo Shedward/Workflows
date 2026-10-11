@@ -13,8 +13,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Core"),
-        .package(path: "../Domain/API"),
+        .package(path: "../../Core/Core"),
         .package(url: "https://github.com/apple/swift-syntax", from: "604.0.0")
     ],
     targets: [
@@ -22,9 +21,12 @@ let package = Package(
             name: "WorkflowEngine",
             dependencies: [
                 .product(name: "Core", package: "Core"),
-                .product(name: "API", package: "API"),
                 "WorkflowMacro"
             ]
+        ),
+        .testTarget(
+            name: "WorkflowEngineTests",
+            dependencies: ["WorkflowEngine"]
         ),
         .target(
             name: "WorkflowMacro",
@@ -35,8 +37,7 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                .product(name: "SwiftLexicalLookup", package: "swift-syntax")
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ]
         )
     ]

@@ -24,14 +24,6 @@ public struct TransitionMetadata: Sendable, Equatable {
     public var outputKeys: Set<String> {
         Set(outputs.map(\.key))
     }
-
-    public var dependencyKeys: Set<String> {
-        Set(dependencies.map(\.key))
-    }
-
-    public var askKeys: Set<String> {
-        Set(asks.map(\.key))
-    }
 }
 
 struct CollectMetadata: DataBinding {
@@ -70,14 +62,31 @@ struct CollectMetadata: DataBinding {
     }
 }
 
+extension DataBindable {
+    /// The inputs, outputs, dependencies and asks declared by the property wrappers of this
+    /// value, read without running anything.
+    func declaredMetadata(processId: TransitionProcessID) -> TransitionMetadata {
+        var copy = self
+        var collector = CollectMetadata()
+        try? copy.bind(&collector)
+        return collector.metadata(processId: processId)
+    }
+}
+
 extension TransitionProcess {
     func collectMetadata() -> TransitionMetadata {
-        guard var bindable = self as? any DataBindable & Defaultable else {
+        guard let bindable = self as? any DataBindable else {
             return .empty(processId: id)
         }
+        return bindable.declaredMetadata(processId: id)
+    }
+}
 
-        var collector = CollectMetadata()
-        try? bindable.bind(&collector)
-        return collector.metadata(processId: id)
+extension AnyWorkflow {
+    var declaredMetadata: TransitionMetadata {
+        guard let bindable = self as? any DataBindable else {
+            return .empty(processId: id)
+        }
+        return bindable.declaredMetadata(processId: id)
     }
 }

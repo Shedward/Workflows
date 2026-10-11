@@ -10,6 +10,17 @@ import Foundation
 import Hummingbird
 import Rest
 
+extension Parameters {
+    /// Path parameters arrive percent-encoded, so a non-ASCII id must be decoded before lookup.
+    func requireDecoded(_ name: String) throws -> String {
+        let raw = try require(name)
+        guard let decoded = raw.removingPercentEncoding else {
+            throw HTTPError(.badRequest, message: "Parameter '\(name)' is not valid percent-encoding: \(raw)")
+        }
+        return decoded
+    }
+}
+
 extension RouteCollection where Context == AppRequestContext {
     @discardableResult
     public func on<Api: WorkflowApi>(
@@ -20,7 +31,12 @@ extension RouteCollection where Context == AppRequestContext {
         let responder = CallbackResponder<Context> { request, context in
             let bytesBuffer = try await request.body.collect(upTo: context.maxUploadSize)
             let data = Data(buffer: bytesBuffer)
-            let body = try Api.RequestBody(data: data)
+            let body: Api.RequestBody
+            do {
+                body = try Api.RequestBody(data: data)
+            } catch {
+                throw InvalidRequestBody(expected: String(describing: Api.RequestBody.self), underlying: error)
+            }
             let output = try await closure(request, body, context)
             return try output.response(from: request, context: context)
         }

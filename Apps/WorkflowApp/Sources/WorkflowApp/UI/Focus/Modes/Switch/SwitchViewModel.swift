@@ -14,60 +14,34 @@ final class SwitchViewModel {
         case newWorkflow
     }
 
+    let activeWorkflows = Loading<[WorkflowInstance]>()
+    let newWorkflows = Loading<[WorkflowStart]>()
+    let starting = Command()
     private(set) var state: State = .activeWorkflows
-    private(set) var activeWorkflows: [WorkflowInstance] = []
-    private(set) var newWorkflows: [WorkflowStart] = []
-    private(set) var error: String?
 
     @ObservationIgnored unowned let focus: FocusViewModel
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
-    @ObservationIgnored private var pickerTask: Task<Void, Never>?
-    @ObservationIgnored private var startTask: Task<Void, Never>?
 
     init(focus: FocusViewModel) {
         self.focus = focus
     }
 
     func refresh() {
-        refreshTask?.cancel()
-        refreshTask = Task { [service = focus.service] in
-            do {
-                let result = try await service.getWorkflowInstances()
-                guard !Task.isCancelled else {
-                    return
-                }
-                activeWorkflows = result
-                error = nil
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
-            }
+        activeWorkflows.load { [service = focus.service] in
+            try await service.getWorkflowInstances()
         }
     }
 
     func showNewWorkflow() {
-        pickerTask?.cancel()
-        pickerTask = Task { [service = focus.service] in
-            do {
-                let result = try await service.getStartingWorkflows()
-                guard !Task.isCancelled else {
-                    return
-                }
-                newWorkflows = result
-                error = nil
-                withAnimation(.snappy) {
-                    state = .newWorkflow
-                }
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
-            }
+        withAnimation(.snappy) {
+            state = .newWorkflow
+        }
+        newWorkflows.load { [service = focus.service] in
+            try await service.getStartingWorkflows()
         }
     }
 
     func showActiveWorkflows() {
+        starting.reset()
         withAnimation(.snappy) {
             state = .activeWorkflows
         }
@@ -79,20 +53,12 @@ final class SwitchViewModel {
     }
 
     func start(_ start: WorkflowStart) {
-        startTask?.cancel()
-        startTask = Task { [service = focus.service] in
-            do {
-                let instance = try await service.startWorkflow(start)
-                guard !Task.isCancelled else {
-                    return
-                }
+        starting.run { [self] in
+            let instance = try await focus.service.startWorkflow(start)
+            withAnimation(.snappy) {
                 state = .activeWorkflows
-                activate(instance)
-            } catch is CancellationError {
-                return
-            } catch {
-                self.error = error.localizedDescription
             }
+            activate(instance)
         }
     }
 }

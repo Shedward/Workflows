@@ -14,7 +14,7 @@ import Rest
 /// - `GET /auth`                                  — list all providers and their auth status
 /// - `GET /auth/{service}`                        — `{ "url": "https://..." }` to start the flow
 /// - `GET /auth/{service}/callback?code=&state=`  — OAuth callback; exchanges code, stores token
-struct AuthController: Controller {
+public struct AuthController: Controller {
 
     // MARK: - Response types
 
@@ -28,11 +28,18 @@ struct AuthController: Controller {
         let url: String
     }
 
+    // MARK: - Callback
+
+    /// The URL a provider sends the user back to; `handleCallback` serves it.
+    public static func callbackURL(service: String, on config: Config) -> String {
+        "\(config.baseURL)/auth/\(service)/callback"
+    }
+
     // MARK: - Properties
 
     let registry: AuthRegistry
 
-    var endpoints: RouteCollection<AppRequestContext> {
+    public var endpoints: RouteCollection<AppRequestContext> {
         RouteCollection(context: AppRequestContext.self)
             .get("auth", use: listProviders)
             .get("auth/:service", use: authorizationURL)
@@ -67,7 +74,7 @@ struct AuthController: Controller {
     }
 
     private func requireProvider(context: Context) async throws -> any OAuthProvider {
-        let serviceID = try context.parameters.require("service")
+        let serviceID = try context.parameters.requireDecoded("service")
         guard let provider = await registry.provider(for: serviceID) else {
             throw HTTPError(.notFound, message: "Unknown auth service: \(serviceID)")
         }

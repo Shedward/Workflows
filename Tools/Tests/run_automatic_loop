@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+# Verifies runtime loop protection in WorkflowRunner.
+#
+# 1. AutomaticLoopWorkflow bounces ping -> pong -> ping through automatic
+#    transitions without changing its data. The runner must notice the
+#    repeated step, mark the instance as failed and return.
+# 2. CountingLoopWorkflow bounces tick -> tock -> tick and bumps a counter on
+#    every step, so no step ever repeats. Only the automatic step cap (100)
+#    can stop it, and the instance must be marked as failed too: otherwise
+#    it looks healthy while an automatic transition is pending forever.
+#
+# Kept last in run_all: if protection regresses, the server spins and eats
+# memory until full_check shuts it down.
+
+readonly STEP_CAP=100
+
+test_repeated_step_is_detected() {
+  start_workflow "AutomaticLoopWorkflow"
+  assert_state "_start"
+
+  # Entering the loop has to come back quickly with the loop detected.
+  # Without protection this request only returns on the timeout, with the
+  # instance still executing.
+  LAST_RESPONSE="$(request POST "/workflowInstances/$INSTANCE_ID/takeTransition?timeout=3" \
+    '{"transitionProcessId":"EnterLoop"}')"
+
+  local state_type
+  state_type="$(jq -r '(.transitionState.state // {}) | keys[0] // empty' <<<"$LAST_RESPONSE")"
+  if [[ "$state_type" != "failed" ]]; then
+    echo "Expected the looping chain to end in 'failed', got '$state_type'" >&2
+    exit 1
+  fi
+
+  local debug
+  debug="$(jq -r '.transitionState.state.failed.error.debugDescription' <<<"$LAST_RESPONSE")"
+  if [[ "$debug" != *"AutomaticLoopDetected"* ]]; then
+    echo "Expected AutomaticLoopDetected, got: $debug" >&2
+    exit 1
+  fi
+
+  # The chain stopped where the repeat was noticed, and the failure is stored.
+  assert_state "ping"
+  assert_transition_failed
+
+  # The chain really stopped: the instance does not move any more.
+  sleep 1
+  assert_state "ping"
+  assert_transition_failed
+
+  # The server is still healthy for other instances.
+  start_workflow "SimpleWorkflow"
+  take_transition "StartA"
+  take_transition "StartB"
+  take_transition "Finalize"
+  assert_finished
+}
+
+test_step_cap_stops_changing_loop() {
+  start_workflow "CountingLoopWorkflow"
+  assert_state "_start"
+
+  # StartCounting sets counter to 0, then every automatic step adds 1.
+  LAST_RESPONSE="$(request POST "/workflowInstances/$INSTANCE_ID/takeTransition?timeout=3" \
+    '{"transitionProcessId":"StartCounting"}')"
+
+  local counter
+  counter="$(jq -r '.data.data.counter' <<<"$LAST_RESPONSE")"
+  if [[ "$counter" != "$STEP_CAP" ]]; then
+    echo "Expected the chain to stop after $STEP_CAP automatic steps, counter is '$counter'" >&2
+    exit 1
+  fi
+
+  local state_type debug
+  state_type="$(jq -r '(.transitionState.state // {}) | keys[0] // empty' <<<"$LAST_RESPONSE")"
+  if [[ "$state_type" != "failed" ]]; then
+    echo "Expected the capped chain to end in 'failed', got '$state_type'" >&2
+    exit 1
+  fi
+  debug="$(jq -r '.transitionState.state.failed.error.debugDescription' <<<"$LAST_RESPONSE")"
+  if [[ "$debug" != *"AutomaticStepLimitReached"* ]]; then
+    echo "Expected AutomaticStepLimitReached, got: $debug" >&2
+    exit 1
+  fi
+
+  # An even number of steps brings the instance back to tick.
+  assert_state "tick"
+  assert_data "counter" "$STEP_CAP"
+  assert_transition_failed
+
+  # The chain really stopped.
+  sleep 1
+  assert_data "counter" "$STEP_CAP"
+}
+
+main() {
+  test_repeated_step_is_detected
+  test_step_cap_stops_changing_loop
+
+  echo "Finished Successfully"
+}
+
+main "$@"

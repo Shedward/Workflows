@@ -7,39 +7,38 @@ import API
 import SwiftUI
 
 struct TransitionView: View {
-    let focus: FocusViewModel
     let viewModel: TransitionViewModel
 
     @Environment(\.theme) private var theme
+    @State private var tappedProcessId: String?
 
     var body: some View {
         Group {
-            if let error = viewModel.error {
-                errorRow(error)
-            } else if viewModel.transitions.isEmpty {
-                Text("No available transitions")
-                    .themeFont(\.caption)
-                    .themeColor(\.content.secondary)
-                    .padding()
+            if let error = viewModel.taking.error {
+                DrawerMessage(text: error.localizedDescription)
             } else {
-                ScrollView {
-                    ForEach(viewModel.transitions, id: \.processId) { transition in
-                        row(for: transition)
+                LoadingView(viewModel.transitions) { transitions in
+                    if transitions.isEmpty {
+                        DrawerMessage(text: "No available transitions")
+                    } else {
+                        ScrollView {
+                            ForEach(transitions, id: \.processId) { transition in
+                                row(for: transition)
+                            }
+                        }
+                        .frame(maxHeight: 400)
+                        .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
+                        .animation(.snappy, value: viewModel.taking.isRunning)
                     }
                 }
-                .frame(maxHeight: 400)
-                .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
             }
-        }
-        .task(id: focus.activeWorkflow?.id) {
-            viewModel.refresh()
         }
     }
 
     @ViewBuilder
     private func row(for transition: API.Transition) -> some View {
         Group {
-            if viewModel.runningTransition?.processId == transition.processId {
+            if viewModel.taking.isRunning, tappedProcessId == transition.processId {
                 runningRow(for: transition)
             } else {
                 idleRow(for: transition)
@@ -63,6 +62,7 @@ struct TransitionView: View {
 
     private func idleRow(for transition: API.Transition) -> some View {
         Button {
+            tappedProcessId = transition.processId
             viewModel.take(transition)
         } label: {
             Card {
@@ -78,14 +78,7 @@ struct TransitionView: View {
             }
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.runningTransition != nil)
+        .disabled(viewModel.taking.isRunning)
         .transition(.opacity.combined(with: .scale))
-    }
-
-    private func errorRow(_ message: String) -> some View {
-        Text(message)
-            .themeFont(\.caption)
-            .themeColor(\.content.secondary)
-            .padding()
     }
 }

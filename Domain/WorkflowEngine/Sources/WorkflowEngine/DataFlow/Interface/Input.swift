@@ -7,22 +7,14 @@
 
 @propertyWrapper
 public struct Input<Value: WorkflowValue>: Sendable {
-    var storage: ValueStorage?
+    var value: Value?
 
     public var wrappedValue: Value {
-        // These conditions are statically unreachable: BindInputs validates
-        // presence and type before any transition runs, and rejects the
-        // transition with a structured `InputBindingFailed` error if either
-        // check fails. Reaching the precondition here means the binding step
-        // was skipped — i.e. an engine bug.
-        guard let storage else {
+        // Statically unreachable: BindInputs validates presence and type before any
+        // transition runs, and rejects it with a structured `InputBindingFailed` error
+        // otherwise. Reaching this means the binding step was skipped, i.e. an engine bug.
+        guard let value else {
             preconditionFailure("Input<\(Value.self)> read before BindInputs ran (engine bug)")
-        }
-        guard let value = storage.value else {
-            preconditionFailure("Input<\(Value.self)> storage was reset after binding (engine bug)")
-        }
-        guard let value = value as? Value else {
-            preconditionFailure("Input storage holds \(type(of: value)), expected \(Value.self) (engine bug)")
         }
         return value
     }

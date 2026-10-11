@@ -38,27 +38,9 @@ actor WaitScheduler {
                 scheduleTimeWait(for: instanceId, date: time.date)
             case .workflowFinished(let finished):
                 logger?.trace("Schedule waiting for finishing instance \(finished.instanceId, privacy: .public)")
-                registerFinishWaiter(waitingId: instanceId, finishedId: finished.instanceId)
+                finishWaiters[finished.instanceId, default: []].insert(instanceId)
             case .asking:
                 logger?.trace("Asking for user input on \(instanceId, privacy: .public)")
-        }
-    }
-
-    func cancel(for instanceId: WorkflowInstanceID) {
-        logger?.trace("Canceled scheduling for \(instanceId)")
-        if let task = timeTasks.removeValue(forKey: instanceId) {
-            task.cancel()
-        }
-        // Remove from all finish-waiter sets
-        for key in Array(finishWaiters.keys) {
-            var set = finishWaiters[key] ?? []
-            if set.remove(instanceId) != nil {
-                if set.isEmpty {
-                    finishWaiters.removeValue(forKey: key)
-                } else {
-                    finishWaiters[key] = set
-                }
-            }
         }
     }
 
@@ -98,19 +80,5 @@ actor WaitScheduler {
         }
 
         timeTasks[instanceId] = task
-    }
-
-    private func registerFinishWaiter(waitingId: WorkflowInstanceID, finishedId: WorkflowInstanceID) {
-        var set = finishWaiters[finishedId] ?? []
-        set.insert(waitingId)
-        finishWaiters[finishedId] = set
-    }
-}
-
-extension WaitScheduler {
-    enum ResumeReason {
-        case time
-        case workflowFinished(data: WorkflowData)
-        case answered(data: WorkflowData)
     }
 }

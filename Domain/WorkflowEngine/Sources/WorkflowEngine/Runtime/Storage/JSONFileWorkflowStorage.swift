@@ -1,8 +1,6 @@
 //
 //  JSONFileWorkflowStorage.swift
-//  Workflow
-//
-//  Created by Vlad Maltsev on 29.03.2026.
+//  WorkflowEngine
 //
 
 import Core
@@ -10,34 +8,9 @@ import Foundation
 import os
 
 public actor JSONFileWorkflowStorage: WorkflowStorage {
-    private static func load(from directory: URL, logger: Logger?) throws -> [WorkflowInstance] {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let files = try FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil
-        ).filter { $0.pathExtension == "json" }
-        return files.compactMap { url in
-            let data: Data
-            do {
-                data = try Data(contentsOf: url)
-            } catch {
-                logger?.error("Failed to read instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
-                return nil
-            }
-            do {
-                return try decoder.decode(WorkflowInstance.self, from: data)
-            } catch {
-                logger?.error("Failed to decode instance file \(url.lastPathComponent, privacy: .public): \(error, privacy: .public)")
-                return nil
-            }
-        }
-    }
-
     private let directory: URL
-    private let retentionInterval: TimeInterval
     private let logger = Logger(scope: .workflow)
-    private var instances: [WorkflowInstance] = []
+    private var table: WorkflowInstanceTable
 
     private let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -54,63 +27,73 @@ public actor JSONFileWorkflowStorage: WorkflowStorage {
 
     public init(directory: URL, retentionInterval: TimeInterval = 3600) async throws {
         self.directory = directory
-        self.retentionInterval = retentionInterval
+        self.table = WorkflowInstanceTable(retentionInterval: retentionInterval)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.instances = try Self.load(from: directory, logger: logger)
+        try loadInstanceFiles()
     }
 
     public func create(_ workflow: AnyWorkflow, initialData: WorkflowData) throws -> WorkflowInstance {
-        let instance = WorkflowInstance(
-            id: UUID().uuidString,
-            workflowId: workflow.id,
-            workflowVersion: workflow.version,
-            state: workflow.startId,
-            transitionState: nil,
-            data: initialData
-        )
-        instances.append(instance)
+        let instance = WorkflowInstance(atStartOf: workflow, data: initialData)
         try save(instance)
+        table.put(instance)
         return instance
     }
 
     public func update(_ instance: WorkflowInstance) throws {
-        instances = instances.filter { $0.id != instance.id } + [instance]
         try save(instance)
+        table.put(instance)
     }
 
     public func finish(_ instance: WorkflowInstance) throws {
-        var finished = instance
-        finished.finishedAt = Date()
-        instances = instances.filter { $0.id != instance.id } + [finished]
+        let finished = instance.finished(at: Date())
         try save(finished)
-        cleanupExpired()
+        table.put(finished)
+        removeExpired()
     }
 
     public func all() -> [WorkflowInstance] {
-        cleanupExpired()
-        return instances.filter { $0.finishedAt == nil }
+        removeExpired()
+        return table.running
     }
 
     public func instance(id: WorkflowInstanceID) -> WorkflowInstance? {
-        cleanupExpired()
-        return instances.first { $0.id == id }
+        removeExpired()
+        return table.instance(id: id)
     }
 
-    private func cleanupExpired() {
-        let now = Date()
-        instances.removeAll { instance in
-            guard let finishedAt = instance.finishedAt else {
-                return false
-            }
-            guard now.timeIntervalSince(finishedAt) > retentionInterval else {
-                return false
+    /// Files in the order they were last written, so `all()` keeps its order across a restart.
+    private func loadInstanceFiles() throws {
+        let files = try FileManager.default
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: [.contentModificationDateKey])
+            .filter { $0.pathExtension == "json" }
+            .sorted { modificationDate(of: $0) < modificationDate(of: $1) }
+        for file in files {
+            let contents: Data
+            do {
+                contents = try Data(contentsOf: file)
+            } catch {
+                logger?.error("Failed to read instance file \(file.lastPathComponent, privacy: .public): \(error, privacy: .public)")
+                continue
             }
             do {
-                try FileManager.default.removeItem(at: filePath(for: instance.id))
+                table.put(try decoder.decode(WorkflowInstance.self, from: contents))
             } catch {
-                logger?.error("Failed to delete expired instance file \(instance.id, privacy: .public): \(error, privacy: .public)")
+                logger?.error("Failed to decode instance file \(file.lastPathComponent, privacy: .public): \(error, privacy: .public)")
             }
-            return true
+        }
+    }
+
+    private func modificationDate(of file: URL) -> Date {
+        (try? file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+    }
+
+    private func removeExpired() {
+        for id in table.removeExpired() {
+            do {
+                try FileManager.default.removeItem(at: filePath(for: id))
+            } catch {
+                logger?.error("Failed to delete expired instance file \(id, privacy: .public): \(error, privacy: .public)")
+            }
         }
     }
 

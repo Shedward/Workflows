@@ -5,45 +5,24 @@
 //  Created by Vlad Maltsev on 03.01.2026.
 //
 
-import SwiftLexicalLookup
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-private enum WrapperKind {
-    case input(key: String)
-    case output(key: String)
-    case dependency(key: String)
-    case ask(key: String)
-
-    var key: String {
-        switch self {
-            case .input(let key), .output(let key), .dependency(let key), .ask(let key):
-                return key
-        }
-    }
-
-    var methodName: String {
-        switch self {
-            case .input:
-                return "input"
-            case .output:
-                return "output"
-            case .dependency:
-                return "dependency"
-            case .ask:
-                return "ask"
-        }
-    }
-}
-
 private struct Field {
     let name: String
-    let type: TypeSyntax
-    let kind: WrapperKind
+    let key: String
+    let bindingMethod: String
 }
 
 public struct DataBindableMacro: MemberMacro {
+
+    private static let bindingMethods = [
+        "Input": "input",
+        "Output": "output",
+        "Dependency": "dependency",
+        "Ask": "ask"
+    ]
 
     public static func expansion(
         of node: AttributeSyntax,
@@ -83,68 +62,47 @@ public struct DataBindableMacro: MemberMacro {
             let varDecl = member.decl.as(VariableDeclSyntax.self),
             let binding = varDecl.bindings.first,
             let identifier = binding.pattern.as(IdentifierPatternSyntax.self),
-            let type = binding.typeAnnotation?.type
+            binding.typeAnnotation != nil
         else {
             return nil
         }
 
         let propertyName = identifier.identifier.text
-        let attributes = varDecl.attributes
 
-        for attribute in attributes {
-            let attrName: String
-            if let simple = attribute.as(AttributeSyntax.self) {
-                attrName = simple.attributeName.trimmedDescription
-            } else {
+        for attribute in varDecl.attributes {
+            guard
+                let attribute = attribute.as(AttributeSyntax.self),
+                let bindingMethod = bindingMethods[attribute.attributeName.trimmedDescription]
+            else {
                 continue
             }
-
-            switch attrName {
-                case "Input":
-                    let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .input(key: key))
-
-                case "Output":
-                    let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .output(key: key))
-
-                case "Dependency":
-                    let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .dependency(key: key))
-
-                case "Ask":
-                    let key = Self.extractKey(from: attribute) ?? propertyName
-                    return Field(name: propertyName, type: type, kind: .ask(key: key))
-
-                default:
-                    continue
-            }
+            return Field(
+                name: propertyName,
+                key: extractKey(from: attribute) ?? propertyName,
+                bindingMethod: bindingMethod
+            )
         }
 
         return nil
     }
 
-    private static func extractKey(from attr: SyntaxProtocol) -> String? {
-        if let simple = attr.as(AttributeSyntax.self) {
-            guard
-                let args = simple.arguments?.as(LabeledExprListSyntax.self),
-                let keyArg = args.first(where: { $0.label?.text == "key" }),
-                let literal = keyArg.expression.as(StringLiteralExprSyntax.self)
-            else {
-                return nil
-            }
-
-            return literal.segments
-                .compactMap { $0.as(StringSegmentSyntax.self)?.content.text }
-                .joined()
-        } else {
+    private static func extractKey(from attribute: AttributeSyntax) -> String? {
+        guard
+            let args = attribute.arguments?.as(LabeledExprListSyntax.self),
+            let keyArg = args.first(where: { $0.label?.text == "key" }),
+            let literal = keyArg.expression.as(StringLiteralExprSyntax.self)
+        else {
             return nil
         }
+
+        return literal.segments
+            .compactMap { $0.as(StringSegmentSyntax.self)?.content.text }
+            .joined()
     }
 
     private static func makeStatement(from field: Field) -> CodeBlockItemSyntax {
         """
-        try bind.\(raw: field.kind.methodName)(for: "\(raw: field.kind.key)", at: &_\(raw: field.name))
+        try bind.\(raw: field.bindingMethod)(for: "\(raw: field.key)", at: &_\(raw: field.name))
         """
     }
 }

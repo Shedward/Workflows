@@ -19,7 +19,9 @@ Workflow is a Swift-based workflow engine that executes state machine-like workf
 # Build the macOS WorkflowApp (separate from the server).
 ./Tools/Run/build_app
 
-swift test --package-path Core/Core            # Unit tests (Core module, Swift Testing)
+./Tools/Run/unit_tests                         # Unit tests of every package that has them (Swift Testing, no server)
+swift test --package-path Core/Core            # ...or one package: Core utilities
+swift test --package-path Domain/WorkflowEngine  # ...graph validation, graph builder, registry
 
 # One-time machine setup: create and trust the TLS certificate in ~/.workflows/certs
 ./Tools/Run/setup_certs                        # --force to regenerate
@@ -56,10 +58,10 @@ swiftlint --fix                                # Auto-fix formatting violations
 
 - **Core/Core** — Foundation utilities: `Logger` (scoped), `Failure` (structured errors with stack traces), `@ArrayBuilder` (result builder), `Modifiers` (builder pattern), `Defaultable`
 - **Core/Rest** — REST client framework: `RestClient` protocol, `NetworkRestClient` (URLSession), type-safe `Request<RequestBody, ResponseBody>`, body types (`JSONBody`, `EmptyBody`, etc.), decorators, validators
-- **Domain/WorkflowEngine** — Core engine: workflow protocol, transitions, runner, registry, storage, data flow, wait scheduling
-- **Domain/API** — REST API endpoint definitions and shared models (`Workflow`, `WorkflowInstance`, `Transition`, `TransitionState`)
-- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints
-- **Services/Git, Services/Github** — External service integrations
+- **Domain/WorkflowEngine** — Core engine: workflow protocol, transitions, runner, registry, storage, data flow, wait scheduling. Depends only on `Core` (and swift-syntax for the macro); it must not import `API` or `Rest`
+- **Domain/API** — REST API endpoint definitions and shared models (`Workflow`, `WorkflowInstance`, `Transition`, `TransitionState`). Shared by the server and `WorkflowApp`
+- **Apps/WorkflowServer** — Hummingbird HTTP server with controllers for workflow/instance endpoints. Owns the engine model ↔ REST model conversions in `API/Mapping/*+API.swift` and the `ErrorKind` → HTTP status mapping in `Errors/ErrorResponseMiddleware.swift` (each error declares its kind next to its `userDescription`)
+- **Services/Git, Services/GoogleServices** — External service integrations (git via swift-subprocess; Google OAuth, Drive and Sheets)
 - **Workflows/TestingWorkflows** — Example workflow definitions used by integration tests
 
 ### Key Abstractions
@@ -97,8 +99,8 @@ var transitions: Transitions {
 
 **Graph Validation** — At startup, `WorkflowRegistry.validateAll` builds a `WorkflowGraph` for each workflow and runs static analysis:
 - `CollectMetadata` (a `DataBinding` implementation) introspects `@Input`/`@Output`/`@Dependency` metadata from transitions and workflows without executing them
-- `DataFlowAnalyzer` performs forward data propagation (topological sort, intersection at merge points) to detect unsatisfied inputs, unreachable states, dead ends, and missing dependencies
-- `WorkflowValidator` orchestrates all checks and returns `WorkflowValidationResult` with errors/warnings
+- `GraphTopology` (reachable states in topological order, cycles) and `DataAvailability` (forward data propagation, intersection at merge points) compute facts and emit no messages
+- `WorkflowValidator` is the only place that lists the checks, in reporting order, and turns the facts into `WorkflowValidationResult` errors/warnings (unsatisfied inputs, unreachable states, dead ends, missing dependencies)
 - `ValidationMode.strict` throws on errors (blocking startup); `.lenient` logs them (default)
 - Graphs are cached in the registry and accessible via `Workflows.graph(for:)` for UI introspection
 - At workflow start time, `requiredInputs` from the graph are checked against provided `initialData`
@@ -134,6 +136,10 @@ Full specification: `Documentation/API.md`
 
 ### Testing
 
+Every package builds and tests on its own with SwiftPM (`swift build|test --package-path <package>`); the Xcode workspace is only needed for the app and server executables.
+
+**Unit tests** live in `Domain/WorkflowEngine/Tests/WorkflowEngineTests` (validator, graph builder, registry, both storages; fixtures of deliberately invalid workflows in `Fixtures/`), `Apps/WorkflowApp/Tests/WorkflowAppTests` (Focus view models against a `FakeServer` REST client) and `Core/Core/Tests`. Run `./Tools/Run/unit_tests`. When changing graph validation, add a fixture workflow and an expectation there. When changing a Focus view model, add a test there.
+
 When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkflows**:
 1. Add or update integration test scripts in `Tools/Tests/` to cover new or changed behavior.
 2. Register new test scripts in `Tools/Tests/run_all`.
@@ -146,14 +152,14 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 ### Known Issues
 
-- **Bug #3**: `GithubClient` has a hardcoded placeholder token (`"<Token>"`).
+- **Open bug backlog from the 2026-10 cleanup**: see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
 - **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
-- **`@Input`/`@Output` crash risk**: Property wrappers use `fatalError` on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
+- **`@Input`/`@Output` crash risk**: Property wrappers trap (`preconditionFailure`, `fatalError` for `@Ask`) on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
 - **Manual vs automatic failure behavior**: Both manual and automatic transition failures now persist `transitionState.failed`. Manual failures additionally propagate as HTTP 500.
-- **No migration mechanism** — if a workflow's `version` is bumped, persisted instances with the old version will cause `WorkflowVersionMismatch` on startup; they must be deleted manually.
+- **No migration mechanism** — on startup `Workflows.run()` resumes persisted instances; one whose workflow is not registered or whose `version` differs is skipped with a warning and stays on disk until deleted by hand. Taking a transition on it still fails with `WorkflowVersionMismatch`.
 - **No retry mechanism** for failed transitions.
 - **No timeout** for wait transitions.
-- **Subflow data isolation not enforced** — subflows receive full parent `WorkflowData` and nothing flows back. Phase 2 of graph validation will filter I/O based on declared `@Input`/`@Output` on subflow workflows.
+- **Subflow data isolation is opt-in** — a subflow that declares `@Input` properties receives only those keys from the parent, and its declared `@Output` keys are merged back when it finishes. A subflow that declares no `@Input` still receives the full parent `WorkflowData`.
 
 ### Documentation
 

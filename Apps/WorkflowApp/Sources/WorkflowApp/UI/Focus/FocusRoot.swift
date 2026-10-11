@@ -11,7 +11,14 @@ struct FocusRoot: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        let mode = FocusViewModel.descriptor(for: viewModel.currentMode).make(viewModel)
+        let mode = switch viewModel.currentMode {
+            case .initial:
+                AnyFocusMode(InitMode(focus: viewModel))
+            case .switching:
+                AnyFocusMode(SwitchMode(focus: viewModel))
+            case .transition:
+                AnyFocusMode(TransitionMode(focus: viewModel))
+        }
         FocusHUD {
             VStack(spacing: theme.spacing.s) {
                 ModeBar(focus: viewModel)

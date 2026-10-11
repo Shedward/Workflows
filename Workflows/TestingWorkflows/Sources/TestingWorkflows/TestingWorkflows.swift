@@ -24,20 +24,8 @@ public let workflows: [any Workflow] = [
     ConditionBranchingWorkflow(),
     ConditionOutputWorkflow(),
     AskNameWorkflow(),
-    AskWithDataWorkflow()
-]
-
-public let invalidWorkflows: [any Workflow] = [
-    UnreachableFinishWorkflow(),
-    UnreachableStateWorkflow(),
-    AutomaticCycleWorkflow(),
-    AmbiguousAutomaticWorkflow(),
-    UndeclaredInputWorkflow(),
-    UndeclaredOutputWorkflow(),
-    ConditionalInputWorkflow(),
-    TypeMismatchWorkflow(),
-    UnusedInputWorkflow(),
-    MissingDependencyWorkflow(),
-    UnsatisfiedSubflowInputWorkflow(),
-    CircularAlpha()
+    AskWithDataWorkflow(),
+    AutomaticLoopWorkflow(),
+    CountingLoopWorkflow(),
+    UnicodeIdWorkflow()
 ]

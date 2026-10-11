@@ -33,11 +33,7 @@ enum App {
 
         let storage = InMemoryWorkflowStorage()
 
-        let certsPath = workflowsConfigDir.appending(path: "certs")
-        let config = Config(
-            tlsCertificatePath: certsPath.appending(path: "localhost+2.pem").path(),
-            tlsPrivateKeyPath: certsPath.appending(path: "localhost+2-key.pem").path()
-        )
+        let config = Config(certificatesDirectory: workflowsConfigDir.appending(path: "certs"))
 
         let plugins = Plugins {
             WorkflowTransitionUpdatesPlugin()

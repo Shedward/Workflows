@@ -10,6 +10,8 @@ import WorkflowApp
 
 @main
 struct App: SwiftUI.App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WorkflowApp.App().body
     }

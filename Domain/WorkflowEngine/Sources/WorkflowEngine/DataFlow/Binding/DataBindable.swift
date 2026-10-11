@@ -14,15 +14,4 @@ extension DataBindable {
         var binding = binding
         try bind(&binding)
     }
-
-    public func binded<Binding: DataBinding>(_ binding: inout Binding) throws -> Self {
-        var copy = self
-        try copy.bind(&binding)
-        return copy
-    }
-
-    public func binded<Binding: DataBinding>(_ binding: Binding) throws -> Self {
-        var binding = binding
-        return try binded(&binding)
-    }
 }

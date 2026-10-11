@@ -19,6 +19,6 @@ struct TransitionMode: FocusMode {
     }
 
     var drawer: some View {
-        TransitionView(focus: focus, viewModel: viewModel)
+        TransitionView(viewModel: viewModel)
     }
 }

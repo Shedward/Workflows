@@ -23,6 +23,8 @@ public enum ValidationError: Sendable, CustomStringConvertible {
     case undeclaredWorkflowInput(key: String, processId: TransitionProcessID)
     case undeclaredWorkflowOutput(key: String)
     case typeMismatch(key: String, types: [String], atState: StateID)
+    case inputTypeMismatch(key: String, processId: TransitionProcessID, expected: String, available: String, atState: StateID)
+    case outputTypeMismatch(key: String, declared: String, produced: String)
     case unsatisfiedSubflowInput(key: String, subflowId: WorkflowID, atState: StateID)
     case automaticCycleWithoutExit([StateID])
     case circularSubflow([WorkflowID])
@@ -44,10 +46,14 @@ public enum ValidationError: Sendable, CustomStringConvertible {
                 "Declared workflow output '\(key)' is not produced on all paths to finish"
             case let .typeMismatch(key, types, atState):
                 "Data key '\(key)' has conflicting types \(types.joined(separator: ", ")) at state '\(atState)'"
+            case let .inputTypeMismatch(key, processId, expected, available, atState):
+                "Input '\(key)' required by '\(processId)' at state '\(atState)' is produced as \(available) but \(processId) expects \(expected)"
+            case let .outputTypeMismatch(key, declared, produced):
+                "Declared workflow output '\(key)' is \(declared) but reaches finish as \(produced)"
             case let .unsatisfiedSubflowInput(key, subflowId, atState):
                 "Subflow '\(subflowId)' requires input '\(key)' which is not available at state '\(atState)'"
             case let .automaticCycleWithoutExit(states):
-                "Cycle involving states \(states.joined(separator: " → ")) has only automatic transitions and no manual exit"
+                "Cycle involving states \(states.joined(separator: " → ")) has no manual transition leaving it"
             case let .circularSubflow(workflows):
                 "Circular subflow dependency detected: \(workflows.joined(separator: " → "))"
             case let .missingProviderDependency(key, valueType, providerType):
@@ -65,7 +71,7 @@ public enum ValidationWarning: Sendable, CustomStringConvertible {
     public var description: String {
         switch self {
             case let .unreachableState(stateId):
-                "State '\(stateId)' is declared but never used in any transition"
+                "State '\(stateId)' cannot be reached from start"
             case let .cycleDetected(states):
                 "Cycle detected involving states: \(states.joined(separator: " → "))"
             case let .ambiguousAutomaticTransitions(state, count):

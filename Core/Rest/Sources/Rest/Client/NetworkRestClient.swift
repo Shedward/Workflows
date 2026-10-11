@@ -10,6 +10,37 @@ import Foundation
 import os
 
 public actor NetworkRestClient: RestClient {
+    /// The request as sent: every part comes from the decorated request, and query values are
+    /// percent-encoded here and nowhere else.
+    static func urlRequest<RequestBody: DataEncodable, ResponseBody: DataDecodable>(
+        for request: Request<RequestBody, ResponseBody>,
+        at endpoint: Endpoint
+    ) throws -> URLRequest {
+        var url = endpoint.host
+        if let path = request.path, let urlWithPath = URL(string: endpoint.host.absoluteString + path) {
+            url = urlWithPath
+        }
+
+        var queryItems: [URLQueryItem] = []
+        for (key, value) in request.query.values.sorted(by: { $0.key < $1.key }) {
+            if let queryValue = value.queryValue {
+                queryItems.append(URLQueryItem(name: key, value: queryValue))
+            }
+        }
+        if !queryItems.isEmpty {
+            url.append(queryItems: queryItems)
+        }
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.allHTTPHeaderFields = request.headers.values
+        urlRequest.httpBody = try request.body.data()
+        if let contentType = request.body.contentType, urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+            urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
+        return urlRequest
+    }
+
     private let endpoint: Endpoint
     private let session: URLSession
     private let logger = Logger(scope: .network)
@@ -29,7 +60,6 @@ public actor NetworkRestClient: RestClient {
         self.responseValidators = responseValidators
     }
 
-    // swiftlint:disable:next function_body_length
     public func fetch<RequestBody, ResponseBody>(
         _ request: Request<RequestBody, ResponseBody>
     ) async throws -> ResponseBody
@@ -44,27 +74,7 @@ public actor NetworkRestClient: RestClient {
             }
 
             let urlRequest = try Failure.wrap("Composing request \(RequestBody.self)") {
-                var url = endpoint.host
-
-                if let path = decoratedRequest.path {
-                    url = URL(string: url.absoluteString + path) ?? url
-                }
-
-                let queryItems = request.query.values
-                    .map { URLQueryItem(name: $0.key, value: $0.value.queryValue) }
-                    .filter { $0.value != nil }
-                url.append(queryItems: queryItems)
-
-                var urlRequest = URLRequest(url: url)
-                urlRequest.httpMethod = request.method.rawValue
-                urlRequest.allHTTPHeaderFields = decoratedRequest.headers.values
-                let bodyData = try request.body.data()
-                urlRequest.httpBody = bodyData
-                if let contentType = request.body.contentType,
-                   urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
-                    urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
-                }
-                return urlRequest
+                try Self.urlRequest(for: decoratedRequest, at: endpoint)
             }
 
             let (data, response) = try await Failure.wrap("Executing request") {
@@ -72,8 +82,14 @@ public actor NetworkRestClient: RestClient {
             }
             responseData = data
 
-            try Failure.wrap("Validating response") {
+            do {
                 try responseValidators.validate(response)
+            } catch {
+                throw ResponseRejected(
+                    statusCode: (response as? HTTPURLResponse)?.statusCode ?? 0,
+                    body: data,
+                    reason: (error as? DescriptiveError)?.userDescription ?? "\(error)"
+                )
             }
 
             let responseBody = try Failure.wrap("Parsing response") {

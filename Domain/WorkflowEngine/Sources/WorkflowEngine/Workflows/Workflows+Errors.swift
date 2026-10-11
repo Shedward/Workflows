@@ -8,21 +8,19 @@
 public enum WorkflowsError {
     public struct WorkflowNotFound: Swift.Error {
         public let workflowId: WorkflowID
+
+        public init(workflowId: WorkflowID) {
+            self.workflowId = workflowId
+        }
+    }
+
+    public struct DuplicateWorkflowID: Swift.Error {
+        public let workflowId: WorkflowID
+        public let types: [String]
     }
 
     public struct WorkflowInstanceNotFound: Swift.Error {
         public let instanceId: WorkflowInstanceID
-    }
-
-    public struct WorkflowInstanceMismatch: Swift.Error {
-        public let instance: WorkflowInstanceID
-        public let expectedWorkflow: WorkflowID
-        public let foundWorkflow: WorkflowID
-    }
-
-    public struct TransitionNotFound: Swift.Error {
-        public let transitionId: TransitionID
-        public let availableTransitions: [TransitionID]
     }
 
     public struct TransitionProcessNotFoundForInstance: Swift.Error {
@@ -68,10 +66,16 @@ public enum WorkflowsError {
         public let transitionId: TransitionID
     }
 
+    public struct AutomaticStepLimitReached: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+        public let state: StateID
+        public let transitionId: TransitionID
+        public let limit: Int
+    }
+
     public struct InputBindingFailed: Swift.Error {
         public enum Reason: Sendable {
             case missing
-            case typeMismatch(expected: String)
             case decodingFailed(any Swift.Error)
         }
 

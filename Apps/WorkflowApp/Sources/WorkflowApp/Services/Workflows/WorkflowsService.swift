@@ -6,38 +6,38 @@
 //
 
 import API
+import Foundation
 import Rest
 import SwiftUI
 
 struct WorkflowsService: Sendable {
-    let rest: any RestClient
+    let rest: WorkflowServerClient
+
+    init(rest: any RestClient) {
+        self.rest = WorkflowServerClient(rest)
+    }
 
     init(endpoint: NetworkRestClient.Endpoint) {
-        self.rest = NetworkRestClient(endpoint: endpoint)
+        self.rest = WorkflowServerClient(endpoint: endpoint)
     }
 
     func getWorkflowInstances() async throws -> [WorkflowInstance] {
-        let request = GetWorkflowsInstances()
-        return try await rest.fetch(request).items
+        try await rest.fetch(GetWorkflowsInstances()).items
     }
 
     func getStartingWorkflows() async throws -> [WorkflowStart] {
-        let request = GetStartingWorkflows()
-        return try await rest.fetch(request).items
+        try await rest.fetch(GetStartingWorkflows()).items
     }
 
     func startWorkflow(_ start: WorkflowStart) async throws -> WorkflowInstance {
-        let request = StartWorkflow(workflowId: start.workflowId, initialData: start.data)
-        return try await rest.fetch(request)
+        try await rest.fetch(StartWorkflow(workflowId: start.workflowId, initialData: start.data))
     }
 
     func getTransitions(instanceId: String) async throws -> [API.Transition] {
-        let request = AvailableTransitions(instanceId: instanceId)
-        return try await rest.fetch(request).items
+        try await rest.fetch(AvailableTransitions(instanceId: instanceId)).items
     }
 
     func takeTransition(instanceId: String, transitionProcessId: String) async throws -> WorkflowInstance {
-        let request = TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId)
-        return try await rest.fetch(request)
+        try await rest.fetch(TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId))
     }
 }

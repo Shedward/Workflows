@@ -6,6 +6,7 @@
 //
 
 import API
+import Foundation
 
 extension WorkflowInstance {
     enum Mock {
@@ -16,5 +17,16 @@ extension WorkflowInstance {
             transitionState: nil,
             data: .init()
         )
+
+        static func simple(id: String = "simple-mock", state: String = "working", finished: Bool = false) -> WorkflowInstance {
+            WorkflowInstance(
+                id: id,
+                workflowId: "Workflow",
+                state: state,
+                transitionState: nil,
+                data: WorkflowData(),
+                finishedAt: finished ? Date() : nil
+            )
+        }
     }
 }

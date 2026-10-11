@@ -13,31 +13,31 @@ struct SwitchView: View {
 
     var body: some View {
         Group {
-            if let error = viewModel.error {
-                errorRow(error)
+            if let error = viewModel.starting.error {
+                DrawerMessage(text: error.localizedDescription)
             } else {
                 switch viewModel.state {
                     case .activeWorkflows:
-                        activeList
+                        LoadingView(viewModel.activeWorkflows) { workflows in
+                            activeList(workflows)
+                        }
                     case .newWorkflow:
-                        WorkflowPicker(starts: viewModel.newWorkflows) { start in
-                            viewModel.start(start)
+                        LoadingView(viewModel.newWorkflows) { starts in
+                            WorkflowPicker(starts: starts) { start in
+                                viewModel.start(start)
+                            }
                         }
                 }
             }
         }
-        .onAppear { viewModel.refresh() }
     }
 
-    @ViewBuilder private var activeList: some View {
-        if viewModel.activeWorkflows.isEmpty {
-            Text("No running workflows")
-                .themeFont(\.caption)
-                .themeColor(\.content.secondary)
-                .padding()
+    @ViewBuilder private func activeList(_ workflows: [WorkflowInstance]) -> some View {
+        if workflows.isEmpty {
+            DrawerMessage(text: "No running workflows")
         } else {
             ScrollView {
-                ForEach(viewModel.activeWorkflows) { workflow in
+                ForEach(workflows) { workflow in
                     Button {
                         viewModel.activate(workflow)
                     } label: {
@@ -50,12 +50,5 @@ struct SwitchView: View {
             .frame(maxHeight: 400)
             .contentMargins(.vertical, theme.spacing.xl, for: .scrollContent)
         }
-    }
-
-    private func errorRow(_ message: String) -> some View {
-        Text(message)
-            .themeFont(\.caption)
-            .themeColor(\.content.secondary)
-            .padding()
     }
 }

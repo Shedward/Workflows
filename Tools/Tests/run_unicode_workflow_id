@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. "$(dirname "$0")/../Lib/request.sh"
+. "$(dirname "$0")/../Lib/workflow.sh"
+
+# "Юникод_процесс", as a browser or URLSession puts it into a path.
+readonly ENCODED_ID="%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4_%D0%BF%D1%80%D0%BE%D1%86%D0%B5%D1%81%D1%81"
+
+assert_json_equals() {
+  local filter="$1"
+  local expected="$2"
+  local response="$3"
+  local actual
+  actual="$(jq -r "$filter" <<<"$response")"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "Expected $filter to be '$expected', got '$actual'" >&2
+    exit 1
+  fi
+}
+
+test_graph_by_encoded_id() {
+  local response
+  response="$(request GET "/workflows/$ENCODED_ID/graph")"
+  assert_json_equals '.workflowId' "Юникод_процесс" "$response"
+  assert_json_equals '[.states[].id] | index("середина") != null' "true" "$response"
+}
+
+test_starting_by_encoded_id() {
+  local response
+  response="$(request GET "/workflows/$ENCODED_ID/starting")"
+  assert_json_equals 'length' "1" "$response"
+  assert_json_equals '.[0].workflowId' "Юникод_процесс" "$response"
+}
+
+test_ascii_id_still_works() {
+  local response
+  response="$(request GET "/workflows/SimpleWorkflow/graph")"
+  assert_json_equals '.workflowId' "SimpleWorkflow" "$response"
+}
+
+test_lifecycle() {
+  start_workflow "Юникод_процесс"
+  assert_state "_start"
+  take_transition "StartA"
+  assert_state "середина"
+  take_transition "Finalize"
+  assert_finished
+}
+
+main() {
+  test_graph_by_encoded_id
+  test_starting_by_encoded_id
+  test_ascii_id_still_works
+  test_lifecycle
+  echo "Finished Successfully"
+}
+
+main "$@"

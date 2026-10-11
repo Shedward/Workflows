@@ -14,13 +14,21 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../Core/Rest"),
-        .package(path: "../Domain/API")
+        .package(path: "../../Core/Rest"),
+        .package(path: "../../Domain/API")
     ],
     targets: [
         .target(
             name: "WorkflowApp",
             dependencies: [
+                .product(name: "Rest", package: "Rest"),
+                .product(name: "API", package: "API")
+            ]
+        ),
+        .testTarget(
+            name: "WorkflowAppTests",
+            dependencies: [
+                "WorkflowApp",
                 .product(name: "Rest", package: "Rest"),
                 .product(name: "API", package: "API")
             ]

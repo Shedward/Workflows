@@ -1,5 +1,5 @@
 //
-//  WorkflowRun.swift
+//  WorkflowInstance.swift
 //  Workflow
 //
 //  Created by Vlad Maltsev on 24.12.2025.
@@ -34,9 +34,24 @@ public struct WorkflowInstance: Sendable, Codable {
         self.data = data
         self.finishedAt = finishedAt
     }
+
+    init(atStartOf workflow: AnyWorkflow, data: WorkflowData) {
+        self.init(
+            id: UUID().uuidString,
+            workflowId: workflow.id,
+            workflowVersion: workflow.version,
+            state: workflow.startId,
+            transitionState: nil,
+            data: data
+        )
+    }
 }
 
 extension WorkflowInstance: Modifiers {
+    public func finished(at date: Date) -> Self {
+        with { $0.finishedAt = date }
+    }
+
     public func moveToState(_ state: StateID) -> Self {
         with { $0.state = state }
     }

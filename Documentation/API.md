@@ -12,6 +12,7 @@
 - All workflow data values are JSON-encoded strings (e.g., the string `hello` is stored as `"\"hello\""` in the data map).
 - Finished workflow instances are removed from storage and will not appear in any listing.
 - Automatic transitions execute inline before the HTTP response is returned.
+- Endpoints that run transitions (`POST /workflowInstances`, `.../takeTransition`, `.../answer`) accept `?timeout=<seconds>` (default 5, kept within 0–600). If the work takes longer, the response is `200` with the instance as it is at that moment, and the work continues in the background. A value that is not a finite number means the default.
 
 ---
 
@@ -155,6 +156,7 @@ If the workflow has automatic transitions from `_start`, they execute inline. Th
 
 | Status | Condition |
 |--------|-----------|
+| 400 | Body is not valid JSON for this endpoint, or `initialData` lacks a key the workflow declares as `@Input` |
 | 404 | Workflow ID not found |
 
 ---
@@ -214,9 +216,9 @@ If subsequent automatic transitions exist from the new state, they also execute 
 
 | Status | Condition |
 |--------|-----------|
+| 400 | Body is not valid JSON for this endpoint |
 | 404 | Instance not found |
-| 404 | Transition ID not found in workflow definition |
-| 500 | Transition not available from the instance's current state |
+| 409 | Transition not available from the instance's current state (unknown id, or defined from another state) |
 | 500 | Transition action threw an error |
 
 When a transition fails, the instance remains in its original state but `transitionState` is set to `failed` with error details.
@@ -411,10 +413,12 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 
 ```json
 {
-  "userDescription": "Workflow not found",
-  "debugDescription": "WorkflowNotFound(id: \"BadId\")"
+  "userDescription": "Workflow 'BadId' is not registered",
+  "debugDescription": "WorkflowNotFound(workflowId: \"BadId\")"
 }
 ```
+
+`userDescription` is the same text the engine stores in `transitionState.failed` for the same error.
 
 ---
 
@@ -422,12 +426,17 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 
 | Error | HTTP Status | userDescription |
 |-------|-------------|-----------------|
-| Workflow not found | 404 | "Workflow not found" |
-| Instance not found | 404 | "Workflow instance not found" |
-| Transition not found | 404 | "Transition not found" |
-| Transition not available from state | 500 | "Transition process not found for instance" |
-| Instance/workflow mismatch | 500 | "Workflow instance does not match expected workflow" |
-| Instance not asking | 409 | "Workflow instance is not waiting for an answer" |
+| Request body cannot be decoded | 400 | "Request body is not a valid <type>: ..." |
+| Required initial data missing | 400 | "Workflow '<id>' requires initial data for: <keys>" |
+| Workflow not found | 404 | "Workflow '<id>' is not registered" |
+| Instance not found | 404 | "Workflow instance '<id>' not found" |
+| Transition not available from state | 409 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
+| Instance not asking | 409 | "Workflow instance '<id>' is not waiting for an answer" |
+| Transition failed | 500 | The failure's own description |
+
+The status comes from the error's `ErrorKind` (`Core`), which says who has to act: `invalidRequest` → 400, the caller fixes the request; `notFound` → 404, the caller checks the id; `conflict` → 409, the caller re-reads the instance state; `internal` → 500, the workflow or the server failed. Every `DescriptiveError` without an explicit kind is `internal`.
+
+Every endpoint answers an unknown workflow or instance with this shape, `GET /workflows/:id/graph` included.
 
 ---
 
@@ -440,7 +449,8 @@ Workflows can define transitions with `trigger: "automatic"`. These execute inli
 - When starting a workflow (`POST /workflowInstances`), all automatic transitions from `_start` execute before the response.
 - When taking a transition (`POST takeTransition`), any automatic transitions from the resulting state also execute.
 - Only one automatic transition is allowed per state. Multiple automatics from the same state cause an error.
-- A safety limit of 1000 automatic steps prevents infinite loops.
+- A chain that repeats a step with unchanged data is stopped and the instance is marked failed (`AutomaticLoopDetected`).
+- A chain is stopped after 100 automatic steps if another automatic step is still pending, and the instance is marked failed (`AutomaticStepLimitReached`). This catches loops that change data on every step. A chain that ends on its own within 100 steps is not affected.
 
 ### Subflows
 
