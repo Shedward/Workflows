@@ -684,8 +684,10 @@ server start under strict validation in a sandboxed home.
 6. Pull request `cleanup` → `main`: prepared 2026-10-10 (60 commits, 139 files, +4402 −2223; 95 unit and
    28 integration tests).
 
-Open after the PR: B19's environment override of host/port still bypasses the redirect URI; B36 minor
-storage oddities. The HUD was checked on screen on 2026-10-10 (macOS 27.2): it did not show because the
+Open after the PR, moved to `Tasks/` on 2026-10-11: B19 →
+`Tasks/2026-10-11-env-override-bypasses-oauth-redirect-uri`, B36 →
+`Tasks/2026-10-11-storage-silently-accepts-unknown-and-finished-ids`. B6 is closed: `Todo.swift`
+declares `todo(_:)` since the dead-code sweep. The HUD was checked on screen on 2026-10-10 (macOS 27.2): it did not show because the
 `@NSApplicationDelegateAdaptor` lived on the library's `App`, not on the executable's `@main` type; fixed
 in commit 4293545.
 

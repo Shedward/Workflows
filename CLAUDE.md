@@ -152,13 +152,12 @@ When making changes to **WorkflowEngine**, **WorkflowServer**, or **TestingWorkf
 
 ### Known Issues
 
-- **Open bug backlog from the 2026-10 cleanup**: see "Bug backlog" in `.claude/notes/2026-10-04-cleanup-exploration.md`.
-- **Error handling**: `WorkflowRunner` silently swallows storage errors with `try?` in multiple places.
+- **Backlog and open bugs live in `Tasks/`** (one markdown file per task, closed ones in `Tasks/Done/`); the format and the create/close rules are in the personal skill `tasks`. The "Bug backlog" table in `.claude/notes/2026-10-04-cleanup-exploration.md` is history.
 - **`@Input`/`@Output` crash risk**: Property wrappers trap (`preconditionFailure`, `fatalError` for `@Ask`) on misuse — mitigated by graph validation catching missing inputs at startup, but runtime crashes still possible if validation is `.lenient`.
 - **Manual vs automatic failure behavior**: Both manual and automatic transition failures now persist `transitionState.failed`. Manual failures additionally propagate as HTTP 500.
 - **No migration mechanism** — on startup `Workflows.run()` resumes persisted instances; one whose workflow is not registered or whose `version` differs is skipped with a warning and stays on disk until deleted by hand. Taking a transition on it still fails with `WorkflowVersionMismatch`.
 - **No retry mechanism** for failed transitions.
-- **No timeout** for wait transitions.
+- **No timeout** for wait transitions — by design, a wait is for a human action; see `Tasks/Done/2026-10-11-timeout-for-wait-transitions.md`.
 - **Subflow data isolation is opt-in** — a subflow that declares `@Input` properties receives only those keys from the parent, and its declared `@Output` keys are merged back when it finishes. A subflow that declares no `@Input` still receives the full parent `WorkflowData`.
 
 ### Documentation
