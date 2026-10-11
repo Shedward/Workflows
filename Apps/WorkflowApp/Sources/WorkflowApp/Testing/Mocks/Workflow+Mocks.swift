@@ -13,5 +13,9 @@ extension WorkflowStart {
             WorkflowStart(workflowId: "Код_ревью", title: nil, data: WorkflowData()),
             WorkflowStart(workflowId: "Дейли_стендап", title: nil, data: WorkflowData())
         ]
+
+        static func simple(id: String = "simple-mock", title: String? = nil) -> WorkflowStart {
+            WorkflowStart(id: id, workflowId: "Review", title: title, data: WorkflowData())
+        }
     }
 }

@@ -8,9 +8,7 @@
 import Carbon.HIToolbox
 import SwiftUI
 
-/// The executable's `@main` type must declare `@NSApplicationDelegateAdaptor(AppDelegate.self)` itself:
-/// SwiftUI installs the delegate only from the `@main` type, and without it neither the HUD panel nor
-/// the global hotkey is set up.
+/// `@NSApplicationDelegateAdaptor(AppDelegate.self)` belongs on the executable's `@main` type; SwiftUI ignores it here.
 public struct App: SwiftUI.App {
     public var body: some Scene {
         MenuBarExtra("Workflows", systemImage: "bolt.horizontal.circle") {

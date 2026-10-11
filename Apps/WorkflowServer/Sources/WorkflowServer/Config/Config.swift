@@ -8,8 +8,6 @@
 import Foundation
 
 public struct Config {
-    static let authCallbackRoute = "auth/:service/callback"
-
     public var hostname: String
     public var port: Int
     public var tlsCertificatePath: String
@@ -39,10 +37,5 @@ public struct Config {
             tlsCertificatePath: certificatesDirectory.appending(path: "localhost+2.pem").path(),
             tlsPrivateKeyPath: certificatesDirectory.appending(path: "localhost+2-key.pem").path()
         )
-    }
-
-    /// The absolute URL an OAuth provider must redirect to on this server.
-    public func authCallbackURL(service: String) -> String {
-        baseURL + "/" + Self.authCallbackRoute.replacingOccurrences(of: ":service", with: service)
     }
 }

@@ -703,3 +703,19 @@ the server controller to `main` (−711 diff lines): it undoes the S1/S3/S4 pass
 the B12/B14 fixes, and restores misleading controller names; the closure-wired view models (architecture)
 and the `+` chain of validator checks (clarity) as form changes without a reading gain. Checks: lint clean,
 95 unit tests, 28 integration scripts, app builds.
+
+### 2026-10-11 — review round 1 (user, plannotator on `main...cleanup`)
+
+Applied: the `ResponseRejected` → `ServerError` mapping moved from `WorkflowsService` into the API
+package as `RestClient.fetch(_: some WorkflowApi)`, which takes precedence over Rest's `fetch(_ api:)`
+by being the more constrained overload; `ServerError` is now a public `DescriptiveError` in API. The auth
+callback route is a literal in `AuthController` again, `AuthController.callbackURL(service:on:)` builds
+the redirect URI (the controller is public for that), `Config` keeps only `baseURL`. Test support: `Boom`
+→ `TestError` with a `message`, `eventually` takes `within:`/`polling:` (5 s / 10 ms), the stubs moved
+into the app's `Mock` namespaces (`WorkflowInstance.Mock.simple`, `WorkflowStart.Mock.simple`,
+`API.Transition.Mock.simple`) so previews and tests share them. Comments trimmed in `App.swift`,
+`API+Route.swift`, `ServerError`.
+Answered, not changed: task cancellation in the view models exists on `main` too and keeps a stale
+response (HUD reopened, active workflow switched) from overwriting a newer one; `Ask` uses
+`preconditionFailure` to match `Input`/`Output`/`Dependency` (B5). Open for the user: whether the HTTP
+status table stays in `ErrorResponseMiddleware` (B16 decision) or each error declares an `ErrorKind`.

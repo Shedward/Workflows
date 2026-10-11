@@ -291,7 +291,7 @@ Google 3-legged OAuth actor. Key points:
 UserOAuthTokenProvider(
     credentials: oauthCredentials,
     scopes: ["https://www.googleapis.com/auth/drive", ...],
-    redirectURI: config.authCallbackURL(service: "google")
+    redirectURI: AuthController.callbackURL(service: "google", on: config)
 )
 ```
 

@@ -11,7 +11,7 @@ import Hummingbird
 import Rest
 
 extension Parameters {
-    /// Path parameters arrive percent-encoded; every production workflow id is Cyrillic.
+    /// Path parameters arrive percent-encoded, so a non-ASCII id must be decoded before lookup.
     func requireDecoded(_ name: String) throws -> String {
         let raw = try require(name)
         guard let decoded = raw.removingPercentEncoding else {

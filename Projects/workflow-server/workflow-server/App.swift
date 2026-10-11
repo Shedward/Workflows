@@ -42,7 +42,7 @@ enum App {
                 "https://www.googleapis.com/auth/drive",
                 "https://www.googleapis.com/auth/spreadsheets"
             ],
-            redirectURI: config.authCallbackURL(service: "google")
+            redirectURI: AuthController.callbackURL(service: "google", on: config)
         )
         await authRegistry.register(googleTokenProvider)
 

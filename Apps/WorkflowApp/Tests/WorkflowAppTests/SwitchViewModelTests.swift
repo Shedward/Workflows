@@ -18,7 +18,7 @@ struct SwitchViewModelTests {
     }
 
     @Test func refreshLoadsRunningWorkflows() async {
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("a"), .stub("b")]) }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a"), .Mock.simple(id: "b")]) }
 
         viewModel.refresh()
 
@@ -28,23 +28,23 @@ struct SwitchViewModelTests {
     }
 
     @Test func failedRefreshShowsTheErrorAndKeepsTheList() async {
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("a")]) }
-        server.on("GET /workflowInstances") { throw Boom() }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a")]) }
+        server.on("GET /workflowInstances") { throw TestError() }
 
         viewModel.refresh()
         await eventually("running workflows are loaded") { viewModel.activeWorkflows.map(\.id) == ["a"] }
         viewModel.refresh()
 
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         #expect(viewModel.activeWorkflows.map(\.id) == ["a"])
     }
 
     @Test func successfulRefreshClearsTheError() async {
-        server.on("GET /workflowInstances") { throw Boom() }
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("a")]) }
+        server.on("GET /workflowInstances") { throw TestError() }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a")]) }
 
         viewModel.refresh()
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         viewModel.refresh()
 
         await eventually("error is cleared") { viewModel.error == nil }
@@ -55,9 +55,9 @@ struct SwitchViewModelTests {
         let staleResponse = Gate()
         server.on("GET /workflowInstances") {
             await staleResponse.wait()
-            return ListBody(items: [WorkflowInstance.stub("stale")])
+            return ListBody(items: [WorkflowInstance.Mock.simple(id: "stale")])
         }
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("fresh")]) }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "fresh")]) }
 
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
@@ -72,9 +72,7 @@ struct SwitchViewModelTests {
     }
 
     @Test func showNewWorkflowLoadsStartsAndOpensThePicker() async {
-        server.on("GET /startingWorkflows") {
-            ListBody(items: [WorkflowStart(id: "s1", workflowId: "Review", title: "Review PR", data: WorkflowData())])
-        }
+        server.on("GET /startingWorkflows") { ListBody(items: [WorkflowStart.Mock.simple(id: "s1", title: "Review PR")]) }
 
         viewModel.showNewWorkflow()
 
@@ -84,11 +82,11 @@ struct SwitchViewModelTests {
     }
 
     @Test func failedShowNewWorkflowShowsTheErrorAndStaysOnTheList() async {
-        server.on("GET /startingWorkflows") { throw Boom() }
+        server.on("GET /startingWorkflows") { throw TestError() }
 
         viewModel.showNewWorkflow()
 
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         #expect(viewModel.state == .activeWorkflows)
         #expect(viewModel.newWorkflows.isEmpty)
     }
@@ -106,16 +104,16 @@ struct SwitchViewModelTests {
     @Test func activateMakesTheWorkflowActiveAndReturnsToTheInitialMode() {
         focus.enter(.switching)
 
-        viewModel.activate(.stub("a"))
+        viewModel.activate(.Mock.simple(id: "a"))
 
         #expect(focus.activeWorkflow?.id == "a")
         #expect(focus.currentMode == .initial)
     }
 
     @Test func startCreatesAnInstanceAndActivatesIt() async {
-        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        let start = WorkflowStart.Mock.simple(id: "s1")
         server.on("GET /startingWorkflows") { ListBody(items: [start]) }
-        server.on("POST /workflowInstances") { WorkflowInstance.stub("created") }
+        server.on("POST /workflowInstances") { WorkflowInstance.Mock.simple(id: "created") }
         focus.enter(.switching)
         viewModel.showNewWorkflow()
         await eventually("picker is shown") { viewModel.state == .newWorkflow }
@@ -129,16 +127,16 @@ struct SwitchViewModelTests {
     }
 
     @Test func failedStartShowsTheErrorAndStaysInThePicker() async {
-        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        let start = WorkflowStart.Mock.simple(id: "s1")
         server.on("GET /startingWorkflows") { ListBody(items: [start]) }
-        server.on("POST /workflowInstances") { throw Boom() }
+        server.on("POST /workflowInstances") { throw TestError() }
         focus.enter(.switching)
         viewModel.showNewWorkflow()
         await eventually("picker is shown") { viewModel.state == .newWorkflow }
 
         viewModel.start(start)
 
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         #expect(viewModel.state == .newWorkflow)
         #expect(focus.activeWorkflow == nil)
         #expect(focus.currentMode == .switching)
@@ -148,9 +146,9 @@ struct SwitchViewModelTests {
         let staleResponse = Gate()
         server.on("GET /workflowInstances") {
             await staleResponse.wait()
-            throw Boom()
+            throw TestError()
         }
-        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.stub("fresh")]) }
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "fresh")]) }
 
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
@@ -164,13 +162,13 @@ struct SwitchViewModelTests {
     }
 
     @Test func goingBackFromThePickerClearsTheError() async {
-        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        let start = WorkflowStart.Mock.simple(id: "s1")
         server.on("GET /startingWorkflows") { ListBody(items: [start]) }
-        server.on("POST /workflowInstances") { throw Boom() }
+        server.on("POST /workflowInstances") { throw TestError() }
         viewModel.showNewWorkflow()
         await eventually("picker is shown") { viewModel.state == .newWorkflow }
         viewModel.start(start)
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
 
         viewModel.showActiveWorkflows()
 
@@ -179,11 +177,11 @@ struct SwitchViewModelTests {
     }
 
     @Test func aSecondStartWhileOneIsInFlightIsIgnored() async {
-        let start = WorkflowStart(id: "s1", workflowId: "Review", title: nil, data: WorkflowData())
+        let start = WorkflowStart.Mock.simple(id: "s1")
         let createResponse = Gate()
         server.on("POST /workflowInstances") {
             await createResponse.wait()
-            return WorkflowInstance.stub("created")
+            return WorkflowInstance.Mock.simple(id: "created")
         }
 
         viewModel.start(start)

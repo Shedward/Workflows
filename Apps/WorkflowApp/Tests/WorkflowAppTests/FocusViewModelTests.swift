@@ -21,7 +21,7 @@ struct FocusViewModelTests {
     }
 
     @Test func activeWorkflowCanBeSetAndCleared() {
-        focus.setActiveWorkflow(.stub("a"))
+        focus.setActiveWorkflow(.Mock.simple(id: "a"))
         #expect(focus.activeWorkflow?.id == "a")
 
         focus.setActiveWorkflow(nil)

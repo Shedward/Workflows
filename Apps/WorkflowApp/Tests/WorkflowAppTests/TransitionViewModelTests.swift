@@ -20,14 +20,14 @@ struct TransitionViewModelTests {
 
     private func loadTransitions(_ processIds: [String], of instanceId: String) async {
         server.on("GET /workflowInstances/\(instanceId)/transitions") {
-            ListBody(items: processIds.map { API.Transition.stub($0) })
+            ListBody(items: processIds.map { API.Transition.Mock.simple(processId: $0) })
         }
         viewModel.refresh()
         await eventually("transitions are loaded") { viewModel.transitions.map(\.processId) == processIds }
     }
 
     @Test func refreshLoadsTransitionsOfTheActiveWorkflow() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
 
         await loadTransitions(["Approve", "Reject"], of: "w")
 
@@ -36,7 +36,7 @@ struct TransitionViewModelTests {
     }
 
     @Test func refreshWithoutActiveWorkflowClearsTransitionsAndAsksNothing() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Approve"], of: "w")
         focus.setActiveWorkflow(nil)
 
@@ -48,24 +48,24 @@ struct TransitionViewModelTests {
     }
 
     @Test func failedRefreshShowsTheErrorAndKeepsTransitions() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Approve"], of: "w")
-        server.on("GET /workflowInstances/w/transitions") { throw Boom() }
+        server.on("GET /workflowInstances/w/transitions") { throw TestError() }
 
         viewModel.refresh()
 
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         #expect(viewModel.transitions.map(\.processId) == ["Approve"])
     }
 
     @Test func staleRefreshDoesNotOverwriteANewerOne() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         let staleResponse = Gate()
         server.on("GET /workflowInstances/w/transitions") {
             await staleResponse.wait()
-            return ListBody(items: [API.Transition.stub("Stale")])
+            return ListBody(items: [API.Transition.Mock.simple(processId: "Stale")])
         }
-        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.stub("Fresh")]) }
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Fresh")]) }
 
         viewModel.refresh()
         await eventually("first request is sent") { server.requests.count == 1 }
@@ -79,16 +79,16 @@ struct TransitionViewModelTests {
     }
 
     @Test func takeMarksTheTransitionRunningThenUpdatesTheWorkflowAndItsTransitions() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Approve"], of: "w")
         let takeResponse = Gate()
         server.on("POST /workflowInstances/w/takeTransition") {
             await takeResponse.wait()
-            return WorkflowInstance.stub("w", state: "approved")
+            return WorkflowInstance.Mock.simple(id: "w", state: "approved")
         }
-        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.stub("Publish")]) }
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Publish")]) }
 
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
 
         await eventually("transition is running") { viewModel.runningTransition?.processId == "Approve" }
         #expect(focus.activeWorkflow?.state == "working")
@@ -100,11 +100,11 @@ struct TransitionViewModelTests {
     }
 
     @Test func takeThatFinishesTheWorkflowClearsTheActiveWorkflow() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Finish"], of: "w")
-        server.on("POST /workflowInstances/w/takeTransition") { WorkflowInstance.stub("w", finished: true) }
+        server.on("POST /workflowInstances/w/takeTransition") { WorkflowInstance.Mock.simple(id: "w", finished: true) }
 
-        viewModel.take(.stub("Finish"))
+        viewModel.take(.Mock.simple(processId: "Finish"))
 
         await eventually("workflow is no longer active") { focus.activeWorkflow == nil }
         await eventually("transition is done") { viewModel.runningTransition == nil }
@@ -113,52 +113,52 @@ struct TransitionViewModelTests {
     }
 
     @Test func failedTakeShowsTheErrorAndKeepsTheWorkflow() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         await loadTransitions(["Approve"], of: "w")
-        server.on("POST /workflowInstances/w/takeTransition") { throw Boom() }
+        server.on("POST /workflowInstances/w/takeTransition") { throw TestError() }
 
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
 
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         await eventually("transition is done") { viewModel.runningTransition == nil }
         #expect(focus.activeWorkflow?.state == "working")
         #expect(viewModel.transitions.map(\.processId) == ["Approve"])
     }
 
     @Test func aRefusedTakeShowsTheServersExplanation() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         let body = Data(#"{"userDescription":"Transition 'Approve' is not available","debugDescription":"..."}"#.utf8)
         server.on("POST /workflowInstances/w/takeTransition") {
             throw ResponseRejected(statusCode: 409, body: body, reason: "Wrong status code: 409")
         }
 
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
 
         await eventually("error is shown") { viewModel.error == "Transition 'Approve' is not available" }
     }
 
     @Test func aRefusedTakeWithoutAnErrorBodyShowsTheStatus() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         server.on("POST /workflowInstances/w/takeTransition") {
             throw ResponseRejected(statusCode: 502, body: Data("Bad Gateway".utf8), reason: "Wrong status code: 502")
         }
 
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
 
         await eventually("error is shown") { viewModel.error == "HTTP 502: Wrong status code: 502" }
     }
 
     @Test func takeIsIgnoredWhileAnotherTransitionIsRunning() async {
-        focus.setActiveWorkflow(.stub("w"))
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
         let takeResponse = Gate()
         server.on("POST /workflowInstances/w/takeTransition") {
             await takeResponse.wait()
-            return WorkflowInstance.stub("w", finished: true)
+            return WorkflowInstance.Mock.simple(id: "w", finished: true)
         }
 
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
         await eventually("transition is running") { viewModel.runningTransition?.processId == "Approve" }
-        viewModel.take(.stub("Reject"))
+        viewModel.take(.Mock.simple(processId: "Reject"))
         takeResponse.open()
         await eventually("transition is done") { viewModel.runningTransition == nil }
 
@@ -166,7 +166,7 @@ struct TransitionViewModelTests {
     }
 
     @Test func takeWithoutActiveWorkflowDoesNothing() async {
-        viewModel.take(.stub("Approve"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
 
         await settle()
         #expect(viewModel.runningTransition == nil)
@@ -174,11 +174,11 @@ struct TransitionViewModelTests {
     }
 
     @Test func twoTakesInOneTurnSendOneRequest() async {
-        focus.setActiveWorkflow(.stub("w"))
-        server.on("POST /workflowInstances/w/takeTransition") { WorkflowInstance.stub("w", finished: true) }
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
+        server.on("POST /workflowInstances/w/takeTransition") { WorkflowInstance.Mock.simple(id: "w", finished: true) }
 
-        viewModel.take(.stub("Approve"))
-        viewModel.take(.stub("Reject"))
+        viewModel.take(.Mock.simple(processId: "Approve"))
+        viewModel.take(.Mock.simple(processId: "Reject"))
 
         #expect(viewModel.runningTransition?.processId == "Approve")
         await eventually("transition is done") { viewModel.runningTransition == nil }
@@ -186,14 +186,14 @@ struct TransitionViewModelTests {
     }
 
     @Test func clearingTheActiveWorkflowDropsAnInFlightRefreshAndTheError() async {
-        focus.setActiveWorkflow(.stub("w"))
-        server.on("GET /workflowInstances/w/transitions") { throw Boom() }
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
+        server.on("GET /workflowInstances/w/transitions") { throw TestError() }
         viewModel.refresh()
-        await eventually("error is shown") { viewModel.error == "boom" }
+        await eventually("error is shown") { viewModel.error == TestError.message }
         let staleResponse = Gate()
         server.on("GET /workflowInstances/w/transitions") {
             await staleResponse.wait()
-            return ListBody(items: [API.Transition.stub("Stale")])
+            return ListBody(items: [API.Transition.Mock.simple(processId: "Stale")])
         }
         viewModel.refresh()
         await eventually("request is sent") { server.requests.count == 2 }
