@@ -89,7 +89,7 @@ actor WorkflowRunner {
 
     /// Takes `transition` and then follows the automatic chain from the state it leads to.
     @discardableResult
-    private func takeTransitionLocked(
+    func takeTransitionLocked(
         _ transition: AnyTransition,
         on instance: WorkflowInstance,
         of workflow: AnyWorkflow,
@@ -245,7 +245,7 @@ actor WorkflowRunner {
 
     // MARK: - Lookup
 
-    private func loadInstance(_ instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
+    func loadInstance(_ instanceId: WorkflowInstanceID) async throws -> WorkflowInstance {
         guard let instance = try await storage.instance(id: instanceId) else {
             throw WorkflowsError.WorkflowInstanceNotFound(instanceId: instanceId)
         }

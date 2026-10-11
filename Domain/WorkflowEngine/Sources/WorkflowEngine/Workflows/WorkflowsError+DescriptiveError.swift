@@ -81,6 +81,16 @@ extension WorkflowsError.InstanceNotAsking: DescriptiveError {
     }
 }
 
+extension WorkflowsError.InstanceNotFailed: DescriptiveError {
+    public var userDescription: String {
+        "Workflow instance '\(instanceId)' has no failed transition to retry"
+    }
+
+    public var kind: ErrorKind {
+        .conflict
+    }
+}
+
 extension WorkflowsError.MissingAskAnswers: DescriptiveError {
     public var userDescription: String {
         "Workflow instance '\(instanceId)' expects an answer for: \(missingKeys.sorted().joined(separator: ", "))"

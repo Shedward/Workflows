@@ -15,6 +15,7 @@ public let workflows: [any Workflow] = [
     SubflowsWorkflow(),
     AutomaticSubflowsWorkflow(),
     FailingWorkflow(),
+    FlakyWorkflow(),
     BranchingWorkflow(),
     InitialDataWorkflow(),
     SlowWorkflow(),

@@ -12,7 +12,7 @@
 - All workflow data values are JSON-encoded strings (e.g., the string `hello` is stored as `"\"hello\""` in the data map).
 - Finished workflow instances are removed from storage and will not appear in any listing.
 - Automatic transitions execute inline before the HTTP response is returned.
-- Endpoints that run transitions (`POST /workflowInstances`, `.../takeTransition`, `.../answer`) accept `?timeout=<seconds>` (default 5, kept within 0–600). If the work takes longer, the response is `200` with the instance as it is at that moment, and the work continues in the background. A value that is not a finite number means the default.
+- Endpoints that run transitions (`POST /workflowInstances`, `.../takeTransition`, `.../retry`, `.../answer`) accept `?timeout=<seconds>` (default 5, kept within 0–600). If the work takes longer, the response is `200` with the instance as it is at that moment, and the work continues in the background. A value that is not a finite number means the default.
 
 ---
 
@@ -225,6 +225,26 @@ When a transition fails, the instance remains in its original state but `transit
 
 ---
 
+### POST /workflowInstances/:id/retry
+
+Run the transition recorded in `transitionState.failed` again. Works for manual and automatic transitions alike; a failed automatic transition is otherwise never retried.
+
+- **Path Parameters**: `id` — instance UUID
+- **Request Body**: none
+- **Response**: `200 OK`, WorkflowInstance reflecting the state after the transition
+
+The transition runs with the instance data as it was before the failure; nothing the failed attempt wrote is kept. If subsequent automatic transitions exist from the new state, they also execute inline. Side effects of the failed attempt (a created file, a sent message) are not undone: an action that is not idempotent repeats them.
+
+- **Errors**:
+
+| Status | Condition |
+|--------|-----------|
+| 404 | Instance not found |
+| 409 | Instance has no failed transition |
+| 500 | Transition failed again; `transitionState` stays `failed` with the new error |
+
+---
+
 ### GET /workflowInstances/:id/transitions
 
 List transitions available from the instance's current state.
@@ -433,6 +453,7 @@ All values are JSON-encoded strings. A string value `hello` is stored as `"\"hel
 | Instance not found | 404 | "Workflow instance '<id>' not found" |
 | Transition not available from state | 409 | "Transition '<process>' is not available for instance '<id>' of '<workflow>'; available: ..." |
 | Instance not asking | 409 | "Workflow instance '<id>' is not waiting for an answer" |
+| Instance not failed | 409 | "Workflow instance '<id>' has no failed transition to retry" |
 | Transition failed | 500 | The failure's own description |
 
 The status comes from the error's `ErrorKind` (`Core`), which says who has to act: `invalidRequest` → 400, the caller fixes the request; `notFound` → 404, the caller checks the id; `conflict` → 409, the caller re-reads the instance state; `internal` → 500, the workflow or the server failed. Every `DescriptiveError` without an explicit kind is `internal`.

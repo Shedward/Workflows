@@ -60,6 +60,10 @@ public enum WorkflowsError {
         public let instanceId: WorkflowInstanceID
     }
 
+    public struct InstanceNotFailed: Swift.Error {
+        public let instanceId: WorkflowInstanceID
+    }
+
     public struct MissingAskAnswers: Swift.Error {
         public let instanceId: WorkflowInstanceID
         public let missingKeys: Set<String>

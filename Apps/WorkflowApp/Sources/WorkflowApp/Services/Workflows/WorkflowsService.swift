@@ -40,4 +40,8 @@ struct WorkflowsService: Sendable {
     func takeTransition(instanceId: String, transitionProcessId: String) async throws -> WorkflowInstance {
         try await rest.fetch(TakeTransition(instanceId: instanceId, transitionProcessId: transitionProcessId))
     }
+
+    func retryTransition(instanceId: String) async throws -> WorkflowInstance {
+        try await rest.fetch(RetryTransition(instanceId: instanceId))
+    }
 }
