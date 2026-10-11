@@ -1,6 +1,6 @@
 ---
 type: bug
-status: open
+status: done
 effort: low
 impact: low
 ---
@@ -29,3 +29,6 @@ task does not touch that.
 - Заведено при сканировании заметок 2026-10-11.
 - Оценено effort low (precondition плюс юнит-тест), impact low
   (единственный вызов уже защищён clamp'ом).
+- Сделано: non-finite `seconds` означает «без дедлайна» (таймер не
+  запускается), параметризованный тест в `CoreTests`. Clamp в контроллере
+  остаётся: он ещё защищает от огромных конечных значений вроде `1e30`.

@@ -45,3 +45,16 @@ import Testing
     try? await Task.sleep(for: .milliseconds(300))
     #expect(await flag.operationFinished)
 }
+
+@Test(arguments: [Double.nan, .infinity, -.infinity])
+func withTimeoutTreatsNonFiniteSecondsAsNoDeadline(seconds: Double) async {
+    let result = await withTimeout(seconds: seconds) {
+        try? await Task.sleep(for: .milliseconds(20))
+        return 42
+    }
+    guard case .completed(.success(let value)) = result else {
+        Issue.record("expected completed success, got \(result)")
+        return
+    }
+    #expect(value == 42)
+}

@@ -20,6 +20,9 @@ public enum TimeoutResult<T: Sendable>: Sendable {
 /// cancelled. This is intentional: callers (e.g. HTTP handlers) use this to
 /// bound how long they wait for a response while letting the underlying work
 /// finish on its own.
+///
+/// A non-finite `seconds` (`nan`, `±infinity`) means no deadline: the result
+/// is always `.completed`. `Task.sleep` traps on such a duration otherwise.
 public func withTimeout<T: Sendable>(
     seconds: Double,
     operation: @Sendable @escaping () async throws -> T
@@ -35,9 +38,11 @@ public func withTimeout<T: Sendable>(
         }
     }
 
-    Task {
-        try? await Task.sleep(for: .seconds(seconds))
-        await state.resume(with: .timedOut)
+    if seconds.isFinite {
+        Task {
+            try? await Task.sleep(for: .seconds(seconds))
+            await state.resume(with: .timedOut)
+        }
     }
 
     return await withCheckedContinuation { continuation in
