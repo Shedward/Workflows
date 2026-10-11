@@ -30,7 +30,6 @@ struct SwitchView: View {
                 }
             }
         }
-        .onAppear { viewModel.refresh() }
     }
 
     @ViewBuilder private func activeList(_ workflows: [WorkflowInstance]) -> some View {

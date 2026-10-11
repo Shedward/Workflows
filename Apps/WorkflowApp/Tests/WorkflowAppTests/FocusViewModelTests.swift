@@ -1,11 +1,17 @@
 import API
+import Rest
 import Testing
 @testable import WorkflowApp
 
 @Suite("Focus view model")
 @MainActor
 struct FocusViewModelTests {
-    let focus = FocusViewModel(service: WorkflowsService(rest: FakeServer()))
+    let server = FakeServer()
+    let focus: FocusViewModel
+
+    init() {
+        focus = FocusViewModel(service: WorkflowsService(rest: server))
+    }
 
     @Test func startsInTheInitialModeWithoutAnActiveWorkflow() {
         #expect(focus.currentMode == .initial)
@@ -20,12 +26,44 @@ struct FocusViewModelTests {
         #expect(focus.currentMode == .initial)
     }
 
-    @Test func activeWorkflowCanBeSetAndCleared() {
-        focus.setActiveWorkflow(.Mock.simple(id: "a"))
-        #expect(focus.activeWorkflow?.id == "a")
+    @Test func enteringSwitchingLoadsTheRunningWorkflows() async {
+        server.on("GET /workflowInstances") { ListBody(items: [WorkflowInstance.Mock.simple(id: "a")]) }
+
+        focus.enter(.switching)
+
+        await eventually("running workflows are loaded") { focus.switchVM.activeWorkflows.value?.map(\.id) == ["a"] }
+    }
+
+    @Test func enteringTransitionLoadsTheTransitionsOfTheActiveWorkflow() async {
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Approve")]) }
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Reject")]) }
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
+
+        focus.enter(.transition)
+
+        await eventually("transitions are reloaded") { focus.transitionVM.transitions.value?.map(\.processId) == ["Reject"] }
+    }
+
+    @Test func settingTheActiveWorkflowLoadsItsTransitions() async {
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Approve")]) }
+
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
+
+        #expect(focus.activeWorkflow?.id == "w")
+        await eventually("transitions are loaded") { focus.transitionVM.transitions.value?.map(\.processId) == ["Approve"] }
+    }
+
+    @Test func clearingTheActiveWorkflowResetsTheTransitions() async {
+        server.on("GET /workflowInstances/w/transitions") { ListBody(items: [API.Transition.Mock.simple(processId: "Approve")]) }
+        focus.setActiveWorkflow(.Mock.simple(id: "w"))
+        await eventually("transitions are loaded") { focus.transitionVM.transitions.value != nil }
 
         focus.setActiveWorkflow(nil)
+
         #expect(focus.activeWorkflow == nil)
+        #expect(focus.transitionVM.transitions.value == nil)
+        await settle()
+        #expect(server.requests.count == 1)
     }
 
     @Test func modeBarOffersSwitchingAndTransitionWithTheirShortcuts() {

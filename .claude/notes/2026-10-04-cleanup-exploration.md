@@ -751,3 +751,19 @@ enum state for `Command` (nobody switches over it yet). Names considered and rej
 `Query`/`Command` (Query reads as database selectors in Swift), `Loader`/`Runner`, `Fetcher`/`Executor`
 (Swift Concurrency clash). The view models now hold only `Loading`, `Command` and `state`; no `Task`.
 39 app tests.
+
+Regression found on screen after `Loading`: transitions never loaded. `LoadingView` renders `EmptyView` for
+`.idle`, and SwiftUI runs neither `.task` nor `.onAppear` on an `EmptyView` (probe in the scratchpad,
+`empty_task_probe.swift`, with the exact `Group { if … else LoadingLike }` structure of both drawers), so
+the load that would have replaced the empty view never started. `SwitchView` had the same hole, masked
+because its `.onAppear` fired once the picker had content. Fix (user's choice, option 2): the view model
+decides when to load. `FocusViewModel.enter(.switching)` refreshes the list, `enter(.transition)` and
+`setActiveWorkflow` refresh the transitions; the drawers have no `.task` / `.onAppear`, and `take` no
+longer calls `refresh()` itself. Rejected: an invisible real node for `.idle` (`Color.clear.frame(height:
+0)`), a workaround that lives on a comment. 42 app tests.
+
+Xcode side note: "Missing package product" in Xcode was a stale `SourcePackages` in its DerivedData
+(swift-collections 1.3.0 from February; swift-async-algorithms 1.1.7 sets traits on it and the resolver
+throws before reaching the pinned 1.7.1). Reset Package Caches fixed it; a clean resolve passes. The
+per-package `.build` folders from `swift test --package-path` (100k files) were deleted; they sit inside
+the workspace's synchronized groups and only slow Xcode down.

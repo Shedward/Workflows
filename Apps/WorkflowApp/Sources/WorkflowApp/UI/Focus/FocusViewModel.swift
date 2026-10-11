@@ -24,11 +24,18 @@ final class FocusViewModel {
         withAnimation(.snappy) {
             currentMode = mode
         }
+        switch mode {
+            case .initial:
+                break
+            case .switching:
+                switchVM.refresh()
+            case .transition:
+                transitionVM.refresh()
+        }
     }
 
-    /// Single point of truth for active-workflow updates so cross-mode side effects
-    /// can be added here later (analytics, cache invalidation, etc.).
     func setActiveWorkflow(_ workflow: WorkflowInstance?) {
         activeWorkflow = workflow
+        transitionVM.refresh()
     }
 }

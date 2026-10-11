@@ -38,7 +38,6 @@ final class TransitionViewModel {
                 transitionProcessId: transition.processId
             )
             focus.setActiveWorkflow(updated.finishedAt == nil ? updated : nil)
-            refresh()
         }
     }
 }

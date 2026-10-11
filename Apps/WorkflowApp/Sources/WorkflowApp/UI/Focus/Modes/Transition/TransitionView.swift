@@ -33,9 +33,6 @@ struct TransitionView: View {
                 }
             }
         }
-        .task(id: viewModel.focus.activeWorkflow?.id) {
-            viewModel.refresh()
-        }
     }
 
     @ViewBuilder

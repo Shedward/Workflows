@@ -180,7 +180,7 @@ struct SwitchViewModelTests {
         await eventually("created instance is active") { focus.activeWorkflow?.id == "created" }
         await settle()
 
-        #expect(server.requests == ["POST /workflowInstances"])
+        #expect(server.requests.filter { $0.hasPrefix("POST") } == ["POST /workflowInstances"])
         #expect(!viewModel.starting.isRunning)
     }
 }
